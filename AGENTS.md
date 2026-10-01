@@ -123,6 +123,25 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
    Özgün git geçmişi `ornekler/eski_arac_arsivi/eski_git_gecmisi.bundle` içinde, GitHub'a gitmeyen
    yerel dosyalar aynı alanda korunuyor (git dışı). Kopyaların içerikleri doğrulandıktan sonra eski
    `../bupilic-rapor-araci` klasörü silindi.
+3. **Dosya tanıma ve sayım doğrulaması:** Dört dosyayı birlikte sürükle-bırak tarayıcıda denendi;
+   yanıltıcı dosya adlarına rağmen içeriklerine göre doğru yerlere yerleştiler. Dosya türü içerikten
+   tanınır; sayım tarihi için dosya adı kullanılabilir. Aynı adlı ürünün farklı stok kodlarıyla gelen
+   adetli/kolili satırlarında hazır kilogram miktarlarının toplanması ve rapor planında tek satıra
+   yazılması sentetik testlerle doğrulandı. Hesap davranışı değiştirilmedi. Son tam kontrolde
+   **155 test geçti** (gerçek dosyalı altın testler dahil); GitHub denetimi ve yayın da başarılı.
+
+**Oturum devri (2026-10-01):** Kullanıcı ayrılıyor; yarın devam edilecek. Yeni geliştirmeye şimdi
+başlama. Kullanıcı, gerekli depo/yayın komutlarını asistanın çalıştırabileceğini açıkça belirtti;
+aynı işlemler için yeniden izin isteme. Yeni oturumda aşağıdaki sayım sorularından devam et:
+
+1. Adetli ve kolili aynı ürünün birlikte bulunduğu sayım Excel'i `ornekler/` içine konulacak;
+   henüz yeni örnek verilmedi.
+2. İki satırda `Miktar` kilogram mı, adet/koli sayısı mı? Ürün adları aynı mı? Yanıt bekleniyor.
+3. Yeni örneği incele; gerekiyorsa doğru ürün eşlemesini ve birim dönüşümünü testlerle uygula.
+   Ağırlık bilgisi yoksa tahmin etme; kullanıcıdan dosyadaki ağırlık bilgisini veya dönüşüm kuralını
+   iste. Genel olarak ambalaj kelimelerini silerek farklı ürünleri birleştirme.
+4. Sayım kuralından sonra onaylı Google Drive aşamasına geç. Envanter, bakiye, palet/kasa raporları
+   ayrıca örnek dosya bekliyor. Şirket verileri ve özgün eski arşiv git dışında kalmalı.
 
 **Sıradaki işler:** Kullanıcı Google Drive'a geçilebileceğini belirtti; aynı mesajda adetli ve kolili
 sayım satırlarının doğru toplanmasını istedi. Önce sayım isteğini netleştir: yeni örnekte `Miktar`
