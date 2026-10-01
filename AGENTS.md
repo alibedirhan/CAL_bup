@@ -109,6 +109,20 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive'a kaydetme                                    | Sırada                       |
 | 7     | Envanter, bakiye, palet/kasa raporları                     | Örnek dosya bekleniyor       |
 
+**Bekleyen işler (2026-10-01, bu sırayla):**
+
+1. **Yeniden adlandırma:** GitHub depo adı `Bup_Excel_Rapor` → `CAL_bup`; ekranda görünen ad "BUP Rapor" →
+   **"CAL bup"** (kullanıcı onayladı). Değişecekler: GitHub'da depo adı, `vite.config.ts` `base`
+   (`/CAL_bup/`), `index.html` başlığı, `KenarCubugu.tsx` marka adı ve harfi, `public/favicon.svg`,
+   README/AGENTS.md/docs'taki ad ve adresler, yerel klasör adı ve `git remote`. Yeni adres
+   `alibedirhan.github.io/CAL_bup/`; eski adres çalışmaz (kullanıcı yer imini güncellemeli). Tarayıcı
+   kayıtları aynı alan adında olduğu için korunur. Sürümü artır.
+2. **Eski aracı arşivleme:** `../bupilic-rapor-araci` (yalnızca yerel git, 8 commit) gizli
+   `alibedirhan/Bup_Excel_Rapor_Eski` deposuna yüklenecek, doğrulandıktan sonra yerelden silinecek.
+   Komut kullanıcıya verildi, henüz çalıştırılmadı:
+   `cd "/home/ali/Desktop/EXCEL RAPOR PROGRAMI/bupilic-rapor-araci" && gh repo create alibedirhan/Bup_Excel_Rapor_Eski --private --source=. --remote=arsiv --push`
+3. Google Drive aşaması (aşağıda).
+
 **6. Google Drive (kullanıcı kararı):** Tarayıcı içi kayıt (ayarlar, geçmiş, yedekler) kalır; ek olarak
 "Drive'a bağlan". `drive.file` kapsamı (uygulama yalnızca kendi oluşturduğu dosyaları görür), Drive'da
 "BUP Rapor" klasörü: günlük depo kontrol dosyası, yedeği, isteğe bağlı LED dosyaları; geçmiş/ayarlar
