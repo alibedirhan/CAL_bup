@@ -1,0 +1,137 @@
+/* Tablolar, süzgeç düğmeleri ve liste satırları (depo kontrol, geçmiş, ayarlar). */
+.suzgecler {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.suzgec {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 5px 12px;
+  border: 1px solid var(--cizgi);
+  border-radius: 999px;
+  background: var(--yuzey);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.suzgec span {
+  color: var(--soluk);
+  font-size: 12px;
+}
+
+.suzgec[aria-pressed='true'] {
+  border-color: var(--murekkep);
+  background: var(--murekkep);
+  color: var(--yuzey);
+}
+
+.suzgec[aria-pressed='true'] span {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.tablo-kap {
+  max-height: 560px;
+  overflow: auto;
+  border: 1px solid var(--cizgi);
+  border-radius: var(--yaricap);
+}
+
+.tablo {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.tablo th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 9px 12px;
+  background: var(--yuzey-2);
+  border-bottom: 1px solid var(--cizgi);
+  font: 500 11px var(--yazi-rakam);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--soluk);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tablo td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--cizgi);
+  vertical-align: top;
+}
+
+.tablo td .rozet {
+  margin-left: 8px;
+  vertical-align: 1px;
+}
+
+.tablo tbody tr:hover td {
+  background: var(--yuzey-2);
+}
+
+.tablo tr.eklendi td {
+  background: var(--uyari-yumusak);
+}
+
+.tablo tr.tekrar td {
+  color: var(--soluk);
+}
+
+.tablo tfoot td {
+  position: sticky;
+  bottom: 0;
+  background: var(--yuzey-2);
+  border-top: 1px solid var(--cizgi-guclu);
+  border-bottom: 0;
+  font-weight: 600;
+}
+
+.tablo .sayi {
+  text-align: right;
+  font-family: var(--yazi-rakam);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tablo .soluk {
+  color: var(--soluk);
+}
+
+.tablo .vurgulu {
+  color: var(--uyari);
+  font-weight: 500;
+}
+
+.bos-satir {
+  padding: 24px !important;
+  text-align: center;
+  color: var(--soluk);
+}
+
+.hucre-alt {
+  display: block;
+  font-size: 12px;
+  color: var(--soluk);
+}
+
+.aciklama-hucresi {
+  min-width: 260px;
+  max-width: 520px;
+  font-size: 12.5px;
+  color: var(--soluk);
+}
+
+.yedek-listesi {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

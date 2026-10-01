@@ -63,22 +63,23 @@ yüklenmez.
 
 ## Doğrulama
 
-| Katman        | Komut                   | Neyi yakalar                                                       |
-| ------------- | ----------------------- | ------------------------------------------------------------------ |
-| Tip           | `npm run tip`           | TypeScript strict hataları                                         |
-| Lint          | `npm run lint`          | Katman ihlalleri, React kancaları, şüpheli kod                     |
-| Biçim         | `npm run bicim:kontrol` | Prettier                                                           |
-| Birim         | `npm test`              | Kurallar, rota, tema, rapor kaydı                                  |
-| Altın (yerel) | `npm test`              | `ornekler/` varsa gerçek LED dosyalarıyla uçtan uca; yoksa atlanır |
-| Derleme       | `npm run build`         | Yayına çıkacak paket                                               |
+| Katman        | Komut                   | Neyi yakalar                                                     |
+| ------------- | ----------------------- | ---------------------------------------------------------------- |
+| Tip           | `npm run tip`           | TypeScript strict hataları                                       |
+| Lint          | `npm run lint`          | Katman ihlalleri, React kancaları, şüpheli kod                   |
+| Biçim         | `npm run bicim:kontrol` | Prettier                                                         |
+| Birim         | `npm test`              | Kurallar, okuyucular, Excel yazma (sentetik), ekran durumu, tema |
+| Altın (yerel) | `npm test`              | `ornekler/` varsa gerçek dosyalarla uçtan uca; yoksa atlanır     |
+| Derleme       | `npm run build`         | Yayına çıkacak paket                                             |
 
 `npm run kontrol` hepsini sırayla çalıştırır; GitHub Actions da aynısını yapar.
 
 ## Eski araçla eşdeğerlik
 
-Kurallar eski aracın Python ikiziyle (`../bupilic-rapor-araci/ikiz/`) aynı sonucu vermek zorundadır.
-`tools/ikiz_aktar.py` ikizi gerçek dosyalarla çalıştırıp girdileri ve sonucu `ornekler/ikiz.json`'a
-yazar; `tests/altin/ikiz.test.ts` aynı girdilerle TypeScript kurallarını çalıştırıp satır satır
+Kurallar eski Excel/VBA aracının Python ikiziyle aynı sonucu verir. Eski araç arşivdedir
+(`github.com/alibedirhan/Bup_Excel_Rapor_Eski`, gizli). `tools/ikiz_aktar.py` ikizi gerçek dosyalarla
+çalıştırıp girdileri ve sonucu `ornekler/ikiz.json`'a yazmıştır; bu dosya artık sabit bir başvuru
+çıktısıdır. `tests/altin/ikiz.test.ts` aynı girdilerle TypeScript kurallarını çalıştırıp satır satır
 karşılaştırır. Bilinçli farklar:
 
 - `yuvarla3` Python `round(x, 3)` ile aynıdır (`toFixed`); VBA `Round`'dan farkı yalnızca kuramsaldır.
@@ -87,11 +88,9 @@ karşılaştırır. Bilinçli farklar:
 - Ürün adı sıralaması büyük harfe çevrilmiş adın karakter koduna göredir (ikiz gibi; VBA Türkçe
   harmanlama kullanıyordu). 30.09 verisinde aynı sonucu verir.
 
-## Eski araçtan taşınan bilgi
+## İş kuralları
 
-LED dosya biçimleri, hedef dosya biçimi ve iş kuralları eski Excel/VBA aracında
-(`../bupilic-rapor-araci/docs/MIMARI.md`, Python ikizi `ikiz/`) belgelenmiş ve 30.09.2026 gerçek
-dosyalarıyla doğrulanmıştır. Bu uygulamanın kuralları o ikizle aynı sonucu vermek zorundadır.
+LED dosya biçimleri, hedef dosya biçimi ve rapor kuralları: `docs/IS_KURALLARI.md`.
 
 ### ExcelJS notları (denenmiş, `hedef/sayfa.ts`'te çözüldü)
 

@@ -5,8 +5,11 @@ TypeScript kurallarının ikizle birebir aynı sonucu verdiğini kanıtlamak iç
 tests/altin/ikiz.test.ts bu dosyayı okur. Çıktı ornekler/ altına yazılır ve
 git'e girmez (şirket verisi).
 
-Çalıştırma (eski aracın sanal ortamıyla):
+Eski araç arşivdedir (github.com/alibedirhan/Bup_Excel_Rapor_Eski, gizli). Yeniden üretmek için
+arşivi bu klasörün yanına `bupilic-rapor-araci` adıyla klonlayın, `pip install openpyxl` ile bir
+sanal ortam kurun ve:
     ../bupilic-rapor-araci/.venv/bin/python tools/ikiz_aktar.py [GUN]
+Yeni bir gün için yeniden üretmek yalnızca kurallar değişmişse gerekir; ornekler/ikiz.json sabittir.
 GUN verilmezse depo kontrol dosyasındaki son gün sayfası kullanılır.
 """
 import glob, json, os, sys, unicodedata

@@ -10,12 +10,12 @@ Bupiliç İzmir Bölge Deposu için LED çıktılarından günlük raporları ha
 
 ## Raporlar
 
-| Rapor               | Durum                        |
-| ------------------- | ---------------------------- |
-| Günlük depo kontrol | Hazır (iş yerinde deneniyor) |
-| Envanter            | Yakında                      |
-| Bakiye              | Yakında                      |
-| Palet / kasa        | Yakında                      |
+| Rapor               | Durum   |
+| ------------------- | ------- |
+| Günlük depo kontrol | Hazır   |
+| Envanter            | Yakında |
+| Bakiye              | Yakında |
+| Palet / kasa        | Yakında |
 
 ## Geliştirme
 
@@ -26,4 +26,7 @@ npm run kontrol   # tip denetimi + lint + biçim + test + derleme (yayından ön
 ```
 
 `main` dalına gönderilen her değişiklik GitHub Actions'ta denetlenir ve geçerse siteye yayınlanır.
-Mimari ve kurallar: [docs/MIMARI.md](docs/MIMARI.md).
+
+- Geliştiriciler ve yapay zekâ araçları için: [AGENTS.md](AGENTS.md)
+- Mimari: [docs/MIMARI.md](docs/MIMARI.md)
+- İş kuralları ve LED dosya biçimleri: [docs/IS_KURALLARI.md](docs/IS_KURALLARI.md)
