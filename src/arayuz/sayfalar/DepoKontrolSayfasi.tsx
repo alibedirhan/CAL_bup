@@ -9,8 +9,8 @@ type AsamaDurumu = 'bitti' | 'simdi' | 'sirada';
 // Yapım süresince gösterilir; rapor çalışır hâle gelince bu bölüm kalkar.
 const ASAMALAR: readonly { ad: string; durum: AsamaDurumu }[] = [
   { ad: 'Temel: iskelet, tema, yayın', durum: 'bitti' },
-  { ad: 'Hesap kuralları ve testler', durum: 'simdi' },
-  { ad: 'Excel okuma ve yazma', durum: 'sirada' },
+  { ad: 'Hesap kuralları ve testler', durum: 'bitti' },
+  { ad: 'Excel okuma ve yazma', durum: 'simdi' },
   { ad: 'Arayüz: adımlar ve kontrol ekranı', durum: 'sirada' },
   { ad: 'İş yerinde 30.09 denemesi', durum: 'sirada' },
   { ad: "Google Drive'a kaydetme", durum: 'sirada' },

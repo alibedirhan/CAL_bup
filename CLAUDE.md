@@ -23,8 +23,10 @@
 ## Yapım aşamaları
 
 1. Temel: iskelet, tema, yayın — **bitti** (0.1.0)
-2. Hesap kuralları ve testler (Python ikizinin TypeScript'e taşınması, gerçek dosyalarla altın test)
-3. Excel okuma ve yazma (ExcelJS; LED okuyucular, gün sayfası kopyalama/yazma)
+2. Hesap kuralları ve testler — **bitti** (0.2.0). Altın test: `tests/altin/ikiz.test.ts`, gerçek dosyalarla
+   Python ikiziyle 209 satır birebir aynı. İkiz çıktısı: `tools/ikiz_aktar.py` → `ornekler/ikiz.json`
+3. Excel okuma ve yazma (ExcelJS → `kaynaklar/kitap.ts` biçimine çeviren `kaynaklar/excel.ts`; `hedef/` ile
+   gün sayfası kopyalama ve planı yazma; altın testte çıkan sayfa elle hazırlanmış 30.09 ile karşılaştırılır)
 4. Arayüz: adımlar, kontrol ekranı, Geçmiş, Ayarlar
 5. İş yerinde 30.09 denemesi — beklenen rakamlar yalnızca yerelde: `ornekler/beklenen.json`
    (git dışı; gerçek stok rakamları açık depoya yazılmaz)

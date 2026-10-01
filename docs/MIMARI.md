@@ -7,15 +7,18 @@ okunur ve yazılır. GitHub Pages'te yayınlanır.
 
 ```
 arayuz/      ekranlar, bileşenler, tema            → raporlar, platform
-raporlar/    rapor kaydı + her raporun iş akışı     → cekirdek, kaynaklar, hedef
-kaynaklar/   LED dosyası okuyucuları → KaynakVeri   → cekirdek, ExcelJS
+raporlar/    rapor kaydı + her raporun hesabı (saf plan) → cekirdek, kaynaklar, hedef
+kaynaklar/   LED okuyucuları ve dosya tanıma → KaynakVeri → cekirdek
+             (yalnızca excel.ts ExcelJS'e bağlıdır: dosyayı Kitap biçimine çevirir)
 hedef/       depo kontrol kitabına yazma            → cekirdek, ExcelJS
-cekirdek/    saf kurallar (sayı, tarih, eşleştirme, kontrol) → hiçbir şey
+cekirdek/    saf kurallar: sayı, metin, tarih, ayarlar, KaynakVeri, kontrol → hiçbir şey
 platform/    tarayıcıya bağlı işler: saklama, dosya seçme/kaydetme, Drive
 ```
 
 - `cekirdek/` saf TypeScript'tir: React'e, ExcelJS'e, tarayıcıya bağlanmaz. ESLint bunu zorlar
   (`eslint.config.js` → `no-restricted-imports`).
+- Okuyucular Excel kütüphanesini bilmez; `kaynaklar/kitap.ts`'teki `Kitap`/`Sayfa` görünümünü okur.
+  Testler bu görünümü elle kurar (`tests/yardimci/sentetik.ts`), gerçek dosya `excel.ts` ile çevrilir.
 - Rapor dosya biçimini bilmez, okuyucu raporu bilmez. Aradaki tek sözleşme `KaynakVeri`dir
   (eski VBA aracının `clsKaynakVeri` sınıfı).
 - Rapor önce saf bir **plan** üretir (satırlar, eklenecekler, kontroller). Önizleme bu plandan çizilir,
@@ -55,6 +58,19 @@ yüklenmez.
 | Derleme       | `npm run build`         | Yayına çıkacak paket                                               |
 
 `npm run kontrol` hepsini sırayla çalıştırır; GitHub Actions da aynısını yapar.
+
+## Eski araçla eşdeğerlik
+
+Kurallar eski aracın Python ikiziyle (`../bupilic-rapor-araci/ikiz/`) aynı sonucu vermek zorundadır.
+`tools/ikiz_aktar.py` ikizi gerçek dosyalarla çalıştırıp girdileri ve sonucu `ornekler/ikiz.json`'a
+yazar; `tests/altin/ikiz.test.ts` aynı girdilerle TypeScript kurallarını çalıştırıp satır satır
+karşılaştırır. Bilinçli farklar:
+
+- `yuvarla3` Python `round(x, 3)` ile aynıdır (`toFixed`); VBA `Round`'dan farkı yalnızca kuramsaldır.
+- `tarihBul` etiketi Türkçe küçük harfe çevirerek arar (Python `lower()` "İ" harfinde konum kaydırıyordu).
+- Genel durum VBA'daki gibi uyarıları da sayar (Python ikizi yalnızca Tamam/Hata veriyordu).
+- Ürün adı sıralaması büyük harfe çevrilmiş adın karakter koduna göredir (ikiz gibi; VBA Türkçe
+  harmanlama kullanıyordu). 30.09 verisinde aynı sonucu verir.
 
 ## Eski araçtan taşınan bilgi
 

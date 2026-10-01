@@ -1,7 +1,7 @@
 {
   "name": "bup-rapor",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Bupiliç İzmir deposu için LED çıktılarından günlük rapor hazırlayan tarayıcı uygulaması",
   "type": "module",
   "scripts": {
