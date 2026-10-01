@@ -1,0 +1,90 @@
+/*
+ * Tasarım belirteçleri. Bileşenler renkleri yalnızca buradan alır.
+ * Koyu tema iki blokta tanımlıdır (sistem ayarı ve elle seçim);
+ * ikisi birebir aynı olmalı — tests/birim/tema.test.ts bunu denetler.
+ */
+:root {
+  --zemin: #f3f4f6;
+  --yuzey: #ffffff;
+  --yuzey-2: #f7f8fa;
+  --yuzey-3: #eef0f3;
+  --murekkep: #151a22;
+  --soluk: #5a6372;
+  --cizgi: #e1e4ea;
+  --cizgi-guclu: #c9ced7;
+  --vurgu: #b3222e;
+  --vurgu-uzeri: #ffffff;
+  --vurgu-yumusak: #fbeaec;
+  --buz: #2e6fa8;
+  --buz-yumusak: #e8f1f9;
+  --tamam: #17864f;
+  --tamam-yumusak: #e3f4ea;
+  --uyari: #a86a12;
+  --uyari-yumusak: #fbf1de;
+  --hata: #be2a2a;
+  --hata-yumusak: #fbe7e7;
+  --golge: 0 1px 2px rgb(20 26 34 / 6%), 0 12px 32px -12px rgb(20 26 34 / 18%);
+  --odak: 0 0 0 3px rgb(46 111 168 / 35%);
+
+  --yazi-baslik: 'Geologica Variable', 'Segoe UI', system-ui, sans-serif;
+  --yazi-govde: 'Onest Variable', 'Segoe UI', system-ui, sans-serif;
+  --yazi-rakam: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  --yaricap-k: 8px;
+  --yaricap: 12px;
+  --yaricap-b: 16px;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --zemin: #0c0f14;
+    --yuzey: #141920;
+    --yuzey-2: #1a2029;
+    --yuzey-3: #212833;
+    --murekkep: #e8ebf0;
+    --soluk: #8e97a5;
+    --cizgi: #262d38;
+    --cizgi-guclu: #36404d;
+    --vurgu: #e5535c;
+    --vurgu-uzeri: #ffffff;
+    --vurgu-yumusak: #3a1a1e;
+    --buz: #6da8dd;
+    --buz-yumusak: #16263a;
+    --tamam: #45c987;
+    --tamam-yumusak: #12291d;
+    --uyari: #e9b04f;
+    --uyari-yumusak: #2e2312;
+    --hata: #f06a6a;
+    --hata-yumusak: #331617;
+    --golge: 0 1px 2px rgb(0 0 0 / 40%), 0 16px 40px -16px rgb(0 0 0 / 70%);
+    --odak: 0 0 0 3px rgb(109 168 221 / 40%);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --zemin: #0c0f14;
+  --yuzey: #141920;
+  --yuzey-2: #1a2029;
+  --yuzey-3: #212833;
+  --murekkep: #e8ebf0;
+  --soluk: #8e97a5;
+  --cizgi: #262d38;
+  --cizgi-guclu: #36404d;
+  --vurgu: #e5535c;
+  --vurgu-uzeri: #ffffff;
+  --vurgu-yumusak: #3a1a1e;
+  --buz: #6da8dd;
+  --buz-yumusak: #16263a;
+  --tamam: #45c987;
+  --tamam-yumusak: #12291d;
+  --uyari: #e9b04f;
+  --uyari-yumusak: #2e2312;
+  --hata: #f06a6a;
+  --hata-yumusak: #331617;
+  --golge: 0 1px 2px rgb(0 0 0 / 40%), 0 16px 40px -16px rgb(0 0 0 / 70%);
+  --odak: 0 0 0 3px rgb(109 168 221 / 40%);
+  color-scheme: dark;
+}

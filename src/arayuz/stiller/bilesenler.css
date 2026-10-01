@@ -1,0 +1,373 @@
+/* ---- Sayfa başlığı ---- */
+.baslik {
+  display: grid;
+  gap: 8px;
+}
+
+.baslik h1 {
+  font-size: clamp(1.7rem, 3vw, 2.25rem);
+  line-height: 1.12;
+  font-weight: 700;
+}
+
+.baslik p {
+  max-width: 66ch;
+  color: var(--soluk);
+  font-size: 1.02rem;
+}
+
+/* ---- Rozet ---- */
+.rozet {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--cizgi);
+  font: 500 10.5px/1.6 var(--yazi-rakam);
+  letter-spacing: 0.04em;
+  color: var(--soluk);
+  white-space: nowrap;
+}
+
+.rozet.durum {
+  padding: 5px 12px;
+  border: 0;
+  font: 600 13px var(--yazi-govde);
+  letter-spacing: 0;
+}
+
+.rozet.durum::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.rozet.tamam {
+  background: var(--tamam-yumusak);
+  color: var(--tamam);
+}
+
+.rozet.uyari {
+  background: var(--uyari-yumusak);
+  color: var(--uyari);
+}
+
+.rozet.hata {
+  background: var(--hata-yumusak);
+  color: var(--hata);
+}
+
+.rozet.bilgi {
+  background: var(--buz-yumusak);
+  color: var(--buz);
+}
+
+/* ---- Adımlar ---- */
+.adimlar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.adim {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 13px 6px 6px;
+  border: 1px solid var(--cizgi);
+  border-radius: 999px;
+  background: var(--yuzey);
+  font-size: 13px;
+  color: var(--soluk);
+}
+
+.adim-no {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--yuzey-3);
+  font: 500 11.5px var(--yazi-rakam);
+}
+
+.adim.bitti .adim-no {
+  background: var(--tamam-yumusak);
+  color: var(--tamam);
+}
+
+.adim.simdi {
+  border-color: var(--murekkep);
+  color: var(--murekkep);
+  font-weight: 600;
+}
+
+.adim.simdi .adim-no {
+  background: var(--murekkep);
+  color: var(--yuzey);
+}
+
+/* ---- Kart ---- */
+.kart {
+  background: var(--yuzey);
+  border: 1px solid var(--cizgi);
+  border-radius: var(--yaricap-b);
+  padding: 22px 24px;
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  min-width: 0;
+}
+
+.kart.one-cikan {
+  box-shadow: var(--golge);
+}
+
+.kart-ust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.kart h2 {
+  font-size: 1.2rem;
+}
+
+.kart p {
+  color: var(--soluk);
+}
+
+.izgara-2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+}
+
+@media (max-width: 960px) {
+  .izgara-2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---- Numaralı akış ---- */
+.akis {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.akis li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 14px;
+}
+
+.akis-no {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--yuzey-3);
+  font: 500 12px var(--yazi-rakam);
+}
+
+.akis b {
+  display: block;
+  font-weight: 600;
+}
+
+.akis span {
+  color: var(--soluk);
+  font-size: 14px;
+}
+
+/* ---- Aşama listesi ---- */
+.asamalar {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.asama {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--cizgi);
+  font-size: 14px;
+}
+
+.asama:last-child {
+  border-bottom: 0;
+}
+
+.asama-isaret {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1.5px solid var(--cizgi-guclu);
+  color: var(--soluk);
+}
+
+.asama.bitti .asama-isaret {
+  border-color: var(--tamam);
+  background: var(--tamam);
+  color: var(--yuzey);
+}
+
+.asama.simdi .asama-isaret {
+  border-color: var(--vurgu);
+  box-shadow: 0 0 0 3px var(--vurgu-yumusak);
+}
+
+.asama.simdi {
+  font-weight: 600;
+}
+
+/* ---- Kaynak dosya yuvaları ---- */
+.yuvalar {
+  display: grid;
+  gap: 10px;
+}
+
+.yuva {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px dashed var(--cizgi-guclu);
+  border-radius: var(--yaricap);
+  background: var(--yuzey-2);
+}
+
+.yuva-simge {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--yuzey);
+  border: 1px solid var(--cizgi);
+  color: var(--soluk);
+}
+
+.yuva b {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.yuva span {
+  font-size: 12.5px;
+  color: var(--soluk);
+}
+
+/* ---- Boş durum ---- */
+.bos {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  padding: 28px;
+  border: 1px dashed var(--cizgi-guclu);
+  border-radius: var(--yaricap-b);
+  background: var(--yuzey);
+}
+
+.bos svg {
+  color: var(--soluk);
+}
+
+.bos p {
+  max-width: 60ch;
+  color: var(--soluk);
+}
+
+/* ---- Tema seçici ---- */
+.tema-secici {
+  display: inline-grid;
+  grid-auto-flow: column;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--cizgi);
+  border-radius: 10px;
+  background: var(--yuzey);
+}
+
+.tema-secici button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--soluk);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.tema-secici button:hover {
+  color: var(--murekkep);
+}
+
+.tema-secici button[aria-pressed='true'] {
+  background: var(--yuzey-3);
+  color: var(--murekkep);
+}
+
+.tema-secici.genis button {
+  width: auto;
+  padding: 0 12px;
+  grid-auto-flow: column;
+  gap: 7px;
+  font-size: 13px;
+}
+
+/* ---- Bilgi satırları ---- */
+.bilgi-satirlari {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.bilgi-satirlari > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--cizgi);
+  font-size: 14px;
+}
+
+.bilgi-satirlari > div:last-child {
+  border-bottom: 0;
+}
+
+.bilgi-satirlari dt {
+  color: var(--soluk);
+}
+
+.bilgi-satirlari dd {
+  margin: 0;
+  text-align: right;
+}

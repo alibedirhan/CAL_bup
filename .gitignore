@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.local
+.env*
+.vscode/
+.idea/
+
+# Şirket verisi depoya ASLA girmez (depo herkese açık)
+ornekler/
+*.xlsx
+*.XLSX
+*.xls
+*.XLS
+*.xlsm

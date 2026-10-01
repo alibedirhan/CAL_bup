@@ -1,0 +1,175 @@
+/* Uygulama iskeleti: solda kenar çubuğu, sağda sayfa. Dar ekranda üst üste. */
+.kabuk {
+  display: grid;
+  grid-template-columns: 252px minmax(0, 1fr);
+  min-height: 100%;
+}
+
+.kenar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px 14px;
+  background: var(--yuzey-2);
+  border-right: 1px solid var(--cizgi);
+  overflow-y: auto;
+}
+
+.marka {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 2px 8px;
+  text-decoration: none;
+}
+
+.marka-isaret {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--vurgu);
+  color: var(--vurgu-uzeri);
+  font: 700 15px var(--yazi-baslik);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 15%);
+}
+
+.marka-ad {
+  font: 600 16px/1.15 var(--yazi-baslik);
+}
+
+.marka-ad small {
+  display: block;
+  margin-top: 2px;
+  font: 400 12px var(--yazi-govde);
+  color: var(--soluk);
+}
+
+.menu {
+  display: grid;
+  gap: 2px;
+}
+
+.menu .etiket {
+  padding: 0 10px 8px;
+}
+
+.menu-oge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--yaricap-k);
+  color: var(--murekkep);
+  text-decoration: none;
+  transition: background-color 0.15s;
+}
+
+.menu-oge svg {
+  flex: none;
+  color: var(--soluk);
+}
+
+.menu-oge:hover {
+  background: var(--yuzey-3);
+}
+
+.menu-oge[aria-current='page'] {
+  background: var(--yuzey);
+  box-shadow: inset 0 0 0 1px var(--cizgi);
+  font-weight: 600;
+}
+
+.menu-oge[aria-current='page'] svg {
+  color: var(--vurgu);
+}
+
+.menu-oge.pasif {
+  color: var(--soluk);
+}
+
+.menu-oge .rozet {
+  margin-left: auto;
+}
+
+.kenar-alt {
+  margin-top: auto;
+  display: grid;
+  gap: 12px;
+}
+
+.yerel-not {
+  display: flex;
+  gap: 9px;
+  padding: 11px 12px;
+  border: 1px dashed var(--cizgi-guclu);
+  border-radius: var(--yaricap);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--soluk);
+}
+
+.yerel-not svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.surum {
+  padding: 0 10px;
+  font: 400 11.5px var(--yazi-rakam);
+  color: var(--soluk);
+}
+
+.sayfa {
+  min-width: 0;
+  padding: 36px clamp(16px, 4vw, 48px) 64px;
+}
+
+.sayfa-ic {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  gap: 28px;
+}
+
+@media (max-width: 860px) {
+  .kabuk {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kenar {
+    position: static;
+    height: auto;
+    gap: 14px;
+    padding: 14px 16px;
+    border-right: 0;
+    border-bottom: 1px solid var(--cizgi);
+  }
+
+  .menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .menu .etiket,
+  .yerel-not {
+    display: none;
+  }
+
+  .kenar-alt {
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sayfa {
+    padding-top: 24px;
+  }
+}
