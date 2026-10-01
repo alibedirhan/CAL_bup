@@ -308,8 +308,8 @@ export function AyarlarSayfasi({ tema, temaDegisti, ayarlar: a, ayarDegisti }: O
           <div>
             <dt>Kaynak kod</dt>
             <dd>
-              <a href="https://github.com/alibedirhan/Bup_Excel_Rapor" target="_blank" rel="noreferrer">
-                github.com/alibedirhan/Bup_Excel_Rapor
+              <a href="https://github.com/alibedirhan/CAL_bup" target="_blank" rel="noreferrer">
+                github.com/alibedirhan/CAL_bup
               </a>
             </dd>
           </div>

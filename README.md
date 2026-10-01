@@ -1,8 +1,8 @@
-# BUP Rapor
+# CAL bup
 
 Bupiliç İzmir Bölge Deposu için LED çıktılarından günlük raporları hazırlayan tarayıcı uygulaması.
 
-**Adres:** https://alibedirhan.github.io/Bup_Excel_Rapor/
+**Adres:** https://alibedirhan.github.io/CAL_bup/
 
 - Kurulum gerekmez. Chrome ya da Edge'de adresi açmanız yeterli.
 - Seçtiğiniz Excel dosyaları **yalnızca sizin bilgisayarınızda, tarayıcının içinde** işlenir. Hiçbir sunucuya gönderilmez.
@@ -21,7 +21,7 @@ Bupiliç İzmir Bölge Deposu için LED çıktılarından günlük raporları ha
 
 ```sh
 npm ci            # bağımlılıklar
-npm run dev       # yerel sunucu: http://localhost:5173/Bup_Excel_Rapor/
+npm run dev       # yerel sunucu: http://localhost:5173/CAL_bup/
 npm run kontrol   # tip denetimi + lint + biçim + test + derleme (yayından önce hepsi geçmeli)
 ```
 

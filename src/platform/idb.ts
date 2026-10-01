@@ -1,6 +1,7 @@
 // Tarayıcının kalıcı deposu (IndexedDB) için küçük anahtar/değer sarmalayıcı.
 // Yedekler, geçmiş ve hatırlanan dosya burada durur; yalnızca bu tarayıcıda görünür.
 
+// CAL bup adından önce kaydedilen geçmiş ve yedekleri korumak için ad değişmez.
 const VT_ADI = 'bup-rapor';
 const DEPO = 'kv';
 

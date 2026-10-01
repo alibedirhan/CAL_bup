@@ -25,10 +25,10 @@ export function KenarCubugu({ rota, tema, temaDegisti }: Ozellikler) {
     <aside className="kenar">
       <a className="marka" href={rotaAdresi({ tur: 'rapor', id: 'depo-kontrol' })}>
         <span className="marka-isaret" aria-hidden="true">
-          B
+          C
         </span>
         <span className="marka-ad">
-          BUP Rapor
+          CAL bup
           <small>İzmir Bölge Deposu</small>
         </span>
       </a>

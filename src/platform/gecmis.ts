@@ -60,6 +60,10 @@ export async function yedekBaytlari(id: string): Promise<Uint8Array | null> {
 
 const csvHucre = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
 
+export function gecmisDosyaAdi(tarih = new Date()): string {
+  return `CAL bup geçmişi ${tarih.toLocaleDateString('tr-TR')}.csv`;
+}
+
 /** Excel'in Türkçe ayarında doğrudan açılan CSV (noktalı virgül, virgüllü ondalık). */
 export function gecmisCsv(liste: readonly GecmisKaydi[]): string {
   const sayi = (x: number) => x.toFixed(3).replace('.', ',');

@@ -1,4 +1,4 @@
-# AGENTS.md — BUP Rapor
+# AGENTS.md — CAL bup
 
 Bu dosya projede çalışan yapay zekâ araçları (Codex, Claude Code vb.) ve geliştiriciler içindir.
 İşe başlamadan önce bunu, sonra `docs/MIMARI.md` ve `docs/IS_KURALLARI.md`'yi okuyun.
@@ -9,11 +9,11 @@ Bupiliç İzmir Bölge Deposu için LED sisteminin Excel çıktılarından günl
 **tarayıcı uygulaması**. Sunucu yoktur: Excel dosyaları kullanıcının tarayıcısında okunur ve yazılır,
 hiçbir yere gönderilmez. GitHub Pages'te yayınlanır.
 
-- Site: https://alibedirhan.github.io/Bup_Excel_Rapor/
-- Depo (herkese açık): https://github.com/alibedirhan/Bup_Excel_Rapor
+- Site: https://alibedirhan.github.io/CAL_bup/
+- Depo (herkese açık): https://github.com/alibedirhan/CAL_bup
 - Hazır rapor: **Günlük depo kontrol**. Kullanıcı D01, sayım fişi ve şube alış dosyalarını bırakır;
   uygulama depo kontrol kitabına yeni gün sayfasını ekler, toplamları kontrol eder.
-- Eski Excel/VBA sürümü arşivdedir: `github.com/alibedirhan/Bup_Excel_Rapor_Eski` (gizli).
+- Eski Excel/VBA sürümü arşivlenecek: `github.com/alibedirhan/Bup_Excel_Rapor_Eski` (gizli).
 
 ## Kullanıcıyla iletişim
 
@@ -32,7 +32,7 @@ Node 22 (`.nvmrc`).
 
 ```sh
 npm ci              # bağımlılıklar
-npm run dev         # http://localhost:5173/Bup_Excel_Rapor/
+npm run dev         # http://localhost:5173/CAL_bup/
 npm test            # birim + (varsa) gerçek dosyalı altın testler
 npm run kontrol     # tip + lint + biçim + test + derleme — her değişiklikten sonra geçmeli
 npm run bicim       # Prettier ile biçimle
@@ -111,12 +111,10 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 
 **Bekleyen işler (2026-10-01, bu sırayla):**
 
-1. **Yeniden adlandırma:** GitHub depo adı `Bup_Excel_Rapor` → `CAL_bup`; ekranda görünen ad "BUP Rapor" →
-   **"CAL bup"** (kullanıcı onayladı). Değişecekler: GitHub'da depo adı, `vite.config.ts` `base`
-   (`/CAL_bup/`), `index.html` başlığı, `KenarCubugu.tsx` marka adı ve harfi, `public/favicon.svg`,
-   README/AGENTS.md/docs'taki ad ve adresler, yerel klasör adı ve `git remote`. Yeni adres
-   `alibedirhan.github.io/CAL_bup/`; eski adres çalışmaz (kullanıcı yer imini güncellemeli). Tarayıcı
-   kayıtları aynı alan adında olduğu için korunur. Sürümü artır.
+1. **Yeniden adlandırma (uygulama hazır):** GitHub depo adı `CAL_bup`, ekranda görünen ad
+   **"CAL bup"**, sürüm **1.0.1**. Site adresi `alibedirhan.github.io/CAL_bup/`; kullanıcı yer imini
+   güncellemeli. Tarayıcı kayıtları aynı alan adında korunur: localStorage öneki ve IndexedDB adı
+   uyumluluk için `bup-rapor` olarak kalır. Yerel klasör kullanıcı tarafından `CAL_bup` yapılacak.
 2. **Eski aracı arşivleme:** `../bupilic-rapor-araci` (yalnızca yerel git, 8 commit) gizli
    `alibedirhan/Bup_Excel_Rapor_Eski` deposuna yüklenecek, doğrulandıktan sonra yerelden silinecek.
    Komut kullanıcıya verildi, henüz çalıştırılmadı:
@@ -125,7 +123,7 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 
 **6. Google Drive (kullanıcı kararı):** Tarayıcı içi kayıt (ayarlar, geçmiş, yedekler) kalır; ek olarak
 "Drive'a bağlan". `drive.file` kapsamı (uygulama yalnızca kendi oluşturduğu dosyaları görür), Drive'da
-"BUP Rapor" klasörü: günlük depo kontrol dosyası, yedeği, isteğe bağlı LED dosyaları; geçmiş/ayarlar
+"CAL bup" klasörü: günlük depo kontrol dosyası, yedeği, isteğe bağlı LED dosyaları; geçmiş/ayarlar
 eşitlemesi. Kullanıcı Google Drive kullanıyor ve şirket verisini kendi Drive'ına koymayı onayladı.
 Google Cloud'da OAuth istemci kimliği kurulumunu kullanıcıya adım adım anlat. CSP'ye
 (`vite.config.ts`) yalnızca gereken Google adreslerini ekle. Yeni modül `platform/drive.ts`.

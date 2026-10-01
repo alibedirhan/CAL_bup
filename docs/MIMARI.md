@@ -1,4 +1,4 @@
-# Mimari
+# CAL bup — Mimari
 
 Statik bir tek sayfa uygulaması (Vite + TypeScript + React). Sunucu yok: Excel dosyaları tarayıcıda
 okunur ve yazılır. GitHub Pages'te yayınlanır.
@@ -76,7 +76,7 @@ yüklenmez.
 
 ## Eski araçla eşdeğerlik
 
-Kurallar eski Excel/VBA aracının Python ikiziyle aynı sonucu verir. Eski araç arşivdedir
+Kurallar eski Excel/VBA aracının Python ikiziyle aynı sonucu verir. Eski araç arşivlenecek
 (`github.com/alibedirhan/Bup_Excel_Rapor_Eski`, gizli). `tools/ikiz_aktar.py` ikizi gerçek dosyalarla
 çalıştırıp girdileri ve sonucu `ornekler/ikiz.json`'a yazmıştır; bu dosya artık sabit bir başvuru
 çıktısıdır. `tests/altin/ikiz.test.ts` aynı girdilerle TypeScript kurallarını çalıştırıp satır satır

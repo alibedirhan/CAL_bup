@@ -1,4 +1,4 @@
-# İş kuralları ve dosya biçimleri
+# CAL bup — İş kuralları ve dosya biçimleri
 
 Bu belge raporların _ne_ yaptığını anlatır; _nasıl_ yapıldığı `docs/MIMARI.md`'dedir. Kurallar eski
 Excel/VBA aracından (v1.2) taşınmış ve 30.09.2026 gerçek dosyalarıyla doğrulanmıştır. Gerçek rakamlar

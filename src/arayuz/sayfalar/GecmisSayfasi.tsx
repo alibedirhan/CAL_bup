@@ -4,6 +4,7 @@ import { indir } from '../../platform/dosya';
 import {
   EN_FAZLA_YEDEK,
   gecmisCsv,
+  gecmisDosyaAdi,
   gecmisListesi,
   yedekBaytlari,
   yedekListesi,
@@ -35,7 +36,7 @@ export function GecmisSayfasi() {
   const csvIndir = () => {
     if (!kayitlar) return;
     const bayt = new TextEncoder().encode(gecmisCsv(kayitlar));
-    indir(bayt, `BUP Rapor geçmişi ${new Date().toLocaleDateString('tr-TR')}.csv`);
+    indir(bayt, gecmisDosyaAdi());
   };
 
   const yedekIndir = async (y: Omit<Yedek, 'bayt'>) => {
