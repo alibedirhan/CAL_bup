@@ -13,7 +13,7 @@ hiçbir yere gönderilmez. GitHub Pages'te yayınlanır.
 - Depo (herkese açık): https://github.com/alibedirhan/CAL_bup
 - Hazır rapor: **Günlük depo kontrol**. Kullanıcı D01, sayım fişi ve şube alış dosyalarını bırakır;
   uygulama depo kontrol kitabına yeni gün sayfasını ekler, toplamları kontrol eder.
-- Eski Excel/VBA sürümü arşivlenecek: `github.com/alibedirhan/Bup_Excel_Rapor_Eski` (gizli).
+- Eski Excel/VBA sürümü arşivdedir: `github.com/alibedirhan/Bup_Excel_Rapor_Eski` (gizli).
 
 ## Kullanıcıyla iletişim
 
@@ -109,17 +109,22 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive'a kaydetme                                    | Sırada                       |
 | 7     | Envanter, bakiye, palet/kasa raporları                     | Örnek dosya bekleniyor       |
 
-**Bekleyen işler (2026-10-01, bu sırayla):**
+**Tamamlanan işler (2026-10-01):**
 
-1. **Yeniden adlandırma (uygulama hazır):** GitHub depo adı `CAL_bup`, ekranda görünen ad
-   **"CAL bup"**, sürüm **1.0.1**. Site adresi `alibedirhan.github.io/CAL_bup/`; kullanıcı yer imini
-   güncellemeli. Tarayıcı kayıtları aynı alan adında korunur: localStorage öneki ve IndexedDB adı
-   uyumluluk için `bup-rapor` olarak kalır. Yerel klasör kullanıcı tarafından `CAL_bup` yapılacak.
-2. **Eski aracı arşivleme:** `../bupilic-rapor-araci` (yalnızca yerel git, 8 commit) gizli
-   `alibedirhan/Bup_Excel_Rapor_Eski` deposuna yüklenecek, doğrulandıktan sonra yerelden silinecek.
-   Komut kullanıcıya verildi, henüz çalıştırılmadı:
-   `cd "/home/ali/Desktop/EXCEL RAPOR PROGRAMI/bupilic-rapor-araci" && gh repo create alibedirhan/Bup_Excel_Rapor_Eski --private --source=. --remote=arsiv --push`
-3. Google Drive aşaması (aşağıda).
+1. **Yeniden adlandırma:** GitHub depo adı `CAL_bup`, ekranda görünen ad **"CAL bup"**, sürüm
+   **1.0.1**. Yeni site yayını tamamlandı ve tarayıcıda doğrulandı:
+   `alibedirhan.github.io/CAL_bup/`. Kullanıcı yer imini güncellemeli. Yerel klasör adı `CAL_bup`.
+   Tarayıcı kayıtları aynı alan adında korunur: localStorage öneki ve IndexedDB adı uyumluluk için
+   `bup-rapor` olarak kalır.
+2. **Eski aracı arşivleme:** Gizli `alibedirhan/Bup_Excel_Rapor_Eski` deposuna yüklendi ve depo
+   arşiv durumuna alındı. Eski belgelerdeki gerçek ürün adları ve stok miktarları tüm geçmişten
+   temizlendi; 8 commit'in kodu, dosyaları ve kayıt bilgileri korundu (commit kimlikleri değişti).
+   Arşiv GitHub'dan yeniden indirilip bütün geçmiş ve dosyalar karşılaştırıldı; git bütünlüğü doğrulandı.
+   Özgün git geçmişi `ornekler/eski_arac_arsivi/eski_git_gecmisi.bundle` içinde, GitHub'a gitmeyen
+   yerel dosyalar aynı alanda korunuyor (git dışı). Kopyaların içerikleri doğrulandıktan sonra eski
+   `../bupilic-rapor-araci` klasörü silindi.
+
+**Sıradaki iş:** Google Drive aşaması. Başlamadan önce kullanıcıya sor; bu oturumda henüz başlanmadı.
 
 **6. Google Drive (kullanıcı kararı):** Tarayıcı içi kayıt (ayarlar, geçmiş, yedekler) kalır; ek olarak
 "Drive'a bağlan". `drive.file` kapsamı (uygulama yalnızca kendi oluşturduğu dosyaları görür), Drive'da

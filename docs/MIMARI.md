@@ -76,8 +76,11 @@ yüklenmez.
 
 ## Eski araçla eşdeğerlik
 
-Kurallar eski Excel/VBA aracının Python ikiziyle aynı sonucu verir. Eski araç arşivlenecek
-(`github.com/alibedirhan/Bup_Excel_Rapor_Eski`, gizli). `tools/ikiz_aktar.py` ikizi gerçek dosyalarla
+Kurallar eski Excel/VBA aracının Python ikiziyle aynı sonucu verir. Eski araç arşivdedir
+(`github.com/alibedirhan/Bup_Excel_Rapor_Eski`, gizli, değişikliklere kapalı). Arşivin 8 commit'i
+GitHub'dan yeniden indirilerek doğrulandı. Belge geçmişindeki şirket verileri temizlendi; kod geçmişi
+korundu. Özgün geçmiş ve yerel dosyalar yalnızca `ornekler/eski_arac_arsivi/` içinde tutulur (git dışı).
+`tools/ikiz_aktar.py` ikizi gerçek dosyalarla
 çalıştırıp girdileri ve sonucu `ornekler/ikiz.json`'a yazmıştır; bu dosya artık sabit bir başvuru
 çıktısıdır. `tests/altin/ikiz.test.ts` aynı girdilerle TypeScript kurallarını çalıştırıp satır satır
 karşılaştırır. Bilinçli farklar:
