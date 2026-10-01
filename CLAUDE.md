@@ -30,7 +30,11 @@
    `tests/altin/gercekExcel.test.ts`: 30.09 silinip yeniden oluşturulur, elle sayfayla hücre hücre aynı
    (tek fark `beklenen.json`daki örnek satır; elle sayfadaki E toplamı son satırı kapsamıyordu), diğer 48 sayfa değişmez.
    Çıktı `ornekler/cikti_30.09.xlsx`; LibreOffice ile yeniden hesaplanınca toplamlar tutuyor.
-4. Arayüz: adımlar, kontrol ekranı, Geçmiş, Ayarlar
+4. Arayüz — **bitti** (0.4.0). `arayuz/sayfalar/depoKontrol/` (useDepoKontrol + bileşenler),
+   durum mantığı `raporlar/depoKontrol/oturum.ts` (saf, testli), Excel motoru `motorYukle.ts` ile ayrı
+   parça olarak yüklenir. Kaydetme: Chrome/Edge'de dosyanın üzerine (önce IndexedDB'ye yedek), değilse indirme.
+   Tarayıcı denemesi (Playwright, yerel): gerçek dosyalar bırakılır, inen dosya altın test çıktısıyla aynı.
+   React efektleri hiçbir zaman değer döndürmemeli (tek satırlık `useEffect(() => f())` ekranı çökertti).
 5. İş yerinde 30.09 denemesi — beklenen rakamlar yalnızca yerelde: `ornekler/beklenen.json`
    (git dışı; gerçek stok rakamları açık depoya yazılmaz)
 6. Google Drive'a kaydetme (drive.file kapsamı, "BUP Rapor" klasörü; OAuth istemci kimliği kurulumunu

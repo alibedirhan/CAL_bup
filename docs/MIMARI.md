@@ -24,6 +24,21 @@ platform/    tarayıcıya bağlı işler: saklama, dosya seçme/kaydetme, Drive
 - Rapor önce saf bir **plan** üretir (satırlar, eklenecekler, kontroller). Önizleme bu plandan çizilir,
   "Kaydet" aynı planı kitaba uygular. Ekranda görülen ile dosyaya yazılan aynıdır.
 
+## Arayüz akışı (günlük depo kontrol)
+
+```
+useDepoKontrol (React)  ──  oturum.ts: azalt(eylem) + turet(durum) → ekranda görünen her şey
+        │                    (saf; tests/birim/oturum.test.ts)
+        └─ islemler.ts  ──  motorYukle() → motor.ts (ExcelJS'e dokunan her şey, ayrı paket parçası)
+                            platform/: dosya seçme/kaydetme, IndexedDB (yedek, geçmiş, son dosya)
+```
+
+- Önizleme ile kayıt aynı planı kullanır; kayıtta dosya baştan açılıp plan yeniden uygulanır, önizlemedeki
+  kitaba dokunulmaz.
+- Dosyanın üzerine yazmadan önce: diskteki dosya açıldıktan sonra değiştiyse durulur; değişmediyse eski
+  hâli IndexedDB'ye yedeklenir (son 10). Dosya Excel'de açıksa anlaşılır hata verilir.
+- Depo kontrol ekranı başka sayfaya geçince de bağlı kalır (`hidden`), yüklenen dosyalar kaybolmaz.
+
 ## Yeni rapor eklemek
 
 1. `src/raporlar/kayit.ts`'ye bir kayıt ekleyin (`durum: 'yapimda'`).

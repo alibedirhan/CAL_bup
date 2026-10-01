@@ -17,7 +17,7 @@ export const RAPORLAR: readonly RaporTanimi[] = [
     id: 'depo-kontrol',
     ad: 'Günlük depo kontrol',
     aciklama: 'LED stoğu, depo sayımı ve gelen malı yeni gün sayfasına yazar, toplamları kontrol eder.',
-    durum: 'yapimda',
+    durum: 'hazir',
     kaynaklar: ['D01 Stok Giriş Çıkış Envanteri', 'Sayım fişi', 'Şube alış (önceki gün)'],
   },
   {

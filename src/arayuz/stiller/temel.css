@@ -61,6 +61,11 @@ button {
   color: var(--soluk);
 }
 
+/* hidden özniteliği display veren sınıflara yenilmesin */
+[hidden] {
+  display: none !important;
+}
+
 .gorunmez {
   position: absolute;
   width: 1px;

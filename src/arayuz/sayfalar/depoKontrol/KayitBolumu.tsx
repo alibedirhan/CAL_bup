@@ -1,0 +1,90 @@
+import { indir } from '../../../platform/dosya';
+import { yedekBaytlari } from '../../../platform/gecmis';
+import { Mesaj } from '../../bilesenler/Mesaj';
+import { Simge } from '../../bilesenler/Simge';
+import type { DepoKontrol } from './useDepoKontrol';
+
+/** 5. adım: kaydetme düğmeleri. */
+export function KayitCubugu({ dk }: { dk: DepoKontrol }) {
+  const { hedef } = dk.oturum;
+  const { plan, kaydedilebilir } = dk.gorunum;
+  if (!hedef || !plan) return null;
+  const dosyaya = Boolean(hedef.tanitici);
+  const mesgul = dk.mesgul !== null;
+  return (
+    <div className="kayit-cubugu">
+      <p>
+        {dosyaya
+          ? `Yeni sayfa ${hedef.ad} dosyasına yazılacak. Önce dosyanın yedeği alınır.`
+          : 'Güncellenmiş dosya indirilecek. Eski dosyanın yerine koyabilirsiniz.'}
+      </p>
+      <div className="satir-dugmeleri">
+        {dosyaya && (
+          <button
+            type="button"
+            className="dugme"
+            disabled={!kaydedilebilir || mesgul}
+            onClick={() => dk.kaydetIste('indir')}
+          >
+            Yeni dosya olarak indir
+          </button>
+        )}
+        <button
+          type="button"
+          className="dugme birincil"
+          disabled={!kaydedilebilir || mesgul}
+          onClick={() => dk.kaydetIste(dosyaya ? 'dosyaya' : 'indir')}
+        >
+          {dk.mesgul === 'kaydediliyor'
+            ? 'Kaydediliyor…'
+            : dosyaya
+              ? 'Depo kontrol dosyasına kaydet'
+              : 'İndir'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function SonucKarti({ dk }: { dk: DepoKontrol }) {
+  const s = dk.sonuc;
+  if (!s) return null;
+  const yedekIndir = async () => {
+    if (!s.yedekId) return;
+    const bayt = await yedekBaytlari(s.yedekId);
+    if (bayt) indir(bayt, `YEDEK ${s.hedef.ad}`);
+  };
+  return (
+    <section className="kart sonuc" aria-live="polite">
+      <div className="sonuc-ust">
+        <span className="sonuc-simge">
+          <Simge ad="tik" boyut={22} />
+        </span>
+        <div>
+          <h2>
+            {s.sayfa} sayfası {s.kayit === 'dosyaya' ? 'kaydedildi' : 'hazır, dosya indirildi'}
+          </h2>
+          <p>
+            {s.kayit === 'dosyaya'
+              ? `${s.hedef.ad} dosyasını Excel'de açabilirsiniz.`
+              : `İndirilen ${s.hedef.ad} dosyasını eski dosyanın yerine koyun.`}
+          </p>
+        </div>
+      </div>
+      <Mesaj ton="bilgi">
+        Excel dosyayı açarken formülleri yeniden hesaplar; kapatırken "kaydetmek istiyor musunuz" diye
+        sorabilir. Bu normaldir.
+      </Mesaj>
+      <div className="satir-dugmeleri">
+        {s.yedekId && (
+          <button type="button" className="dugme" onClick={yedekIndir}>
+            Kaydetmeden önceki yedeği indir
+          </button>
+        )}
+        <button type="button" className="dugme birincil" onClick={dk.sonucKapat}>
+          Tamam
+        </button>
+      </div>
+    </section>
+  );
+}

@@ -1,0 +1,251 @@
+/* ---- Düğmeler ---- */
+.dugme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--cizgi-guclu);
+  border-radius: 10px;
+  background: var(--yuzey);
+  color: var(--murekkep);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    transform 0.1s;
+}
+
+.dugme:hover:not(:disabled) {
+  border-color: var(--soluk);
+}
+
+.dugme:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.dugme:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dugme.birincil {
+  background: var(--vurgu);
+  border-color: var(--vurgu);
+  color: var(--vurgu-uzeri);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 14%);
+}
+
+.dugme.birincil:hover:not(:disabled) {
+  border-color: var(--vurgu);
+  filter: brightness(1.06);
+}
+
+.dugme.hayalet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--soluk);
+}
+
+.dugme.hayalet:hover:not(:disabled) {
+  background: var(--yuzey-3);
+  color: var(--murekkep);
+}
+
+.dugme.kucuk {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
+.dugme.simge-dugme {
+  min-height: 28px;
+  width: 28px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.satir-dugmeleri {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ---- Girdiler ---- */
+.girdi {
+  min-height: 38px;
+  width: 100%;
+  padding: 0 12px;
+  border: 1px solid var(--cizgi-guclu);
+  border-radius: 10px;
+  background: var(--yuzey);
+  color: var(--murekkep);
+  font: inherit;
+}
+
+.girdi:focus {
+  outline: none;
+  border-color: var(--buz);
+  box-shadow: var(--odak);
+}
+
+.girdi.kisa {
+  width: 130px;
+}
+
+.girdi.mini {
+  width: 64px;
+  min-height: 32px;
+  text-align: center;
+}
+
+.girdi.arama {
+  width: min(240px, 100%);
+}
+
+.ipucu {
+  font-size: 13px;
+  color: var(--soluk);
+}
+
+.alan-hatasi {
+  font-size: 13px;
+  color: var(--hata);
+}
+
+/* ---- Açma/kapama anahtarı ---- */
+.anahtar {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 26px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--cizgi-guclu);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.anahtar span {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--yuzey);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 25%);
+  transition: transform 0.2s;
+}
+
+.anahtar[aria-checked='true'] {
+  background: var(--tamam);
+}
+
+.anahtar[aria-checked='true'] span {
+  transform: translateX(18px);
+}
+
+/* ---- Bildirim ---- */
+.mesaj {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: var(--yaricap);
+  border-left: 4px solid var(--buz);
+  background: var(--buz-yumusak);
+  font-size: 14px;
+}
+
+.mesaj.uyari {
+  border-color: var(--uyari);
+  background: var(--uyari-yumusak);
+}
+
+.mesaj.hata {
+  border-color: var(--hata);
+  background: var(--hata-yumusak);
+}
+
+.mesaj.tamam {
+  border-color: var(--tamam);
+  background: var(--tamam-yumusak);
+}
+
+.mesaj-govde {
+  flex: 1 1 240px;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.mesajlar {
+  display: grid;
+  gap: 8px;
+}
+
+/* ---- Ayarlar sayfası ---- */
+.ayarlar {
+  display: grid;
+}
+
+.ayar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--cizgi);
+}
+
+.ayar:last-child {
+  border-bottom: 0;
+}
+
+.ayar > div {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.ayar label {
+  font-weight: 600;
+}
+
+.ayar p {
+  font-size: 13.5px;
+}
+
+.gelismis summary {
+  cursor: pointer;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.gelismis summary::-webkit-details-marker {
+  display: none;
+}
+
+.gelismis summary h2::after {
+  content: ' ▸';
+  color: var(--soluk);
+}
+
+.gelismis[open] summary h2::after {
+  content: ' ▾';
+}
+
+.duzen-tablosu td,
+.duzen-tablosu th {
+  text-align: left;
+}

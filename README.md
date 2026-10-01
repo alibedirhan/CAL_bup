@@ -10,12 +10,12 @@ Bupiliç İzmir Bölge Deposu için LED çıktılarından günlük raporları ha
 
 ## Raporlar
 
-| Rapor               | Durum            |
-| ------------------- | ---------------- |
-| Günlük depo kontrol | Yapım aşamasında |
-| Envanter            | Yakında          |
-| Bakiye              | Yakında          |
-| Palet / kasa        | Yakında          |
+| Rapor               | Durum                        |
+| ------------------- | ---------------------------- |
+| Günlük depo kontrol | Hazır (iş yerinde deneniyor) |
+| Envanter            | Yakında                      |
+| Bakiye              | Yakında                      |
+| Palet / kasa        | Yakında                      |
 
 ## Geliştirme
 

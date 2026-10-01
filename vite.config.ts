@@ -34,6 +34,8 @@ function guvenlikPolitikasi(): Plugin {
 export default defineConfig({
   base: '/Bup_Excel_Rapor/',
   plugins: [react(), guvenlikPolitikasi()],
+  // Excel motoru (ExcelJS, ~940 KB) bilerek ayrı ve büyük bir parçadır; ilk dosya açılınca yüklenir.
+  build: { chunkSizeWarningLimit: 1000 },
   test: {
     include: ['tests/**/*.test.ts'],
     environment: 'node',
