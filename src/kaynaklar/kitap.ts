@@ -1,3 +1,5 @@
+import { KullaniciHatasi } from '../cekirdek/hata';
+
 // Okuyucuların gördüğü Excel kitabı. Dosya kütüphanesinden (ExcelJS) bağımsızdır:
 // gerçek dosya excel.ts'de, testlerde ise elle kurulan tablolarla bu biçime çevrilir.
 
@@ -19,7 +21,7 @@ export interface Kitap {
 }
 
 /** Dosyanın beklenen rapor olmadığı ya da okunamadığı durumlar. Mesaj kullanıcıya gösterilir. */
-export class OkumaHatasi extends Error {
+export class OkumaHatasi extends KullaniciHatasi {
   override name = 'OkumaHatasi';
 }
 

@@ -10,8 +10,8 @@ type AsamaDurumu = 'bitti' | 'simdi' | 'sirada';
 const ASAMALAR: readonly { ad: string; durum: AsamaDurumu }[] = [
   { ad: 'Temel: iskelet, tema, yayın', durum: 'bitti' },
   { ad: 'Hesap kuralları ve testler', durum: 'bitti' },
-  { ad: 'Excel okuma ve yazma', durum: 'simdi' },
-  { ad: 'Arayüz: adımlar ve kontrol ekranı', durum: 'sirada' },
+  { ad: 'Excel okuma ve yazma', durum: 'bitti' },
+  { ad: 'Arayüz: adımlar ve kontrol ekranı', durum: 'simdi' },
   { ad: 'İş yerinde 30.09 denemesi', durum: 'sirada' },
   { ad: "Google Drive'a kaydetme", durum: 'sirada' },
 ];

@@ -1,7 +1,7 @@
 {
   "name": "bup-rapor",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Bupiliç İzmir deposu için LED çıktılarından günlük rapor hazırlayan tarayıcı uygulaması",
   "type": "module",
   "scripts": {
@@ -20,6 +20,7 @@
     "@fontsource-variable/geologica": "^5.3.0",
     "@fontsource-variable/onest": "^5.3.1",
     "@fontsource/ibm-plex-mono": "^5.3.0",
+    "exceljs": "4.4.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
@@ -32,6 +33,7 @@
     "eslint": "^10.11.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
+    "jszip": "^3.10.2",
     "prettier": "^3.9.9",
     "typescript": "~6.0.0",
     "typescript-eslint": "^8.71.0",

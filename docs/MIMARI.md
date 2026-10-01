@@ -78,11 +78,19 @@ LED dosya biçimleri, hedef dosya biçimi ve iş kuralları eski Excel/VBA arac�
 (`../bupilic-rapor-araci/docs/MIMARI.md`, Python ikizi `ikiz/`) belgelenmiş ve 30.09.2026 gerçek
 dosyalarıyla doğrulanmıştır. Bu uygulamanın kuralları o ikizle aynı sonucu vermek zorundadır.
 
-### ExcelJS ile ilgili denenmiş notlar (2026-10-01)
+### ExcelJS notları (denenmiş, `hedef/sayfa.ts`'te çözüldü)
 
-- Gerçek depo kontrol dosyası (49 gün sayfası) okunup yazıldığında değerler, formüller, biçimler,
-  birleşik hücreler korunuyor.
-- Varsayılan genişlikteki sütunların genişlik bilgisi kayboluyor; yazmadan önce açıkça atanmalı.
-- Sayfa kopyası: `yeni.model = {...kaynak.model, name, id}` biçimi ve hücreleri kopyalıyor, birleşik
-  hücreleri kopyalamıyor; `kaynak.model.merges` ayrıca `mergeCells` ile uygulanmalı. Sayfa sırası
-  `workbook._worksheets` dizisi ve `orderNo` ile ayarlanıyor.
+ExcelJS 4.4.0 sürümüne sabitlenmiştir; yükseltirken aşağıdakileri ve altın testleri yeniden doğrulayın.
+
+| Eksik                                                                                  | Çözüm                                                                 |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Sayfa kopyası (`model` ataması) birleşik hücreleri ve 9 genişlikli sütunları almıyor   | `sayfaKopyala` ikisini ayrıca aktarır                                 |
+| Genişliği tam 9 olan sütunları "varsayılan" sayıp yazmıyor (Excel'in varsayılanı 8,43) | `kitapYaz` bunları 9,000001 olarak yazar                              |
+| `insertRow` formülleri ve koşullu biçim aralıklarını kaydırmıyor                       | `satirEkle` + `formul.ts` Excel'deki gibi kaydırır                    |
+| Satır ekleyince paylaşılan formüller yüzünden dosya yazılamıyor                        | `paylasilanFormulleriAc` önce açık formüle çevirir                    |
+| Kopyadan sonra iki sekme birlikte seçili kalıyor (Excel'de "Grup" modu)                | `sayfaSec` yalnızca yeni sayfayı seçer                                |
+| Formüllerin eski hesaplanmış sonuçları kalıyor                                         | `eskiSonuclariSil` + `fullCalcOnLoad`; bildiklerimizin sonucu yazılır |
+| Sekme seçimi ve `fullCalcOnLoad` geri okunmuyor                                        | Testler `.xlsx` içindeki XML'e bakar (`tests/yardimci/xml.ts`)        |
+
+Sayfa sırası `orderNo` ile belirlenir. ExcelJS hücre tarihlerini UTC verir; `kaynaklar/excel.ts`
+aynı takvim gününü yerel saatte kurar.

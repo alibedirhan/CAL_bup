@@ -25,8 +25,11 @@
 1. Temel: iskelet, tema, yayın — **bitti** (0.1.0)
 2. Hesap kuralları ve testler — **bitti** (0.2.0). Altın test: `tests/altin/ikiz.test.ts`, gerçek dosyalarla
    Python ikiziyle 209 satır birebir aynı. İkiz çıktısı: `tools/ikiz_aktar.py` → `ornekler/ikiz.json`
-3. Excel okuma ve yazma (ExcelJS → `kaynaklar/kitap.ts` biçimine çeviren `kaynaklar/excel.ts`; `hedef/` ile
-   gün sayfası kopyalama ve planı yazma; altın testte çıkan sayfa elle hazırlanmış 30.09 ile karşılaştırılır)
+3. Excel okuma ve yazma — **bitti** (0.3.0). `kaynaklar/excel.ts`, `hedef/` (sayfa kopyalama, satır ekleme +
+   formül/koşullu biçim kaydırma, planı yazma), `raporlar/depoKontrol/islem.ts` (adımlar). Altın test
+   `tests/altin/gercekExcel.test.ts`: 30.09 silinip yeniden oluşturulur, elle sayfayla hücre hücre aynı
+   (tek fark `beklenen.json`daki örnek satır; elle sayfadaki E toplamı son satırı kapsamıyordu), diğer 48 sayfa değişmez.
+   Çıktı `ornekler/cikti_30.09.xlsx`; LibreOffice ile yeniden hesaplanınca toplamlar tutuyor.
 4. Arayüz: adımlar, kontrol ekranı, Geçmiş, Ayarlar
 5. İş yerinde 30.09 denemesi — beklenen rakamlar yalnızca yerelde: `ornekler/beklenen.json`
    (git dışı; gerçek stok rakamları açık depoya yazılmaz)
