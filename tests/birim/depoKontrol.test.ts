@@ -5,7 +5,7 @@ import { tarih } from '../../src/cekirdek/tarih';
 import { d01Oku, sayimOku, subeAlisOku } from '../../src/kaynaklar/led';
 import { hesapla, type DepoKontrolPlani } from '../../src/raporlar/depoKontrol/hesapla';
 import { tarihleriDenetle, uyusmazlikSorusu } from '../../src/raporlar/depoKontrol/tarihDenetimi';
-import { d01Kitap, LISTE, sayimKitap, subeKitap } from '../yardimci/sentetik';
+import { ambalajliSayimKitap, d01Kitap, LISTE, sayimKitap, subeKitap } from '../yardimci/sentetik';
 
 const BUGUN = tarih(2026, 10, 1);
 
@@ -31,6 +31,14 @@ const satir = (p: DepoKontrolPlani, ad: string, kacinci = 0) => {
 
 describe('günlük depo kontrol hesabı', () => {
   const p = plan();
+
+  it('adetli ve kolili aynı ürünün kilogram toplamını raporda tek satıra yazar', () => {
+    const p = plan((k) => {
+      k.sayim = sayimOku(ambalajliSayimKitap(), AYAR, BUGUN);
+    });
+    expect(p.satirlar.filter((s) => s.ad === 'ALFA ÜRÜN')).toHaveLength(1);
+    expect(satir(p, 'ALFA ÜRÜN').d).toBe(25.75);
+  });
 
   it('üç kontrol de tutar', () => {
     expect(p.kontroller.slice(0, 3).map((k) => k.durum)).toEqual(['Tamam', 'Tamam', 'Tamam']);

@@ -26,6 +26,12 @@ Okunan raporlar Bupiliç'in **LED** sisteminden alınır (LOGO değil). Ortak ö
 ### Sayım fişi
 
 - `Sayım Fişi` adlı sayfa. Başlık 1. satırda; B: stok kodu, C: ad, D: miktar (gerçek sayı).
+- Eldeki örnekte E: `Birim` = KG, F: `Amb. Miktar`, G: `Amb. Birim` = KOLİ. Okuyucu yalnızca D'deki
+  hazır miktarı kullanır. Aynı ürünün adetli ve kolili satırlarında D kilogram ise bu miktarlar ada
+  göre toplanıp raporda ilgili ürün satırına yazılır; ambalaj sayıları bu toplama eklenmez.
+- Birim doğrulama ve adet/koli → kilogram dönüşümü henüz yapılmaz. Ürün adları ambalaja göre
+  farklıysa otomatik olarak aynı ürüne eşlenmez. Yeni karma ambalaj örneğiyle bu kurallar
+  netleştirilecek; ürün ağırlığı tahmin edilmeyecek.
 - **Dosyanın içinde tarih yazmaz.** Tarih önce dosya adından alınır (`SAYIM_30_09.xlsx`,
   `Sayım 30.09.2026.xlsx`: adın içindeki ilk geçerli gün-ay çifti; dört haneli yıl yoksa bugüne en yakın
   yıl). Adda tarih yoksa dosyanın oluşturulma tarihi kullanılır.

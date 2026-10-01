@@ -4,7 +4,7 @@ import { tarih } from '../../src/cekirdek/tarih';
 import { OkumaHatasi } from '../../src/kaynaklar/kitap';
 import { d01Oku, sayimOku, subeAlisOku } from '../../src/kaynaklar/led';
 import { dosyaTuru } from '../../src/kaynaklar/tani';
-import { d01Kitap, depoKontrolKitap, sayimKitap, subeKitap } from '../yardimci/sentetik';
+import { ambalajliSayimKitap, d01Kitap, depoKontrolKitap, sayimKitap, subeKitap } from '../yardimci/sentetik';
 
 const BUGUN = tarih(2026, 10, 1);
 
@@ -30,6 +30,13 @@ describe('D01 okuyucu', () => {
 });
 
 describe('sayım fişi okuyucu', () => {
+  it('adetli ve kolili aynı ürünün kilogram miktarlarını farklı kodlarda da toplar', () => {
+    const kv = sayimOku(ambalajliSayimKitap(), AYAR, BUGUN);
+    expect(kv.miktar('ALFA ÜRÜN')).toBe(25.75);
+    expect(kv.miktarlar.size).toBe(1);
+    expect(kv.esasToplam()).toBe(25.75);
+  });
+
   it('aynı ürünün satırlarını toplar', () => {
     const kv = sayimOku(sayimKitap(), AYAR, BUGUN);
     expect(kv.tarih).toBe(tarih(2026, 9, 30));
@@ -78,6 +85,13 @@ describe('yanlış dosya', () => {
 });
 
 describe('dosya türünü tanıma', () => {
+  it('yanıltıcı dosya adlarında içerikteki rapor türünü esas alır', () => {
+    expect(dosyaTuru({ ...d01Kitap(), dosyaAdi: 'SAYIM_30_09.xlsx' }, AYAR)).toBe('d01');
+    expect(dosyaTuru({ ...sayimKitap(), dosyaAdi: 'D01.xlsx' }, AYAR)).toBe('sayim');
+    expect(dosyaTuru({ ...subeKitap(), dosyaAdi: 'DEPO_KONTROL.xlsx' }, AYAR)).toBe('subeAlis');
+    expect(dosyaTuru({ ...depoKontrolKitap(), dosyaAdi: 'SUBE_ALIS.xlsx' }, AYAR)).toBe('depoKontrol');
+  });
+
   it('her dosyayı içeriğinden tanır', () => {
     expect(dosyaTuru(d01Kitap(), AYAR)).toBe('d01');
     expect(dosyaTuru(sayimKitap(), AYAR)).toBe('sayim');

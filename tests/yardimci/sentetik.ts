@@ -80,6 +80,22 @@ export function sayimKitap(
   return { dosyaAdi, olusturulma, sayfalar: [diziSayfa('Sayım Fişi', izgara)] };
 }
 
+/** Aynı ürünün adetli ve kolili ambalajları; Miktar sütunu ikisinde de kilogramdır. */
+export function ambalajliSayimKitap(): Kitap {
+  return {
+    dosyaAdi: 'SAYIM_30_09.xlsx',
+    olusturulma: null,
+    sayfalar: [
+      diziSayfa('Sayım Fişi', [
+        [' ', 'Stok Kartı', 'Stok Kartı', 'Miktar', 'Birim', 'Amb. Miktar', 'Amb. Birim'],
+        [null, 'K010', 'ALFA ÜRÜN', 1.75, 'KG', 3, 'ADET'],
+        [null, 'K011', 'alfa  ürün', 24, 'KG', 2, 'KOLİ'],
+        [null, null, null, 25.75],
+      ]),
+    ],
+  };
+}
+
 export function subeKitap(): Kitap {
   const izgara: HucreDegeri[][] = [
     ['Bu Piliç Dönemsel İskonto Raporu (Şube Alış)'],

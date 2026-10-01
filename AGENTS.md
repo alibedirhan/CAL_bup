@@ -124,7 +124,12 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
    yerel dosyalar aynı alanda korunuyor (git dışı). Kopyaların içerikleri doğrulandıktan sonra eski
    `../bupilic-rapor-araci` klasörü silindi.
 
-**Sıradaki iş:** Google Drive aşaması. Başlamadan önce kullanıcıya sor; bu oturumda henüz başlanmadı.
+**Sıradaki işler:** Kullanıcı Google Drive'a geçilebileceğini belirtti; aynı mesajda adetli ve kolili
+sayım satırlarının doğru toplanmasını istedi. Önce sayım isteğini netleştir: yeni örnekte `Miktar`
+sütunu iki ambalajda da KG mı, ürün adları aynı mı? Eldeki örnekte tüm miktarlar KG ve ambalaj birimi
+KOLİ; karma ambalaj örneği yok. Aynı adın hazır kilogram miktarları zaten toplanır; adet/koli dönüşümü
+ve farklı ürün adlarını eşleme henüz yok. Şirket verisini kod/test/belgeye koyma; yeni örnek yalnızca
+`ornekler/` içinde kalır. Ardından Google Drive'a geç; bağlantı henüz uygulanmadı.
 
 **6. Google Drive (kullanıcı kararı):** Tarayıcı içi kayıt (ayarlar, geçmiş, yedekler) kalır; ek olarak
 "Drive'a bağlan". `drive.file` kapsamı (uygulama yalnızca kendi oluşturduğu dosyaları görür), Drive'da
