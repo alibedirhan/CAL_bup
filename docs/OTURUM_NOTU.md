@@ -59,3 +59,20 @@ Geçici testler proje dışında:
 
 Drive davranışı ve sınırlamalar [DRIVE.md](DRIVE.md), hesap/giriş kuralları [IS_KURALLARI.md](IS_KURALLARI.md),
 katmanlar [MIMARI.md](MIMARI.md), bir sonraki oturumun sırası [AGENTS.md](../AGENTS.md) içinde güncellendi.
+
+## Yayın ve otomatik denetim
+
+1.1.0 `f885182` ile yayınlandı;
+[ilk denetim ve yayın](https://github.com/alibedirhan/CAL_bup/actions/runs/36961876146) başarılı.
+Canlı sayfada sürüm, Drive bölümü, gizlilik sayfası ve normal kullanımın Google’a istek yapmadığı
+Chromium ile doğrulandı (`/tmp/cal-bup-canli.mjs`, `/tmp/cal-bup-canli-1.1.0.png`).
+
+Bu yayında görülen Node 20 action uyarıları nedeniyle resmi action sürümleri güncellendi:
+checkout 7.0.1, setup-node 7.0.0, upload-pages-artifact 5.0.0, deploy-pages 5.0.1.
+Her biri resmi release commit SHA’sına sabitlendi; checkout kimlik bilgilerini kalıcı bırakmaz.
+Otomatik işletim sistemi değişikliği uyarısı için runner Ubuntu 24.04’e sabitlendi.
+Uygulamanın Node sürümü `.nvmrc` üzerinden 22 olarak kaldı. Workflow değişikliği ayrı CI/yayınla doğrulanır.
+Resmi başvurular: [checkout](https://github.com/actions/checkout),
+[setup-node](https://github.com/actions/setup-node),
+[upload-pages-artifact](https://github.com/actions/upload-pages-artifact),
+[deploy-pages](https://github.com/actions/deploy-pages).

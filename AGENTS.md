@@ -129,6 +129,7 @@ Tamamlanan yeni işler:
   Adet/koli ağırlığı veya farklı ürün adları otomatik tahmin edilmez.
 - ExcelJS 4.4.0 sabit kaldı. Yalnızca kullandığı UUID bağımlılığı 11.1.1’e override edildi;
   bilinen açık taraması ve gerçek dosya testleriyle doğrulandı.
+- Yayın araçları resmi güncel release SHA’larına, runner Ubuntu 24.04’e sabitlendi; uygulama Node 22’de kalır.
 
 Önceki tamamlanan işler (2026-10-01): CAL bup adı/yayın adresi, dört dosyanın içerikten tanınması,
 aynı ürünün adetli/kolili hazır kilogram toplamı. Gizli eski araç arşivi
