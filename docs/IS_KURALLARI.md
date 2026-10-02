@@ -29,9 +29,10 @@ Okunan raporlar Bupiliç'in **LED** sisteminden alınır (LOGO değil). Ortak ö
 - Eldeki örnekte E: `Birim` = KG, F: `Amb. Miktar`, G: `Amb. Birim` = KOLİ. Okuyucu yalnızca D'deki
   hazır miktarı kullanır. Aynı ürünün adetli ve kolili satırlarında D kilogram ise bu miktarlar ada
   göre toplanıp raporda ilgili ürün satırına yazılır; ambalaj sayıları bu toplama eklenmez.
-- Birim doğrulama ve adet/koli → kilogram dönüşümü henüz yapılmaz. Ürün adları ambalaja göre
-  farklıysa otomatik olarak aynı ürüne eşlenmez. Yeni karma ambalaj örneğiyle bu kurallar
-  netleştirilecek; ürün ağırlığı tahmin edilmeyecek.
+- Başlıkta `Birim` sütunu varsa ürün satırları KG/KİLOGRAM/KILOGRAM olmalıdır. Boş, adet, koli veya
+  başka birim reddedilir; adet/koli miktarı kilogram kabul edilmez. Birim sütunu olmayan eski biçim
+  hazır kilogram varsayımını korur. Ürün adları ambalaja göre farklıysa otomatik eşlenmez.
+  Adet/koli → kilogram dönüşümü yeni örnek ve doğrulanmış ağırlık kuralını bekler; ağırlık tahmin edilmez.
 - **Dosyanın içinde tarih yazmaz.** Tarih önce dosya adından alınır (`SAYIM_30_09.xlsx`,
   `Sayım 30.09.2026.xlsx`: adın içindeki ilk geçerli gün-ay çifti; dört haneli yıl yoksa bugüne en yakın
   yıl). Adda tarih yoksa dosyanın oluşturulma tarihi kullanılır.
@@ -98,3 +99,20 @@ tutmazsa Hata; tutuyor ama uyarı varsa Uyarı; yoksa Tamam.
 - Elle hazırlanan sayfada E dip toplamının son satırı kapsamadığı görüldü (satır eklendikten sonra formül
   güncellenmemiş); araç her seferinde tüm listeyi kapsayacak şekilde yazar.
 - Kullanıcı 2026-10-01'de iş yerinde (Windows, Chrome/Edge, masaüstü Excel) siteyi denedi: sorunsuz.
+
+## Dosya ve kayıt sınırları (1.1.0)
+
+- Yalnızca `.xlsx` kabul edilir. ExcelJS makroları korumadığından `.xlsm` reddedilir;
+  kullanıcı Excel’de makroları kaldırarak `.xlsx` kopyası oluşturmalıdır.
+- Dosya en fazla 25 MB; ZIP merkez dizinindeki açılmış toplam boyut 100 MB, tek parça 50 MB,
+  parça sayısı 5000; kitap en fazla 400 sayfa, sayfa başına 100.000 satır ve 256 sütun.
+  Bunlar bozuk/aşırı büyük dosyaların işlenmesini sınırlayan kontrollerdir; tam bir zararlı dosya analizi değildir.
+- Aynı bırakma grubunda aynı türden iki dosya gelirse ilk dosya korunur ve ikincisi açıklamayla
+  reddedilir. Değiştirmek için doğru dosya tek başına bırakılır.
+- Üzerine yazmada kalıcı yedek zorunludur. Tarayıcı yedeği saklayamazsa üzerine yazılmaz;
+  indirme seçeneği kullanılabilir. Zaman damgası ve yazmadan hemen önce içerik kontrol edilir.
+- Geçmiş CSV’sindeki formülle başlayabilecek metinler tek tırnakla korunur. Sayı çevirisinde
+  taşan metin değerleri, geçersiz sayı davranışıyla aynı şekilde 0 olur; hesap kuralları değişmez.
+- Drive isteğe bağlıdır. Dosya/önceki yedek ayrı kopya, LED dosyaları ayrıca seçilirse gönderilir.
+  Aynı türde aynı içeriğin yeniden gönderilmesi mevcut kopyayı kullanır. Geçmiş son 500 kaydı tutar;
+  rapor ayarları kullanıcının açık seçimiyle geri alınır. Ayrıntılar: [DRIVE.md](DRIVE.md).

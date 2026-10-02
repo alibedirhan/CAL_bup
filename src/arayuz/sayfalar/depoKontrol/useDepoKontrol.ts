@@ -1,6 +1,6 @@
 // Günlük depo kontrol ekranının durumu ve eylemleri.
 
-import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { Ayarlar } from '../../../cekirdek/ayarlar';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
 import { tarihtenCevir } from '../../../cekirdek/tarih';
@@ -26,6 +26,7 @@ function hataMetni(e: unknown): string {
 }
 
 export function useDepoKontrol(ayarlar: Ayarlar) {
+  const kilit = useRef(false);
   const [oturum, gonder] = useReducer(azalt, BOS_OTURUM);
   const [motor, setMotor] = useState<Motor | null>(null);
   const [mesgul, setMesgul] = useState<Mesgul>(null);
@@ -44,14 +45,19 @@ export function useDepoKontrol(ayarlar: Ayarlar) {
   );
 
   const calistir = useCallback(async (tur: Exclude<Mesgul, null>, is: () => Promise<void>) => {
+    if (kilit.current) return false;
+    kilit.current = true;
     setMesgul(tur);
     setHata(null);
     try {
-      setMotor(await motorYukle());
       await is();
+      setMotor(await motorYukle());
+      return true;
     } catch (e) {
       setHata(hataMetni(e));
+      return false;
     } finally {
+      kilit.current = false;
       setMesgul(null);
     }
   }, []);
@@ -113,10 +119,13 @@ export function useDepoKontrol(ayarlar: Ayarlar) {
     async (kip: 'dosyaya' | 'indir') => {
       const { hedef } = oturum;
       const { secim, plan } = gorunum;
-      if (!hedef || !secim || !plan) return;
+      if (!hedef || !secim || !plan || !gorunum.kaydedilebilir) return;
       await calistir('kaydediliyor', async () => {
         const s = await kaydet(hedef, secim, plan, ayarlar, bugun, kip);
         gonder({ tur: 'kaydedildi', hedef: s.hedef });
+        s.ledDosyalari = Object.values(oturum.kaynaklar).flatMap((k) =>
+          k.bayt ? [{ ad: k.dosyaAdi, bayt: k.bayt }] : [],
+        );
         setSonuc(s);
       });
     },
@@ -133,6 +142,10 @@ export function useDepoKontrol(ayarlar: Ayarlar) {
     bugun,
     hataKapat: () => setHata(null),
     sonucKapat: () => setSonuc(null),
+    driveHedefAc: async (d: SecilenDosya) => {
+      if (!(await calistir('aciliyor', () => hedefYukle(d))))
+        throw new KullaniciHatasi('Depo kontrol dosyası açılamadı. Ekrandaki hata açıklamasına bakın.');
+    },
     hedefSec,
     hatirlananiAc,
     hatirlananiUnut,

@@ -35,9 +35,10 @@ export async function gecmisListesi(): Promise<GecmisKaydi[]> {
   return (await idb.oku<GecmisKaydi[]>(GECMIS)) ?? [];
 }
 
-export async function gecmiseEkle(k: GecmisKaydi): Promise<void> {
-  const liste = await gecmisListesi();
-  await idb.yaz(GECMIS, [k, ...liste].slice(0, EN_FAZLA_KAYIT));
+export async function gecmiseEkle(k: GecmisKaydi): Promise<boolean> {
+  return idb.guncelle(GECMIS, (onceki) =>
+    [k, ...(Array.isArray(onceki) ? onceki : [])].slice(0, EN_FAZLA_KAYIT),
+  );
 }
 
 /** Yedekler en yeniden eskiye; baytlar ayrı anahtarda durur, liste hafif kalır. */
@@ -46,11 +47,15 @@ export async function yedekListesi(): Promise<Omit<Yedek, 'bayt'>[]> {
 }
 
 export async function yedekAl(dosyaAdi: string, bayt: Uint8Array): Promise<string | null> {
-  const id = `${Date.now()}`;
-  if (!(await idb.yaz(`yedek:${id}`, bayt))) return null;
-  const liste = [{ id, zaman: new Date().toISOString(), dosyaAdi }, ...(await yedekListesi())];
-  for (const eski of liste.slice(EN_FAZLA_YEDEK)) await idb.sil(`yedek:${eski.id}`);
-  await idb.yaz(YEDEK_LISTESI, liste.slice(0, EN_FAZLA_YEDEK));
+  const id = crypto.randomUUID();
+  const kaydedildi = await idb.guncelle(YEDEK_LISTESI, (onceki, depo) => {
+    const eski = Array.isArray(onceki) ? (onceki as Omit<Yedek, 'bayt'>[]) : [];
+    const liste = [{ id, zaman: new Date().toISOString(), dosyaAdi }, ...eski];
+    depo.put(bayt, `yedek:${id}`);
+    for (const y of liste.slice(EN_FAZLA_YEDEK)) depo.delete(`yedek:${y.id}`);
+    return liste.slice(0, EN_FAZLA_YEDEK);
+  });
+  if (!kaydedildi) return null;
   return id;
 }
 
@@ -58,7 +63,11 @@ export async function yedekBaytlari(id: string): Promise<Uint8Array | null> {
   return (await idb.oku<Uint8Array>(`yedek:${id}`)) ?? null;
 }
 
-const csvHucre = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+const csvHucre = (v: unknown) => {
+  const metin = typeof v === 'number' ? v.toFixed(3).replace('.', ',') : String(v ?? '');
+  const guvenli = typeof v === 'string' && /^[\s]*[=+@-]|^[\t\r\n]/.test(metin) ? "'" + metin : metin;
+  return `"${guvenli.replace(/"/g, '""')}"`;
+};
 
 export function gecmisDosyaAdi(tarih = new Date()): string {
   return `CAL bup geçmişi ${tarih.toLocaleDateString('tr-TR')}.csv`;
@@ -66,7 +75,6 @@ export function gecmisDosyaAdi(tarih = new Date()): string {
 
 /** Excel'in Türkçe ayarında doğrudan açılan CSV (noktalı virgül, virgüllü ondalık). */
 export function gecmisCsv(liste: readonly GecmisKaydi[]): string {
-  const sayi = (x: number) => x.toFixed(3).replace('.', ',');
   const satirlar = [
     [
       'Zaman',
@@ -86,10 +94,10 @@ export function gecmisCsv(liste: readonly GecmisKaydi[]): string {
       k.dosya,
       k.sayfa,
       k.durum,
-      sayi(k.ledStogu),
-      sayi(k.depoSayimi),
-      sayi(k.gelenMal),
-      k.uyariSayisi,
+      k.ledStogu,
+      k.depoSayimi,
+      k.gelenMal,
+      String(k.uyariSayisi),
       k.aciklama,
     ]),
   ];

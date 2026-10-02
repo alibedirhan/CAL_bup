@@ -1,6 +1,7 @@
 // LED raporlarının okuyucuları (eski aracın OkuD01 / OkuSayim / OkuSubeAlis'i).
 
-import type { Ayarlar } from '../cekirdek/ayarlar';
+import { sutunNo, type Ayarlar } from '../cekirdek/ayarlar';
+import { adNormal } from '../cekirdek/metin';
 import type { KaynakVeri } from '../cekirdek/kaynakVeri';
 import { dosyaAdiTarihi, tarihBul, tarihtenCevir, type Tarih } from '../cekirdek/tarih';
 import { OkumaHatasi, type Kitap, type Sayfa } from './kitap';
@@ -59,6 +60,23 @@ export function sayimOku(kitap: Kitap, ayarlar: Ayarlar, bugun: Tarih): KaynakVe
     throw new OkumaHatasi(
       `${kitap.dosyaAdi} bir sayım fişi değil ('${ayarlar.sayim.sayfaAdi}' sayfası yok).`,
     );
+  }
+  const baslik = ayarlar.sayim.ilkVeriSatiri - 1;
+  let birimSutunu = 0;
+  for (let c = 1; baslik >= 1 && c <= 32; c++)
+    if (adNormal(sayfa.hucre(baslik, c)).toLocaleUpperCase('tr') === 'BİRİM') {
+      birimSutunu = c;
+      break;
+    }
+  if (birimSutunu) {
+    for (let r = ayarlar.sayim.ilkVeriSatiri; r <= sayfa.sonSatir; r++) {
+      if (!adNormal(sayfa.hucre(r, sutunNo(ayarlar.sayim.isimSutunu)))) continue;
+      const birim = adNormal(sayfa.hucre(r, birimSutunu)).toLocaleUpperCase('tr');
+      if (!['KG', 'KİLOGRAM', 'KILOGRAM'].includes(birim))
+        throw new OkumaHatasi(
+          `Sayım fişinin ${r}. satırında miktar birimi kilogram değil veya boş. LED’den kilogram miktarı içeren dosya alın. Adet/koli ağırlığı otomatik tahmin edilmez.`,
+        );
+    }
   }
   const kv = tabloOku(sayfa, ayarlar.sayim, 'Sayım fişi');
   kv.tarih =

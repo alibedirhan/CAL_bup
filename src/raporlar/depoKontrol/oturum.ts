@@ -28,6 +28,7 @@ export interface HedefDosya {
 export interface YuklenenKaynak {
   dosyaAdi: string;
   kitap: Kitap;
+  bayt?: Uint8Array;
 }
 
 export interface Oturum {

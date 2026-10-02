@@ -79,9 +79,14 @@ describe('ad değişikliğinde tarayıcı kayıtları', () => {
     };
     const depoAc = vi.fn(() =>
       istek({
-        transaction: () => ({
-          objectStore: () => ({ get: (anahtar: string) => istek(kayitlar.get(anahtar)) }),
-        }),
+        transaction: () => {
+          const aktarim = {
+            oncomplete: null as (() => void) | null,
+            objectStore: () => ({ get: (anahtar: string) => istek(kayitlar.get(anahtar)) }),
+          };
+          queueMicrotask(() => aktarim.oncomplete?.());
+          return aktarim;
+        },
       }),
     );
     vi.stubGlobal('indexedDB', { open: depoAc });

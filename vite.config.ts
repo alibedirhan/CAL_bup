@@ -2,16 +2,16 @@ import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
-// Yayındaki sayfa kendi dosyaları dışında hiçbir yere bağlanamaz.
-// Google Drive aşamasında yalnızca Google adresleri eklenecek.
+// Drive ve Google kimlik kitaplığı dışında dış bağlantıya izin verilmez.
 const GUVENLIK_POLITIKASI = [
   "default-src 'self'",
-  "script-src 'self'",
-  "style-src 'self' 'unsafe-inline'",
+  "script-src 'self' https://accounts.google.com/gsi/client",
+  "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",
   "font-src 'self'",
   "img-src 'self' data: blob:",
-  "connect-src 'self'",
+  "connect-src 'self' https://accounts.google.com/gsi/ https://www.googleapis.com",
   "worker-src 'self' blob:",
+  'frame-src https://accounts.google.com/gsi/',
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'none'",

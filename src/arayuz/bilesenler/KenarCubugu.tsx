@@ -67,7 +67,7 @@ export function KenarCubugu({ rota, tema, temaDegisti }: Ozellikler) {
       <div className="kenar-alt">
         <p className="yerel-not">
           <Simge ad="kilit" boyut={15} />
-          Dosyalarınız yalnızca bu bilgisayarda işlenir, hiçbir yere gönderilmez.
+          Dosyalarınız bu bilgisayarda işlenir. Drive’a yalnızca siz gönderirsiniz.
         </p>
         <TemaSecici tercih={tema} degisti={temaDegisti} />
         <span className="surum">Sürüm {SURUM}</span>

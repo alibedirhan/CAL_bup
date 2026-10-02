@@ -8,11 +8,28 @@ const DEPO = 'kv';
 let acilis: Promise<IDBDatabase> | null = null;
 
 function vt(): Promise<IDBDatabase> {
-  acilis ??= new Promise((coz, reddet) => {
+  acilis ??= new Promise<IDBDatabase>((coz, reddet) => {
     const istek = indexedDB.open(VT_ADI, 1);
     istek.onupgradeneeded = () => istek.result.createObjectStore(DEPO);
-    istek.onsuccess = () => coz(istek.result);
-    istek.onerror = () => reddet(istek.error ?? new Error('Tarayıcı deposu açılamadı'));
+    istek.onsuccess = () => {
+      const db = istek.result;
+      db.onversionchange = () => {
+        db.close();
+        acilis = null;
+      };
+      coz(db);
+    };
+    istek.onerror = () => {
+      acilis = null;
+      reddet(istek.error ?? new Error('Tarayıcı deposu açılamadı'));
+    };
+    istek.onblocked = () => {
+      acilis = null;
+      reddet(new Error('Tarayıcı deposu başka sekmede açık'));
+    };
+  }).catch((e: unknown) => {
+    acilis = null;
+    throw e;
   });
   return acilis;
 }
@@ -21,8 +38,11 @@ function islem<T>(kip: IDBTransactionMode, is: (d: IDBObjectStore) => IDBRequest
   return vt().then(
     (db) =>
       new Promise<T>((coz, reddet) => {
-        const istek = is(db.transaction(DEPO, kip).objectStore(DEPO));
-        istek.onsuccess = () => coz(istek.result);
+        const aktarim = db.transaction(DEPO, kip);
+        const istek = is(aktarim.objectStore(DEPO));
+        aktarim.oncomplete = () => coz(istek.result);
+        aktarim.onabort = () => reddet(aktarim.error ?? new Error('Tarayıcı deposuna yazılamadı'));
+        aktarim.onerror = () => reddet(aktarim.error ?? new Error('Tarayıcı deposu hatası'));
         istek.onerror = () => reddet(istek.error ?? new Error('Tarayıcı deposu hatası'));
       }),
   );
@@ -50,5 +70,35 @@ export async function sil(anahtar: string): Promise<void> {
     await islem('readwrite', (d) => d.delete(anahtar));
   } catch {
     // yok sayılır
+  }
+}
+
+/** Oku-değiştir-yaz tek aktarımda; iki sekmedeki geçmiş ve yedekler birbirini ezmez. */
+export async function guncelle(
+  anahtar: string,
+  degistir: (onceki: unknown, depo: IDBObjectStore) => unknown,
+): Promise<boolean> {
+  try {
+    await vt().then(
+      (db) =>
+        new Promise<void>((coz, reddet) => {
+          const aktarim = db.transaction(DEPO, 'readwrite');
+          const depo = aktarim.objectStore(DEPO);
+          const istek = depo.get(anahtar);
+          aktarim.oncomplete = () => coz();
+          aktarim.onabort = () => reddet(aktarim.error ?? new Error('Tarayıcı kaydı tamamlanmadı'));
+          aktarim.onerror = () => reddet(aktarim.error ?? new Error('Tarayıcı kaydı başarısız'));
+          istek.onsuccess = () => {
+            try {
+              depo.put(degistir(istek.result, depo), anahtar);
+            } catch {
+              aktarim.abort();
+            }
+          };
+        }),
+    );
+    return true;
+  } catch {
+    return false;
   }
 }

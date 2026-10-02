@@ -249,3 +249,29 @@
 .duzen-tablosu th {
   text-align: left;
 }
+
+/* Drive aynı kart ve bildirim dilini kullanır. */
+#drive-baslik ~ p,
+.drive-sonuc {
+  margin-top: 12px;
+}
+.kart[aria-labelledby='drive-baslik'] {
+  display: grid;
+  gap: 14px;
+}
+.kart[aria-labelledby='drive-baslik'] .gelismis {
+  display: grid;
+  gap: 8px;
+}
+.drive-sonuc {
+  display: grid;
+  gap: 10px;
+}
+.drive-sonuc label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.dosya-satiri b {
+  overflow-wrap: anywhere;
+}

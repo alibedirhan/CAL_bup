@@ -7,7 +7,7 @@ Bu dosya projede çalışan yapay zekâ araçları (Codex, Claude Code vb.) ve g
 
 Bupiliç İzmir Bölge Deposu için LED sisteminin Excel çıktılarından günlük raporlar hazırlayan
 **tarayıcı uygulaması**. Sunucu yoktur: Excel dosyaları kullanıcının tarayıcısında okunur ve yazılır,
-hiçbir yere gönderilmez. GitHub Pages'te yayınlanır.
+normal kullanımda hiçbir yere gönderilmez; isteğe bağlı Drive kaydı kullanıcının düğmesiyle yapılır. GitHub Pages'te yayınlanır.
 
 - Site: https://alibedirhan.github.io/CAL_bup/
 - Depo (herkese açık): https://github.com/alibedirhan/CAL_bup
@@ -99,64 +99,52 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 
 ## Durum ve yol haritası
 
-| Aşama | İçerik                                                     | Durum                        |
-| ----- | ---------------------------------------------------------- | ---------------------------- |
-| 1     | İskelet, tema, yayın                                       | Bitti                        |
-| 2     | Hesap kuralları (VBA/Python ikizinden taşındı)             | Bitti                        |
-| 3     | Excel okuma ve yazma (ExcelJS)                             | Bitti                        |
-| 4     | Arayüz: dosya bırakma, kontrol ekranı, kayıt, geçmiş, ayar | Bitti                        |
-| 5     | İş yerinde deneme                                          | Bitti (2026-10-01, sorunsuz) |
-| 6     | Google Drive'a kaydetme                                    | Sırada                       |
-| 7     | Envanter, bakiye, palet/kasa raporları                     | Örnek dosya bekleniyor       |
+| Aşama | İçerik                                         | Durum                                                               |
+| ----- | ---------------------------------------------- | ------------------------------------------------------------------- |
+| 1–4   | İskelet, hesap kuralları, Excel, rapor arayüzü | Bitti                                                               |
+| 5     | Windows iş yerinde deneme                      | Bitti (2026-10-01)                                                  |
+| 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
+| 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Tamamlanan işler (2026-10-01):**
+**Güncel sürüm:** 1.1.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 
-1. **Yeniden adlandırma:** GitHub depo adı `CAL_bup`, ekranda görünen ad **"CAL bup"**, sürüm
-   **1.0.1**. Yeni site yayını tamamlandı ve tarayıcıda doğrulandı:
-   `alibedirhan.github.io/CAL_bup/`. Kullanıcı yer imini güncellemeli. Yerel klasör adı `CAL_bup`.
-   Tarayıcı kayıtları aynı alan adında korunur: localStorage öneki ve IndexedDB adı uyumluluk için
-   `bup-rapor` olarak kalır.
-2. **Eski aracı arşivleme:** Gizli `alibedirhan/Bup_Excel_Rapor_Eski` deposuna yüklendi ve depo
-   arşiv durumuna alındı. Eski belgelerdeki gerçek ürün adları ve stok miktarları tüm geçmişten
-   temizlendi; 8 commit'in kodu, dosyaları ve kayıt bilgileri korundu (commit kimlikleri değişti).
-   Arşiv GitHub'dan yeniden indirilip bütün geçmiş ve dosyalar karşılaştırıldı; git bütünlüğü doğrulandı.
-   Özgün git geçmişi `ornekler/eski_arac_arsivi/eski_git_gecmisi.bundle` içinde, GitHub'a gitmeyen
-   yerel dosyalar aynı alanda korunuyor (git dışı). Kopyaların içerikleri doğrulandıktan sonra eski
-   `../bupilic-rapor-araci` klasörü silindi.
-3. **Dosya tanıma ve sayım doğrulaması:** Dört dosyayı birlikte sürükle-bırak tarayıcıda denendi;
-   yanıltıcı dosya adlarına rağmen içeriklerine göre doğru yerlere yerleştiler. Dosya türü içerikten
-   tanınır; sayım tarihi için dosya adı kullanılabilir. Aynı adlı ürünün farklı stok kodlarıyla gelen
-   adetli/kolili satırlarında hazır kilogram miktarlarının toplanması ve rapor planında tek satıra
-   yazılması sentetik testlerle doğrulandı. Hesap davranışı değiştirilmedi. Son tam kontrolde
-   **155 test geçti** (gerçek dosyalı altın testler dahil); GitHub denetimi ve yayın da başarılı.
+**2026-10-02 oturum devri:** Kullanıcı plandaki uygulanabilir işleri tamamlamayı, genel tarama ve
+hata düzeltmelerini yetkilendirdi. Önceki oturumda depo/yayın komutlarının asistan tarafından
+çalıştırılmasına açık yetki verilmiştir; aynı işlemler için yeniden izin isteme. Kullanıcı ayrıldı;
+sonuçları dönüşte sade Türkçeyle anlat.
 
-**Oturum devri (2026-10-01):** Kullanıcı ayrılıyor; yarın devam edilecek. Yeni geliştirmeye şimdi
-başlama. Kullanıcı, gerekli depo/yayın komutlarını asistanın çalıştırabileceğini açıkça belirtti;
-aynı işlemler için yeniden izin isteme. Yeni oturumda aşağıdaki sayım sorularından devam et:
+Tamamlanan yeni işler:
 
-1. Adetli ve kolili aynı ürünün birlikte bulunduğu sayım Excel'i `ornekler/` içine konulacak;
-   henüz yeni örnek verilmedi.
-2. İki satırda `Miktar` kilogram mı, adet/koli sayısı mı? Ürün adları aynı mı? Yanıt bekleniyor.
-3. Yeni örneği incele; gerekiyorsa doğru ürün eşlemesini ve birim dönüşümünü testlerle uygula.
-   Ağırlık bilgisi yoksa tahmin etme; kullanıcıdan dosyadaki ağırlık bilgisini veya dönüşüm kuralını
-   iste. Genel olarak ambalaj kelimelerini silerek farklı ürünleri birleştirme.
-4. Sayım kuralından sonra onaylı Google Drive aşamasına geç. Envanter, bakiye, palet/kasa raporları
-   ayrıca örnek dosya bekliyor. Şirket verileri ve özgün eski arşiv git dışında kalmalı.
+- Drive bağlantısı: sadece `drive.file`; erişim belirteci yalnızca oturum belleğinde. Kullanıcı kendi
+  Google Cloud istemci kimliğini Ayarlar’a girer. Aynı kimlik diğer bilgisayarda da kullanılmalıdır.
+- Rapor ve önceki hâlinin ayrı Drive kopyaları; isteğe bağlı LED dosyaları, Drive’dan rapor açma.
+  Ayar/geçmiş kopyaları; geçmiş birleştirme, ayarları inceleyip açık seçimle geri getirme.
+- Yedekler ve geçmiş IndexedDB aktarımı tamamlanınca başarılı sayılır; yedek verisi/liste/silme
+  atomiktir. Yedek saklanamazsa dosyanın üzerine yazılmaz. Yazmadan önce içerik yeniden kontrol edilir.
+- 25 MB sınırı dosyayı okumadan önce uygulanır; ZIP açılma sınırları; makroları kaybetmemek için
+  `.xlsm` reddedilir. CSV formül koruması; ayar doğrulaması; ilk dosya seçme/bırakma olayının
+  motor yükleme beklemesi yüzünden kaybolması önlendi; çift işlem kilidi eklendi.
+- `Birim` başlığı olan sayımda KG dışındaki/boş birim reddedilir. Aynı adın hazır kilogramı toplanır.
+  Adet/koli ağırlığı veya farklı ürün adları otomatik tahmin edilmez.
+- ExcelJS 4.4.0 sabit kaldı. Yalnızca kullandığı UUID bağımlılığı 11.1.1’e override edildi;
+  bilinen açık taraması ve gerçek dosya testleriyle doğrulandı.
 
-**Sıradaki işler:** Kullanıcı Google Drive'a geçilebileceğini belirtti; aynı mesajda adetli ve kolili
-sayım satırlarının doğru toplanmasını istedi. Önce sayım isteğini netleştir: yeni örnekte `Miktar`
-sütunu iki ambalajda da KG mı, ürün adları aynı mı? Eldeki örnekte tüm miktarlar KG ve ambalaj birimi
-KOLİ; karma ambalaj örneği yok. Aynı adın hazır kilogram miktarları zaten toplanır; adet/koli dönüşümü
-ve farklı ürün adlarını eşleme henüz yok. Şirket verisini kod/test/belgeye koyma; yeni örnek yalnızca
-`ornekler/` içinde kalır. Ardından Google Drive'a geç; bağlantı henüz uygulanmadı.
+Önceki tamamlanan işler (2026-10-01): CAL bup adı/yayın adresi, dört dosyanın içerikten tanınması,
+aynı ürünün adetli/kolili hazır kilogram toplamı. Gizli eski araç arşivi
+`alibedirhan/Bup_Excel_Rapor_Eski`; temizlenmiş 8 commit doğrulandı. Özgün geçmiş ve yerel dosyalar
+`ornekler/eski_arac_arsivi/` içinde git dışında korunur.
 
-**6. Google Drive (kullanıcı kararı):** Tarayıcı içi kayıt (ayarlar, geçmiş, yedekler) kalır; ek olarak
-"Drive'a bağlan". `drive.file` kapsamı (uygulama yalnızca kendi oluşturduğu dosyaları görür), Drive'da
-"CAL bup" klasörü: günlük depo kontrol dosyası, yedeği, isteğe bağlı LED dosyaları; geçmiş/ayarlar
-eşitlemesi. Kullanıcı Google Drive kullanıyor ve şirket verisini kendi Drive'ına koymayı onayladı.
-Google Cloud'da OAuth istemci kimliği kurulumunu kullanıcıya adım adım anlat. CSP'ye
-(`vite.config.ts`) yalnızca gereken Google adreslerini ekle. Yeni modül `platform/drive.ts`.
+**Sıradaki somut işler:**
 
-**7. Yeni raporlar:** Önce kullanıcıdan o raporun LED çıktısından örnek ve elle doldurduğu Excel'i iste.
-Adımlar `docs/MIMARI.md` → "Yeni rapor eklemek". Palet/kasa için ilk istek: 40. haftada günlük depo
-satışlarını cari adına göre haftalık toplamak (eskiden SUMIF önerilmişti).
+1. Kullanıcı kendi Google hesabıyla OAuth istemcisini kurmalı ([DRIVE.md](docs/DRIVE.md)); asistanın
+   hesabına erişim yoktur. Canlı Google izin penceresi, gerçek yükleme ve ikinci bilgisayarda açma
+   kullanıcıyla doğrulanacak. Testlerde OAuth ve Drive taklit edildi; gerçek Google testi diye anlatma.
+2. Karma ambalaj sayım örneği hâlâ yok. `Miktar` kilogram mı, adet/koli mi; ürün adları aynı mı,
+   ağırlık bilgisi hangi sütunda? Örnek/yanıt olmadan dönüşüm/eşleme kuralı ekleme.
+3. Envanter, bakiye ve palet/kasa için LED örnekleri ve elle doldurulmuş beklenen rapor gerekir.
+   Palet/kasa hedefi: haftalık günlük satışları cari adına göre toplamak. Uydurma kolon/kural uygulama.
+4. Windows Excel’de yeni sürüm çıktı/kayıt ve açık Excel dosyasına yazma denemesi kullanıcıyla yapılır.
+
+Şirket verileri yalnızca `ornekler/` içinde kalmalı; testler sentetik olmalı. Tarayıcı ekran görüntüleri,
+indirilen raporlar ve geçici tarama çıktıları proje dışında `/tmp/` içinde tutulur; commit’e girmez.

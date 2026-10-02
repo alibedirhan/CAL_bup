@@ -2,6 +2,8 @@
 // ExcelJS'e bağlı tek okuma dosyası budur.
 
 import ExcelJS from 'exceljs';
+import { EN_BUYUK_DOSYA } from '../cekirdek/dosya';
+import { arsiviDenetle } from './xlsxDenetimi';
 import { OkumaHatasi, type HucreDegeri, type Kitap, type Sayfa } from './kitap';
 
 /** Açılmış dosya: okuyucular için Kitap görünümü + yazmak için ExcelJS kitabı. */
@@ -11,12 +13,14 @@ export interface AcikKitap {
 }
 
 /** En büyük dosya: LED çıktıları birkaç yüz KB, depo kontrol dosyası ~1 MB. */
-export const EN_BUYUK_DOSYA = 25 * 1024 * 1024;
+export { EN_BUYUK_DOSYA } from '../cekirdek/dosya';
 
 export async function kitapAc(veri: ArrayBuffer | Uint8Array, dosyaAdi: string): Promise<AcikKitap> {
   if (veri.byteLength > EN_BUYUK_DOSYA) {
     throw new OkumaHatasi(`${dosyaAdi} çok büyük (${Math.round(veri.byteLength / 1048576)} MB).`);
   }
+  if (!/\.xlsx$/i.test(dosyaAdi)) throw new OkumaHatasi('Yalnızca .xlsx dosyaları kullanılabilir.');
+  arsiviDenetle(veri);
   const excel = new ExcelJS.Workbook();
   try {
     // ExcelJS'in türü Node Buffer bekliyor; tarayıcıda ArrayBuffer/Uint8Array da çalışıyor
@@ -26,6 +30,14 @@ export async function kitapAc(veri: ArrayBuffer | Uint8Array, dosyaAdi: string):
   } catch {
     throw new OkumaHatasi(
       `${dosyaAdi} açılamadı. Dosyanın .xlsx biçiminde olduğundan ve bozuk olmadığından emin olun.`,
+    );
+  }
+  if (
+    excel.worksheets.length > 400 ||
+    excel.worksheets.some((s) => s.rowCount > 100_000 || s.columnCount > 256)
+  ) {
+    throw new OkumaHatasi(
+      'Dosyada çok fazla sayfa, satır veya sütun var. Gereksiz verileri kaldırıp yeniden deneyin.',
     );
   }
   return { kitap: kitapGorunumu(excel, dosyaAdi), excel };

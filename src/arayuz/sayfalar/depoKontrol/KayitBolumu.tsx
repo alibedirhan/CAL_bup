@@ -1,3 +1,4 @@
+import { DriveRaporunuKaydet } from '../drive/DriveRaporu';
 import { indir } from '../../../platform/dosya';
 import { yedekBaytlari } from '../../../platform/gecmis';
 import { Mesaj } from '../../bilesenler/Mesaj';
@@ -75,6 +76,8 @@ export function SonucKarti({ dk }: { dk: DepoKontrol }) {
         Excel dosyayı açarken formülleri yeniden hesaplar; kapatırken "kaydetmek istiyor musunuz" diye
         sorabilir. Bu normaldir.
       </Mesaj>
+      {s.uyari && <Mesaj ton="uyari">{s.uyari}</Mesaj>}
+      <DriveRaporunuKaydet key={s.sayfa + s.hedef.sonDegisiklik} sonuc={s} />
       <div className="satir-dugmeleri">
         {s.yedekId && (
           <button type="button" className="dugme" onClick={yedekIndir}>

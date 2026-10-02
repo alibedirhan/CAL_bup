@@ -14,7 +14,7 @@ export function sayiCevir(v: unknown): number {
   // VBA Val() gibi: baştaki sayıyı alır, gerisini yok sayar.
   const m = /^[+-]?\d*\.?\d*/.exec(s);
   const n = m ? Number.parseFloat(m[0]) : Number.NaN;
-  return Number.isNaN(n) ? 0 : n;
+  return Number.isFinite(n) ? n : 0;
 }
 
 /**

@@ -2,6 +2,8 @@
 
 import { VARSAYILAN_AYARLAR, type Ayarlar } from '../cekirdek/ayarlar';
 import { oku, yaz } from './saklama';
+import { ayarGecerli } from '../cekirdek/ayarDenetimi';
+import { KullaniciHatasi } from '../cekirdek/hata';
 
 const ANAHTAR = 'ayarlar';
 
@@ -9,7 +11,9 @@ type Duz = Record<string, unknown>;
 
 function birlestir<T>(varsayilan: T, kayitli: unknown): T {
   if (typeof varsayilan !== 'object' || varsayilan === null) {
-    return typeof kayitli === typeof varsayilan ? (kayitli as T) : varsayilan;
+    return typeof kayitli === typeof varsayilan && (typeof kayitli !== 'number' || Number.isFinite(kayitli))
+      ? (kayitli as T)
+      : varsayilan;
   }
   const sonuc: Duz = { ...(varsayilan as Duz) };
   const k = (typeof kayitli === 'object' && kayitli !== null ? kayitli : {}) as Duz;
@@ -20,13 +24,18 @@ function birlestir<T>(varsayilan: T, kayitli: unknown): T {
 /** Kayıtlı ayarlar; bozuk ya da eksik alanlar varsayılanla tamamlanır. */
 export function ayarlariOku(): Ayarlar {
   try {
-    return birlestir(VARSAYILAN_AYARLAR, JSON.parse(oku(ANAHTAR) ?? '{}'));
+    const metin = oku(ANAHTAR) ?? '{}';
+    if (metin.length > 32768) return structuredClone(VARSAYILAN_AYARLAR);
+    const a = birlestir(VARSAYILAN_AYARLAR, JSON.parse(metin));
+    return ayarGecerli(a) ? a : structuredClone(VARSAYILAN_AYARLAR);
   } catch {
     return VARSAYILAN_AYARLAR;
   }
 }
 
 export function ayarlariYaz(a: Ayarlar): void {
+  if (!ayarGecerli(a))
+    throw new KullaniciHatasi('Ayar değeri geçersiz. Satır, sütun ve tolerans sınırlarını kontrol edin.');
   yaz(ANAHTAR, JSON.stringify(a));
 }
 

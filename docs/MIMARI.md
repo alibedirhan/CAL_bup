@@ -57,9 +57,16 @@ yüklenmez.
 
 - Depo herkese açıktır. `.gitignore` tüm Excel uzantılarını ve `ornekler/` klasörünü dışarıda tutar.
   Testlerdeki sentetik veriler gerçek ürün adı ve miktarı içermez.
-- Derlenen sayfaya içerik güvenlik politikası (CSP) eklenir (`vite.config.ts`): sayfa kendi dosyaları
-  dışında hiçbir adrese bağlanamaz. Google Drive aşamasında yalnızca gereken Google adresleri eklenecek.
-- Analitik, çerez ve dış kaynak yoktur.
+- Derlenen sayfaya CSP eklenir (`vite.config.ts`): kendi kaynakları, Google kimlik kitaplığının
+  `accounts.google.com/gsi/` uçları ve Drive REST için `www.googleapis.com` izinlidir. Joker alan adı yoktur.
+- Google kitaplığı yalnızca kullanıcı Drive bağlantısını hazırladığında yüklenir. Normal rapor
+  akışında dış bağlantı yoktur. Analitik ve takip çerezi eklenmez.
+- Drive adaptörü `platform/drive.ts`, OAuth oturum belleği `driveKimlik.ts`, doğrulama/birleştirme
+  `driveEsitleme.ts` içindedir. Arayüz `arayuz/sayfalar/drive/` altında. ExcelJS ayrı parça kalır.
+- IndexedDB yazıları istek başarısında değil aktarım tamamlanınca başarılı sayılır. Geçmiş
+  ekleme/birleştirme ve yedek verisi/liste/eski yedek silme tek aktarımda yapılır.
+- Drive erişim belirteci kalıcı kaydedilmez; rapor ve ayar kopyaları değişmez dosyalardır. İstekler başlatıldıkları
+  erişim belirtecine bağlanır; hesap değişirse kuyruktaki/çok adımlı işlem durur. Ayrıntı: [DRIVE.md](DRIVE.md).
 
 ## Doğrulama
 

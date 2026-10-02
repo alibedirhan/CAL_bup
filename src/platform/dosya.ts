@@ -3,11 +3,11 @@
 
 import { KullaniciHatasi } from '../cekirdek/hata';
 import * as idb from './idb';
+import { EN_BUYUK_DOSYA, XLSX_MIME } from '../cekirdek/dosya';
 
-const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-const XLSX_TURU = { description: 'Excel dosyası', accept: { [XLSX_MIME]: ['.xlsx', '.xlsm'] } };
+const XLSX_TURU = { description: 'Excel dosyası', accept: { [XLSX_MIME]: ['.xlsx'] } };
 
-export const XLSX_KABUL = `.xlsx,.xlsm,${XLSX_MIME}`;
+export const XLSX_KABUL = `.xlsx,${XLSX_MIME}`;
 
 /** Okunmuş dosya. `tanitici` varsa aynı dosyanın üzerine kaydedilebilir. */
 export interface SecilenDosya {
@@ -26,6 +26,12 @@ export function dogrudanKayitVar(): boolean {
 }
 
 export async function dosyaOku(dosya: File, tanitici?: FileSystemFileHandle): Promise<SecilenDosya> {
+  if (!/\.xlsx$/i.test(dosya.name)) {
+    throw new KullaniciHatasi(
+      'Yalnızca .xlsx dosyaları kullanılabilir. Makrolu dosyayı Excel’de .xlsx olarak kaydedin.',
+    );
+  }
+  if (dosya.size > EN_BUYUK_DOSYA) throw new KullaniciHatasi('Dosya çok büyük. En fazla 25 MB olabilir.');
   const bayt = new Uint8Array(await dosya.arrayBuffer());
   return { ad: dosya.name, bayt, sonDegisiklik: dosya.lastModified, ...(tanitici ? { tanitici } : {}) };
 }
@@ -113,8 +119,8 @@ export async function dosyayaYaz(tanitici: FileSystemFileHandle, bayt: Uint8Arra
 }
 
 /** Baytları dosya olarak indirir. */
-export function indir(bayt: Uint8Array, ad: string): void {
-  const blob = new Blob([bayt as unknown as BlobPart], { type: XLSX_MIME });
+export function indir(bayt: Uint8Array, ad: string, tur = XLSX_MIME): void {
+  const blob = new Blob([bayt as unknown as BlobPart], { type: tur });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

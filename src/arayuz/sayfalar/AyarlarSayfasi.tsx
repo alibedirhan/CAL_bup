@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import { VARSAYILAN_AYARLAR, sutunNo, type Ayarlar, type TabloDuzeni } from '../../cekirdek/ayarlar';
+import { ayarGecerli } from '../../cekirdek/ayarDenetimi';
+import { DriveAyarlari } from './drive/DriveAyarlari';
 import { SURUM } from '../../surum';
 import { SayfaBasligi } from '../bilesenler/SayfaBasligi';
 import { TemaSecici } from '../bilesenler/TemaSecici';
@@ -69,7 +71,7 @@ function SayiGirdisi({
       key={deger}
       onBlur={(e) => {
         const n = Number(e.target.value.replace(',', '.'));
-        if (Number.isFinite(n) && n >= en) degisti(n);
+        if (Number.isFinite(n) && n >= en && n <= (en === 0 ? 1000 : 100000)) degisti(n);
         else e.target.value = String(deger).replace('.', ',');
       }}
     />
@@ -95,7 +97,7 @@ function MetinGirdisi({
       key={deger}
       onBlur={(e) => {
         const s = e.target.value.trim();
-        if (s) degisti(s);
+        if (s && s.length <= 256) degisti(s);
         else e.target.value = deger;
       }}
     />
@@ -133,10 +135,16 @@ function DuzenSatiri({
               try {
                 if (anahtar === 'ilkVeriSatiri') {
                   const n = Number(v);
-                  if (!Number.isInteger(n) || n < 1) throw new Error();
+                  if (!Number.isInteger(n) || n < 1 || n > 100000) throw new Error();
                   degisti({ ...duzen, ilkVeriSatiri: n });
                 } else {
-                  sutunNo(v);
+                  if (v.length > 3 || sutunNo(v) > 256) throw new Error();
+                  const kolonlar = { ...duzen, [anahtar]: v };
+                  if (
+                    new Set([kolonlar.kodSutunu, kolonlar.isimSutunu, kolonlar.miktarSutunu].map(sutunNo))
+                      .size !== 3
+                  )
+                    throw new Error();
                   degisti({ ...duzen, [anahtar]: v });
                 }
               } catch {
@@ -151,7 +159,10 @@ function DuzenSatiri({
 }
 
 export function AyarlarSayfasi({ tema, temaDegisti, ayarlar: a, ayarDegisti }: Ozellikler) {
-  const degis = (p: Partial<Ayarlar>) => ayarDegisti({ ...a, ...p });
+  const guvenliDegis = (yeni: Ayarlar) => {
+    if (ayarGecerli(yeni)) ayarDegisti(yeni);
+  };
+  const degis = (p: Partial<Ayarlar>) => guvenliDegis({ ...a, ...p });
 
   return (
     <>
@@ -168,6 +179,8 @@ export function AyarlarSayfasi({ tema, temaDegisti, ayarlar: a, ayarDegisti }: O
           <TemaSecici tercih={tema} degisti={temaDegisti} genis />
         </div>
       </section>
+
+      <DriveAyarlari ayarlar={a} ayarDegisti={guvenliDegis} />
 
       <section className="kart" aria-labelledby="dk-ayar-baslik">
         <h2 id="dk-ayar-baslik">Günlük depo kontrol</h2>
@@ -217,7 +230,7 @@ export function AyarlarSayfasi({ tema, temaDegisti, ayarlar: a, ayarDegisti }: O
             <SayiGirdisi
               id="ilk-satir"
               deger={a.hedefIlkSatir}
-              en={1}
+              en={4}
               degisti={(n) => degis({ hedefIlkSatir: Math.round(n) })}
             />
           </Alan>
@@ -303,7 +316,7 @@ export function AyarlarSayfasi({ tema, temaDegisti, ayarlar: a, ayarDegisti }: O
           </div>
           <div>
             <dt>Dosyalarınız</dt>
-            <dd>Yalnızca bu bilgisayarda işlenir</dd>
+            <dd>Bu bilgisayarda işlenir; Drive’a yalnızca siz gönderirsiniz</dd>
           </div>
           <div>
             <dt>Kaynak kod</dt>

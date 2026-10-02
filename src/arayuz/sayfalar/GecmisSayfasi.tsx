@@ -36,7 +36,7 @@ export function GecmisSayfasi() {
   const csvIndir = () => {
     if (!kayitlar) return;
     const bayt = new TextEncoder().encode(gecmisCsv(kayitlar));
-    indir(bayt, gecmisDosyaAdi());
+    indir(bayt, gecmisDosyaAdi(), 'text/csv;charset=utf-8');
   };
 
   const yedekIndir = async (y: Omit<Yedek, 'bayt'>) => {

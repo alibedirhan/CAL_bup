@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { gunAdi, tarihMetni } from '../../../cekirdek/tarih';
 import { dogrudanKayitVar, XLSX_KABUL } from '../../../platform/dosya';
+import { DriveRaporunuAc } from '../drive/DriveRaporu';
 import { Simge } from '../../bilesenler/Simge';
 import type { DepoKontrol } from './useDepoKontrol';
 
@@ -88,6 +89,8 @@ export function HedefBolumu({ dk }: { dk: DepoKontrol }) {
           <p className="ipucu">Dosyayı LED dosyalarıyla birlikte aşağıya da sürükleyebilirsiniz.</p>
         </div>
       )}
+
+      <DriveRaporunuAc ac={dk.driveHedefAc} mesgul={dk.mesgul !== null} />
 
       {hedef && (
         <div className="tarih-alani">

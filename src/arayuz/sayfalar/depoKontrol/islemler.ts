@@ -4,7 +4,14 @@ import type { Ayarlar } from '../../../cekirdek/ayarlar';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
 import type { Tarih } from '../../../cekirdek/tarih';
 import { dosyaTuru } from '../../../kaynaklar/tani';
-import { dosyaOku, dosyayaYaz, hedefiHatirla, indir, type SecilenDosya } from '../../../platform/dosya';
+import {
+  dosyaOku,
+  dosyayaYaz,
+  hedefiHatirla,
+  indir,
+  yazmaIzni,
+  type SecilenDosya,
+} from '../../../platform/dosya';
 import { gecmiseEkle, yedekAl } from '../../../platform/gecmis';
 import type { GunSecimi } from '../../../raporlar/depoKontrol/gunSecimi';
 import type { DepoKontrolPlani } from '../../../raporlar/depoKontrol/hesapla';
@@ -34,14 +41,18 @@ export async function dosyalariTani(
   const sonuc: BirakmaSonucu = { hedef: null, kaynaklar: {}, reddedilenler: [] };
   for (const { dosya, tanitici } of dosyalar) {
     try {
-      if (!/\.xls[xm]$/i.test(dosya.name)) {
+      if (!/\.xlsx$/i.test(dosya.name)) {
         throw new KullaniciHatasi('Excel dosyası (.xlsx) değil.');
       }
       const okunan = await dosyaOku(dosya, tanitici);
       const { kitap } = await motor.kitapAc(okunan.bayt, okunan.ad);
       const tur = dosyaTuru(kitap, ayarlar);
+      if ((tur === 'depoKontrol' && sonuc.hedef) || (tur && tur !== 'depoKontrol' && sonuc.kaynaklar[tur]))
+        throw new KullaniciHatasi(
+          'Aynı türden iki dosya bırakıldı. İlk dosya korundu; değiştirmek istediğiniz dosyayı tek başına bırakın.',
+        );
       if (tur === 'depoKontrol') sonuc.hedef = okunan;
-      else if (tur) sonuc.kaynaklar[tur] = { dosyaAdi: dosya.name, kitap };
+      else if (tur) sonuc.kaynaklar[tur] = { dosyaAdi: dosya.name, kitap, bayt: okunan.bayt };
       else throw new KullaniciHatasi('LED raporu ya da depo kontrol dosyası olarak tanınmadı.');
     } catch (e) {
       sonuc.reddedilenler.push({
@@ -58,6 +69,9 @@ export interface KayitSonucu {
   kayit: 'dosyaya' | 'indirildi';
   hedef: HedefDosya;
   yedekId: string | null;
+  oncekiBayt: Uint8Array;
+  ledDosyalari: { ad: string; bayt: Uint8Array }[];
+  uyari: string | null;
 }
 
 /**
@@ -76,6 +90,8 @@ export async function kaydet(
 
   if (kip === 'dosyaya') {
     if (!hedef.tanitici) throw new KullaniciHatasi('Bu tarayıcı dosyanın üzerine kaydedemiyor; indirin.');
+    if (!(await yazmaIzni(hedef.tanitici)))
+      throw new KullaniciHatasi('Dosyaya yazma izni verilmedi. Yeni dosya olarak indirebilirsiniz.');
     const disk = await hedef.tanitici.getFile();
     if (disk.lastModified !== hedef.sonDegisiklik) {
       throw new KullaniciHatasi(
@@ -89,28 +105,35 @@ export async function kaydet(
   const sayfa = motor.uygula(taze, secim, plan, ayarlar);
   const bayt = await motor.kitapYaz(taze.excel);
 
+  // Oluşan dosya tekrar açılabilir olmalı; bu kontrol indirme/yazmadan önce yapılır.
+  const yeniHedef = await hedefAc({ ad: hedef.ad, bayt, sonDegisiklik: Date.now() }, ayarlar, bugun);
+  let yenidenAcUyarisi: string | null = null;
   let yedekId: string | null = null;
   if (kip === 'dosyaya' && hedef.tanitici) {
     yedekId = await yedekAl(hedef.ad, hedef.bayt);
+    if (!yedekId)
+      throw new KullaniciHatasi(
+        'Dosyanın yedeği tarayıcıya kaydedilemedi. Üzerine yazılmadı. Yeni dosya olarak indirin veya tarayıcıda site verisine izin verin.',
+      );
+    const sonDisk = await dosyaOku(await hedef.tanitici.getFile());
+    if (sonDisk.bayt.length !== hedef.bayt.length || !sonDisk.bayt.every((b, i) => b === hedef.bayt[i]))
+      throw new KullaniciHatasi('Depo kontrol dosyası işlem sırasında değişti. Yeniden açın.');
     await dosyayaYaz(hedef.tanitici, bayt);
   } else {
     indir(bayt, hedef.ad);
   }
 
-  const sonDegisiklik =
-    hedef.tanitici && kip === 'dosyaya' ? (await hedef.tanitici.getFile()).lastModified : Date.now();
-  const yeniHedef = await hedefAc(
-    {
-      ad: hedef.ad,
-      bayt,
-      sonDegisiklik,
-      ...(kip === 'dosyaya' && hedef.tanitici ? { tanitici: hedef.tanitici } : {}),
-    },
-    ayarlar,
-    bugun,
-  );
+  if (hedef.tanitici && kip === 'dosyaya') {
+    try {
+      yeniHedef.sonDegisiklik = (await hedef.tanitici.getFile()).lastModified;
+      yeniHedef.tanitici = hedef.tanitici;
+    } catch {
+      // Yazma tamamlandı; tekrar yazmayı öneren başarısızlık mesajı gösterilmez.
+      yenidenAcUyarisi = 'Dosya kaydedildi fakat yeniden okunamadı. Sonraki işlem için dosyayı yeniden açın.';
+    }
+  }
 
-  await gecmiseEkle({
+  const gecmisYazildi = await gecmiseEkle({
     zaman: new Date().toISOString(),
     rapor: 'Günlük depo kontrol',
     dosya: hedef.ad,
@@ -125,5 +148,15 @@ export async function kaydet(
     ...(yedekId ? { yedekId } : {}),
   });
 
-  return { sayfa, kayit: kip === 'dosyaya' ? 'dosyaya' : 'indirildi', hedef: yeniHedef, yedekId };
+  return {
+    sayfa,
+    kayit: kip === 'dosyaya' ? 'dosyaya' : 'indirildi',
+    hedef: yeniHedef,
+    yedekId,
+    oncekiBayt: hedef.bayt,
+    ledDosyalari: [],
+    uyari: gecmisYazildi
+      ? yenidenAcUyarisi
+      : 'Dosya hazır ancak geçmiş bu tarayıcıda saklanamadı. Site verisi iznini kontrol edin.',
+  };
 }

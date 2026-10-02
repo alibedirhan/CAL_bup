@@ -230,7 +230,7 @@
 
 .bilgi-satirlari > div {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(80px, 1fr) minmax(0, 3fr);
   gap: 16px;
   padding: 10px 0;
   border-bottom: 1px solid var(--cizgi);
@@ -248,4 +248,5 @@
 .bilgi-satirlari dd {
   margin: 0;
   text-align: right;
+  overflow-wrap: anywhere;
 }

@@ -1,7 +1,7 @@
 {
   "name": "cal-bup",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Bupiliç İzmir deposu için LED çıktılarından günlük rapor hazırlayan tarayıcı uygulaması",
   "type": "module",
   "scripts": {
@@ -42,5 +42,10 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "11.1.1"
+    }
   }
 }
