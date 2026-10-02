@@ -11,6 +11,7 @@ import './arayuz/stiller/bilesenler.css';
 import './arayuz/stiller/formlar.css';
 import './arayuz/stiller/tablo.css';
 import './arayuz/stiller/depoKontrol.css';
+import './arayuz/stiller/pos.css';
 import { Uygulama } from './arayuz/Uygulama';
 import { kayitliTercih, temaUygula } from './arayuz/tema';
 

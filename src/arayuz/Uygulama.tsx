@@ -8,6 +8,7 @@ import { AyarlarSayfasi } from './sayfalar/AyarlarSayfasi';
 import { DepoKontrolSayfasi } from './sayfalar/depoKontrol/DepoKontrolSayfasi';
 import { GecmisSayfasi } from './sayfalar/GecmisSayfasi';
 import { YakindaSayfasi } from './sayfalar/YakindaSayfasi';
+import { SanalPosSayfasi } from './sayfalar/pos/SanalPosSayfasi';
 import { kayitliTercih, temaUygula, type TemaTercihi } from './tema';
 
 function hashDinle(bildir: () => void) {
@@ -55,6 +56,7 @@ export function Uygulama() {
         {!depoKontrolAcik && (
           <div className="sayfa-ic">
             {rota.tur === 'gecmis' && <GecmisSayfasi />}
+            {rota.tur === 'sanal-pos' && <SanalPosSayfasi />}
             {rota.tur === 'ayarlar' && (
               <AyarlarSayfasi tema={tema} temaDegisti={setTema} ayarlar={ayarlar} ayarDegisti={ayarDegisti} />
             )}

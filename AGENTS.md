@@ -106,8 +106,17 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.1.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.2.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
+Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-03 Sanal POS:** Kullanıcı eklenti istemiyor; elle cari adı/numarası kaydetmek ve gerektiğinde
+alanları elle doldurmak istiyor. İlk sürüm ayrı Sanal POS sekmesi, şifreli yerel cari kasası,
+arama/ekleme/düzenleme/silme, sabit giriş bağlantısı, açık kopyalama düğmeleri, şifreli yedek/ekleme ve
+parola değiştirmedir. Kart/fotoğraf/CVV/banka şifresi/ödeme tutarı/sonuç alanı yoktur. Giriş veya ödeme
+yapılmadı; bağlantı tarayıcı testinde taklit sayfaya yönlendirildi. POS oturumu otomatik doğrulanamaz;
+doğru firma adı/numara kontrolü kullanıcıya aittir. Gerçek giriş bilgilerini koda/teste/belgeye ekleme.
+Fotoğraftan okuma ve ödeme/hata geçmişi sonraki ayrı aşamalardır; tamamlandı diye sunma.
 
 **2026-10-02 oturum devri:** Kullanıcı plandaki uygulanabilir işleri tamamlamayı, genel tarama ve
 hata düzeltmelerini yetkilendirdi. Önceki oturumda depo/yayın komutlarının asistan tarafından

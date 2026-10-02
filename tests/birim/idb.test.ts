@@ -6,6 +6,16 @@ afterEach(() => {
 });
 
 describe('IndexedDB aktarım doğrulaması', () => {
+  it('kesin okumada depo hatasını iletir; rapor okuması önceki toleranslı davranışı korur', async () => {
+    vi.stubGlobal('indexedDB', {
+      open: () => {
+        throw new Error('Depo kapalı');
+      },
+    });
+    const idb = await import('../../src/platform/idb');
+    await expect(idb.okuKesin('hassas-kayit')).rejects.toThrow(/kapalı/);
+    expect(await idb.oku('rapor')).toBeUndefined();
+  });
   it('istek başarılı olup aktarım iptal olursa yazılmış saymaz', async () => {
     const aktarim = {
       oncomplete: null as (() => void) | null,

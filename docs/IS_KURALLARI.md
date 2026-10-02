@@ -116,3 +116,12 @@ tutmazsa Hata; tutuyor ama uyarı varsa Uyarı; yoksa Tamam.
 - Drive isteğe bağlıdır. Dosya/önceki yedek ayrı kopya, LED dosyaları ayrıca seçilirse gönderilir.
   Aynı türde aynı içeriğin yeniden gönderilmesi mevcut kopyayı kullanır. Geçmiş son 500 kaydı tutar;
   rapor ayarları kullanıcının açık seçimiyle geri alınır. Ayrıntılar: [DRIVE.md](DRIVE.md).
+
+## Sanal POS cari yardımı (1.2.0)
+
+Cari adı ve vergi/TC numarası elle kaydedilir; aynı ad veya numaraya ikinci kayıt açılmaz.
+Numara metin olarak korunur, POS kullanıcı alanında da kullanılır. POS giriş şifresi mevcut
+sağlayıcı kuralına göre işlem anında hazırlanır; kaydedilmez. Cari listesi parola ile şifrelenir,
+rapor/Drive kaydına girmez. POS bağlantısı giriş sayfasını açar; doğru cari oturumunu otomatik
+açtığı veya doğruladığı iddia edilmez. Kullanıcı önceki oturumdan çıkar, giriş yapar ve firma
+adı/numarasını karşılaştırır. Kart ve ödeme alanları bu sürümde yoktur. Ayrıntı: [SANAL_POS.md](SANAL_POS.md).

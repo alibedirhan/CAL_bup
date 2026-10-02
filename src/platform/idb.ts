@@ -48,9 +48,14 @@ function islem<T>(kip: IDBTransactionMode, is: (d: IDBObjectStore) => IDBRequest
   );
 }
 
+/** Hassas kayıtlarda depo hatası "kayıt yok" sayılmamalı. */
+export async function okuKesin<T>(anahtar: string): Promise<T | undefined> {
+  return (await islem('readonly', (d) => d.get(anahtar))) as T | undefined;
+}
+
 export async function oku<T>(anahtar: string): Promise<T | undefined> {
   try {
-    return (await islem('readonly', (d) => d.get(anahtar))) as T | undefined;
+    return await okuKesin<T>(anahtar);
   } catch {
     return undefined; // gizli pencere ya da engellenmiş depo: uygulama yine çalışır
   }

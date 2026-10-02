@@ -41,6 +41,9 @@ useDepoKontrol (React)  ──  oturum.ts: azalt(eylem) + turet(durum) → ekran
 
 ## Yeni rapor eklemek
 
+Sanal POS bir rapor değildir: ayrı rota ve şifreli yerel kasa kullanır. Cari bilgisi rapor/Drive
+geçmişine karışmaz. Veri sınırları, şifreleme, eşzamanlı kayıt ve elle işlem akışı: [SANAL_POS.md](SANAL_POS.md).
+
 1. `src/raporlar/kayit.ts`'ye bir kayıt ekleyin (`durum: 'yapimda'`).
 2. Gerekirse `src/kaynaklar/`'a yeni LED okuyucusu (dosyayı içeriğinden tanıyan bir `tani` işleviyle).
 3. `src/raporlar/<id>/` altında `hesapla()` (saf, birim testli) ve `uygula()` (kitaba yazar).

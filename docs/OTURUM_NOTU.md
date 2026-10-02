@@ -1,3 +1,40 @@
+# 3 Ekim 2026 — 1.2.0 Sanal POS cari yardımı
+
+Kullanıcı eklentisiz çalışmayı, cari adı/numarasını elle kaydetmeyi ve kart alanlarını gerektiğinde
+elle doldurmayı seçti. İşlemlerin yapılması, denetlenmesi, sorunların düzeltilmesi ve gerekli
+iyileştirmeler yetkilendirildi. Başlangıç temiz `main`, commit `63e91fa`.
+
+- Ayrı Sanal POS sekmesi: elle cari kaydı, Türkçe arama, düzenleme/silme, aynı ad/numara çakışması.
+- Parolalı yerel kasa: PBKDF2-SHA256 600.000, AES-256-GCM; kalıcı kayıtta yalnızca şifreli zarf.
+- Beş dakika boşta, bölümden çıkış, kapanış ve bfcache dönüşünde kilit. Geç gelen işlem anahtarı
+  tekrar açamaz. Aynı anda işlem ve iki sekme çakışmaları engellenir.
+- Sabit POS giriş bağlantısı, numara ve işlemde üretilen şifreyi kullanıcı isteğiyle kopyalama,
+  panoya izin verilmiyorsa elle gösterme. Doğru firma kontrolü kullanıcıya aittir.
+- Şifreli `.calpos` yedeği, başka kasaya ekleme (çelişkide tamamen durur), parola değiştirme.
+  Drive ve rapor kayıtlarına cari bilgisi eklenmedi.
+- Kart/fotoğraf/CVV/banka şifresi/ödeme tutarı/ödeme sonucu alanı yok. Gerçek POS'a giriş veya ödeme
+  yapılmadı. Kart okuma ve ödeme/hata geçmişi sonraki ayrı aşamalardır.
+- IndexedDB okuma hatasını boş kasa saymayan `okuKesin`; mevcut raporların toleranslı `oku` davranışı
+  korunur. Şifreli zarf boyutu yazmadan önce kontrol edilir; bozuk/ek alan/KDF maliyeti reddedilir.
+- Kullanım, gizlilik ve teknik sınırlar [SANAL_POS.md](SANAL_POS.md) içinde.
+
+Doğrulama:
+
+- `npm run kontrol`: 21 test dosyasında **260 test**, tip/lint/biçim/derleme başarılı; yerel gerçek
+  Excel/ikiz altın testleri dahil. Bağımlılık eklenmedi; `npm audit` 0 bilinen açık.
+- `/tmp/cal-bup-pos-browser.mjs`: Chromium, gerçek IndexedDB/Web Crypto/pano. Elle kayıt,
+  çakışma, düz metin sızıntısı denetimi, yanlış parola, rota kilidi, iki sekme, silme/yedekten ekleme,
+  parola değiştirme, beş dakika kilidi, açık/koyu/dar ekran ve yatay taşma kontrolleri başarılı.
+  POS bağlantısı taklit edildi; dış servis çağrısı yapılmadı. JS sayfa hatası yok.
+- `/tmp/cal-bup-pos-hatalar.mjs`: engelli depo, pano izni reddi/elle giriş, sayfa dönüş kilidi ve
+  bozuk kaydın korunması gerçek tarayıcıda başarılı. Saat geri alma, açarken iptal ve mevcut kasayı
+  tekrar oluşturma birim testlerine eklendi.
+- Görüntüler `/tmp/cal-bup-pos-acik.png`, `/tmp/cal-bup-pos-koyu.png`, `/tmp/cal-bup-pos-dar.png`;
+  yapay yedek `/tmp/cal-bup-pos-yedek.calpos`. Proje/Git dışıdır.
+
+Gerçek Windows Chrome/Edge kullanımı ve kullanıcının doğru firma kontrolü kullanıcıyla denenir;
+otomatik oturum/ödeme doğrulaması yapılmış gibi anlatılmamalıdır.
+
 # 2 Ekim 2026 — 1.1.0 geliştirme ve doğrulama
 
 Kullanıcı yol haritasındaki uygulanabilir işleri ve genel tarama/düzeltmeleri yetkilendirdi.

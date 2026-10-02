@@ -52,6 +52,18 @@ export function KenarCubugu({ rota, tema, temaDegisti }: Ozellikler) {
         })}
       </nav>
 
+      <nav className="menu" aria-label="İşlemler">
+        <div className="etiket">İşlemler</div>
+        <a
+          className="menu-oge"
+          href="#/sanal-pos"
+          aria-current={rota.tur === 'sanal-pos' ? 'page' : undefined}
+        >
+          <Simge ad="kart" />
+          Sanal POS
+        </a>
+      </nav>
+
       <nav className="menu" aria-label="Kayıtlar">
         <div className="etiket">Kayıtlar</div>
         <a className="menu-oge" href="#/gecmis" aria-current={rota.tur === 'gecmis' ? 'page' : undefined}>

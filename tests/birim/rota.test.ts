@@ -11,6 +11,7 @@ describe('rotaCoz', () => {
   it('bilinen sayfaları tanır', () => {
     expect(rotaCoz('#/gecmis')).toEqual({ tur: 'gecmis' });
     expect(rotaCoz('#/ayarlar')).toEqual({ tur: 'ayarlar' });
+    expect(rotaCoz('#/sanal-pos')).toEqual({ tur: 'sanal-pos' });
     expect(rotaCoz('#/rapor/envanter')).toEqual({ tur: 'rapor', id: 'envanter' });
   });
 
@@ -20,7 +21,12 @@ describe('rotaCoz', () => {
   });
 
   it('adres ve çözüm birbirinin tersidir', () => {
-    for (const r of [ACILIS, { tur: 'gecmis' } as const, { tur: 'ayarlar' } as const]) {
+    for (const r of [
+      ACILIS,
+      { tur: 'gecmis' } as const,
+      { tur: 'ayarlar' } as const,
+      { tur: 'sanal-pos' } as const,
+    ]) {
       expect(rotaCoz(rotaAdresi(r))).toEqual(r);
     }
   });
