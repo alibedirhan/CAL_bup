@@ -17,12 +17,25 @@ Bupiliç İzmir Bölge Deposu için LED çıktılarından günlük raporları ha
 | Bakiye              | Yakında |
 | Palet / kasa        | Yakında |
 
+## Sanal POS
+
+Sanal POS bölümünde cari seçince **Kayıtlı kartlar → Kart ekle** görünür. Kart bilgileri elle
+eklenebilir veya fotoğraftan numara/tarih okunabilir. Kart adı, kart sahibi ve isteğe bağlı iletişim
+telefonu aynı cari altında tutulur; fotoğraf, CVV ve banka doğrulama kodu kaydedilmez.
+
+Günlük açılış PIN’sizdir; eski kasa için yalnızca ilk geçişte mevcut PIN gerekir. Kayıtlar bu
+tarayıcıda şifrelidir; bu tarayıcıyı kullanan kişiler erişebilir. Başka bilgisayara aktarım için
+ayrı uzun parolayla **Cari ve kart yedeği** indirilir. Kart numarası POS’a otomatik aktarılmaz;
+firma kontrolünden sonra gösterme/kopyalama kullanılır. Tutar ve banka doğrulaması POS’ta tamamlanır.
+
 ## Geliştirme
 
 ```sh
 npm ci            # bağımlılıklar
 npm run dev       # yerel sunucu: http://localhost:5173/CAL_bup/
 npm run kontrol   # tip denetimi + lint + biçim + test + derleme (yayından önce hepsi geçmeli)
+npx playwright install chromium  # ilk tarayıcı testi kurulumu
+npm run test:tarayici             # gerçek Chromium/IndexedDB/OCR ile uçtan uca testler
 ```
 
 `main` dalına gönderilen her değişiklik GitHub Actions'ta denetlenir ve geçerse siteye yayınlanır.

@@ -1,0 +1,10 @@
+Yerel fotoğraf okuma üçüncü taraf bileşenleri
+
+Tesseract.js 7.0.0: https://github.com/naptha/tesseract.js (Apache-2.0)
+Lisans: TESSERACT-LICENSE
+Tesseract.js core 7.0.0: https://github.com/naptha/tesseract.js-core (Apache-2.0)
+Lisans: CORE-LICENSE
+İngilizce model: @tesseract.js-data/eng 1.0.0, 4.0.0_best_int/eng.traineddata.gz
+Model kaynağı: https://github.com/naptha/tessdata (Apache-2.0)
+Lisans: TESSDATA-LICENSE
+Model kaynak lisansı sürümü: 806cd9adc8c6e8abc11c782db1818c990576bebc

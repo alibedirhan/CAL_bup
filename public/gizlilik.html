@@ -21,31 +21,44 @@
         Tarayıcı site verisini temizlerseniz yerel kayıtlar silinir. Bilgisayarınızdaki Excel dosyaları bundan
         etkilenmez.
       </p>
-      <h2>Sanal POS cari kasası</h2>
+      <h2>Sanal POS cari profili ve kartlar</h2>
       <p>
-        Elle kaydettiğiniz cari adları ve vergi/TC numaraları ayrı bir kasa parolasıyla şifrelenerek bu
-        tarayıcıda tutulur. Günlük PIN/parola, oturum şifreleme anahtarı ve POS giriş şifresi kalıcı kayda
-        eklenmez. Rastgele, dışa aktarılamayan cihaz anahtarı bu tarayıcıda tutulur; kısa PIN ile açılışta
-        kullanılır. Cari listesi rapor geçmişine veya Google Drive eşitlemesine dahil edilmez.
+        Kaydettiğiniz cari adları, vergi/TC numaraları ve isim verdiğiniz kartların numarası, son kullanma
+        tarihi, kart sahibi ve isteğe bağlı iletişim telefonu bu tarayıcıda şifreli tutulur. Rastgele, dışa
+        aktarılamayan AES cihaz anahtarı aynı tarayıcıda saklanır. Günlük PIN sorulmaz; bu tarayıcı profilini
+        kullanan kişiler kayıtlara erişebilir. Bu, kullanıcı doğrulaması veya donanım kasası değildir.
+        Cari/kart kayıtları rapor geçmişine veya Google Drive eşitlemesine dahil edilmez.
       </p>
       <p>
-        Kasa bölümden çıkınca veya 30 dakika kullanılmayınca kilitlenir. Şifreli cari yedeğini indirdiğinizde
-        dosya bilgisayarınızda saklanır; açılması için yedeği hazırlarken belirlediğiniz ayrı uzun yedek
-        parolası gerekir. Eski sürüm yedekleri eski uzun kasa parolasıyla açılır. Unutulan PIN veya parola
-        kurtarılamaz. Tarayıcı site verileri temizlenirse bu liste de silinir.
+        Eski kasadaki cariler mevcut PIN veya parola bir kez girilerek taşınır. Şifreli cari ve kart yedeği
+        indirdiğinizde dosya bilgisayarınıza kaydedilir; açılması için ayrı uzun yedek parolası gerekir. Eski
+        cari yedekleri de okunur. Unutulan eski PIN/yedek parolası kurtarılamaz. Tarayıcı site verileri
+        temizlenirse yerel kayıtlar silinir; geri getirmek için taşınabilir yedek gerekir. Kayıt silmek daha
+        önce indirdiğiniz yedekleri veya bilgisayarınızdaki özgün fotoğrafı silmez.
       </p>
       <p>
-        Giriş bilgileri yalnızca sizin kopyalama düğmesine basmanızla bilgisayarın panosuna yazılır. Pano
-        geçmişine ve diğer uygulamaların panoya erişimine dikkat edin. “POS’u aç” düğmesi seçtiğiniz carinin
-        vergi/TC numarasını, kullanıcı numarasını ve giriş şifresini doğrudan Bupiliç POS’unun HTTPS giriş
-        sayfasına gönderir. Kasa PIN’i ve cari adı gönderilmez; bilgiler adrese eklenmez. Yanıt yeni sekmede
-        açılır. CAL bup POS oturumunu otomatik okuyamaz veya doğru carinin açıldığını doğrulayamaz. “Giriş
-        sayfasını elle aç” yalnızca sayfayı açar, giriş bilgilerini göndermez.
+        Kart fotoğrafı isteğe bağlı seçilir ve bu tarayıcıdaki metin okuma aracıyla numara/tarih adayları
+        bulunur. Fotoğraf dış bir hizmete gönderilmez, kaydedilmez; ham okuma metni saklanmaz. Fotoğraf okuma
+        dosyaları sitenin kendi adresinden yüklenir. Kaydetmeden önce bilgileri kendiniz kontrol etmeniz
+        gerekir. CVV/CVC, banka PIN’i, SMS/doğrulama kodu ve ödeme tutarı/sonucu için kayıt alanı yoktur. Kart
+        sahibinin iletişim telefonu bankadaki telefonu veya SMS hedefini değiştirmez.
       </p>
       <p>
-        Bu sürüm kart fotoğrafı, kart numarası, CVV, banka şifresi veya ödeme sonucu almaz; ödeme POS/banka
-        ekranlarında sizin tarafınızdan yapılır. Şifreleme, açık oturumun kötü amaçlı yazılımlara karşı
-        tamamen korunacağı anlamına gelmez.
+        Kart numarası listede maskelidir; gösterme/kopyalama firma kontrolü ve açık düğme ister. Sekme
+        gizlendiğinde veya iki dakika kullanılmadığında açık numara/form kapanır. Bu, profile erişimi
+        engelleyen bir kilit değildir. Kopyalama düğmeleri bilgiyi bilgisayarın panosuna yazar; pano geçmişi
+        ve başka uygulamalar bu bilgiye erişebilir.
+      </p>
+      <p>
+        “POS’u aç” seçtiğiniz carinin vergi/TC numarasını, kullanıcı numarasını ve giriş şifresini doğrudan
+        Bupiliç POS’unun HTTPS giriş sayfasına gönderir. Kart/telefon/cari adı gönderilmez; bilgiler adrese
+        eklenmez. Yanıt yeni sekmede açılır. CAL bup giriş sonucunu veya doğru carinin açıldığını okuyamaz.
+        “Giriş sayfasını elle aç” yalnızca sayfayı açar, giriş bilgilerini göndermez. Otomatik kart doldurma
+        veya SMS başlatma entegrasyonu yoktur; tutar ve banka doğrulaması POS/banka ekranında tamamlanır.
+      </p>
+      <p>
+        Şifreleme açık tarayıcı oturumunu kötü amaçlı yazılımlara veya aynı tarayıcıya erişen kişilere karşı
+        tamamen korumaz; kart saklamak için PCI uyumluluğunun kanıtı değildir.
       </p>
       <h2>İsteğe bağlı Google Drive</h2>
       <p>

@@ -35,10 +35,11 @@ npm ci              # bağımlılıklar
 npm run dev         # http://localhost:5173/CAL_bup/
 npm test            # birim + (varsa) gerçek dosyalı altın testler
 npm run kontrol     # tip + lint + biçim + test + derleme — her değişiklikten sonra geçmeli
+npm run test:tarayici # derlenmiş uygulamada sentetik Chromium/IndexedDB/OCR denemeleri
 npm run bicim       # Prettier ile biçimle
 ```
 
-`main` dalına gönderilen her commit GitHub Actions'ta `npm run kontrol`'den geçer ve geçerse siteye
+`main` dalına gönderilen her commit GitHub Actions'ta `npm run kontrol` ve `npm run test:tarayici`'den geçer ve geçerse siteye
 yayınlanır (`.github/workflows/yayin.yml`). Yani **main'e push = yayın**.
 
 ## Klasör haritası
@@ -92,8 +93,9 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
   `gercekExcel.test.ts` (gerçek depo kontrol dosyasında 30.09 silinip yeniden oluşturulur; elle hazırlanmış
   sayfayla hücre hücre karşılaştırılır; diğer sayfalar değişmemeli; çıktı `ornekler/cikti_30.09.xlsx`).
 - Doğrulanmış rakamlar `ornekler/beklenen.json`'dadır (git dışı).
-- Tarayıcıda uçtan uca deneme kalıcı değildir; gerekirse Playwright ile `vite preview` üzerinde gerçek
-  dosyaları LED dosya girişine (`input[type=file][multiple]`) verip inen dosyayı altın çıktıyla karşılaştır.
+- Sanal POS’un sentetik tarayıcı denemeleri `tests/tarayici/` içinde CI’da kalıcıdır; Playwright Chromium
+  kurulumu `npx playwright install chromium`. LED gerçek dosya denemeleri yerelde ve Git dışındadır.
+  Gerekirse `vite preview` üzerinde dosyaları girişe verip inen dosyayı altın çıktıyla karşılaştır.
 - Gerçek Excel'de açma, dosyanın üzerine kaydetme (File System Access) ve Excel açıkken kaydetme yalnızca
   kullanıcının Windows bilgisayarında denenebilir; bunları kullanıcıdan iste.
 
@@ -106,9 +108,21 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.3.1. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.4.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-03 profil tamamlaması (1.4.0):** Kullanıcı eksik kalan Sanal POS işlerinin tamamlanmasını
+istedi. Gerçek cari profilinde kart ekleme/düzenleme/silme, isimli maskeli kartlar, iletişim telefonu,
+kontrollü gösterme/kopyalama ve yerel fotoğraftan numara/tarih okuma uygulandı. Günlük PIN kaldırıldı;
+rastgele AES cihaz anahtarı aynı tarayıcıda olduğundan bu profile erişen kişi veriyi açabilir.
+Eski v1/v2 kasa mevcut PIN/parolayla bir kez taşınır; cariler/kimlikler korunur. Uzun parolalı kartlı
+şifreli yedek, eski yedek uyumu, çoklu sekme çakışma ve iptal/hata denetimleri vardır.
+İlk [profil planı](docs/SANAL_POS_PROFIL_PLANI.md) tarihsel belgedir; güncel davranış SANAL_POS.md’dedir.
+Telefon kart başına isteğe bağlı varsayımıdır, kullanıcıya soruldu; yanıt yok. Banka SMS hedefi değişmez.
+Gerçek kart fotoğrafı CVV içerir; kod/test/Git/yayın/önizlemeye koyma. CVV/OTP/fotoğraf/ham OCR saklanmaz.
+Otomatik kart aktarımı/SMS başlatma uygulanmış değildir; sağlayıcı sözleşmesi doğrulanmadan ödeme
+alanlarını/uçlarını tahmin etme. Aşağıdaki eski sürüm kayıtları tarihsel bağlamdır, güncel özellik değildir.
 
 **2026-10-03 seçilen cariyle giriş:** Kullanıcı “POS’u aç” ile doğrudan seçilen carinin hesabının
 açılmasını istedi. Düğme numara/kullanıcı/türetilen giriş şifresini sabit HTTPS giriş sayfasına yerel

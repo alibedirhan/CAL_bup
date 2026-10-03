@@ -117,18 +117,36 @@ tutmazsa Hata; tutuyor ama uyarı varsa Uyarı; yoksa Tamam.
   Aynı türde aynı içeriğin yeniden gönderilmesi mevcut kopyayı kullanır. Geçmiş son 500 kaydı tutar;
   rapor ayarları kullanıcının açık seçimiyle geri alınır. Ayrıntılar: [DRIVE.md](DRIVE.md).
 
-## Sanal POS cari yardımı (1.3.1)
+## Sanal POS cari profili ve kartlar (1.4.0)
 
 Cari adı ve vergi/TC numarası elle kaydedilir; aynı ad veya numaraya ikinci kayıt açılmaz.
-Numara metin olarak korunur, POS kullanıcı alanında da kullanılır. POS giriş şifresi mevcut
-sağlayıcı kuralına göre işlem anında hazırlanır; kaydedilmez. Cari listesi parola ile şifrelenir,
-rapor/Drive kaydına girmez. Kaydetme sonrası cari otomatik seçilir. “POS’u aç” seçilen carinin
-numara/kullanıcı/giriş şifresini doğrudan POS’a POST ile gönderir; kabul edilirse cari hesabı açılır.
-Gerçek hesapla henüz doğrulanmadı; CAL bup giriş sonucunu veya doğru cari oturumunu okuyamaz.
-Kullanıcı önceki oturumdan çıkar, girişten sonra firma
-adı/numarasını karşılaştırır. Kart ve ödeme alanları bu sürümde yoktur. Ayrıntı: [SANAL_POS.md](SANAL_POS.md).
+Numara metin olarak korunur, POS kullanıcı alanında da kullanılır. POS giriş şifresi sağlayıcı
+kuralına göre işlem anında hazırlanır; kaydedilmez. Kaydetme sonrası cari otomatik seçilir.
+“POS’u aç” yalnızca seçilen carinin giriş bilgilerini sabit sağlayıcı adresine POST eder.
+Kullanıcı girişin çalıştığını bildirdi; uygulama sonucu/firma oturumunu okuyamaz. Kullanıcı eski
+oturumdan çıkar, açılan firma adı/numarasını karşılaştırır ve kontrol kutusunu işaretler.
 
-Günlük kasa açılışı bu tarayıcıya bağlı 4–12 rakamlık PIN veya uzun parola ile yapılır. Otomatik
-kilit 30 dakikadır; açık POS sekmesine müdahale etmez. Kilit sonrası açılışta seçili cari geri gelir,
-firma kontrolü yeniden gerekir. Taşınabilir yedek için ayrı en az 14 karakterlik uzun parola kullanılır.
-Eski kasa/yedekler mevcut uzun parolalarıyla çalışır. PIN değişikliği carileri korur.
+Her kart kalıcı cari kimliğine bağlıdır; kart adı, numara, son kullanma, kart sahibi ve isteğe bağlı
+iletişim telefonu elle kaydedilir. Fotoğraf numara/tarih adaylarını yerelde okuyabilir; gözden geçirme
+ve kayıt ayrı kullanıcı adımıdır. CVV/CVC, banka PIN’i, SMS/OTP, fotoğraf veya ham OCR saklanmaz.
+Telefon bankanın SMS hedefini değiştirmez. Tutar ve banka doğrulaması POS/banka ekranında yapılır;
+kartı POS’a otomatik doldurma veya SMS başlatma için doğrulanmış entegrasyon bulunmamaktadır.
+
+- 500 cari, cari başına 10 kart; şifreli zarf/yedek toplamı 2 MiB’yi geçemez.
+- Numara 12–19 ASCII rakam ve Luhn; telefon isteğe bağlı Türkiye cep telefonu biçimidir.
+  Biçim kontrolü kart/telefon sahipliği doğrulaması değildir.
+- Aynı caride aynı numara tekrar eklenmez; mevcut kartın bağlı carisi değiştirilmez.
+- İlk açılışta kart kendiliğinden seçilmez. Cari veya veri değişiminde kart seçimi/firma beyanı sıfırlanır;
+  yeni POS açılışı ve kart değişimi firma beyanını sıfırlar. Numara varsayılan maskelidir.
+- Tam numara gösterme/kopyalama açık kullanıcı adımı ve firma kontrolü ister. Gizli sekme veya iki dakika
+  boşta açık numara/form kapanır; açık POS sekmesine müdahale edilmez.
+- Son kullanma ayı boyunca kart geçerlidir. Süresi geçmiş kart düzenlenebilir/silinebilir;
+  işlem için seçilemez ve yeni kayıt olarak kaydedilemez.
+- Cari silme bağlı kartları onayla birlikte atomik siler. Geri yükleme maskeli inceleme ve açık onay
+  ister; çelişkide tüm aktarım durur, mevcut bilgiler sessizce ezilmez.
+
+Günlük açılışta PIN sorulmaz; dışa aktarılamayan AES-GCM anahtarı bu tarayıcıda saklanır.
+Bu tarayıcıya erişen kişi veriyi açabilir; kullanıcı doğrulaması değildir. Eski kasa mevcut
+PIN/parolayla bir kez taşınır, cari kimlikleri korunur. Yanlış parola/geçiş hatası eski kaydı korur.
+Taşınabilir cari/kart yedeği ayrı en az 14 karakterlik uzun parola kullanır; eski cari yedekleri okunur.
+Veriler rapor/Drive kaydına girmez. Ayrıntı: [SANAL_POS.md](SANAL_POS.md).

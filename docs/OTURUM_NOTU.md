@@ -1,3 +1,58 @@
+# 3 Ekim 2026 — 1.4.0 gerçek cari profili ve kart yönetimi
+
+Kullanıcı tasarımda kalan kart alanlarını gerçek programda göremediğini bildirdi ve tüm eksik uygulama
+işlerinin tamamlanmasını istedi. Önceki yayın yetkisi sürüyor. Artık ilk örnek HTML yerine uygulamanın
+Sanal POS rotasına bağlı cari profili/kart ekleme/düzenleme/silme, maskeli seçim, iletişim telefonu ve
+firma kontrolü ardından numara/tarih/ad gösterme-kopyalama vardır. Tutar ve banka doğrulaması POS’tadır.
+
+- Günlük PIN kaldırıldı; dışa aktarılamayan rastgele AES-256-GCM cihaz anahtarıyla şifreli yerel profil.
+  Aynı tarayıcıya erişen kişi kayıtları açabilir; kullanıcı doğrulaması/PCI uyumu iddiası yoktur.
+- Eski v1/v2 kasada PIN/parola bir kez gerekir; kimlikler korunur, atomik geçiş ve önceden eski cari
+  yedeği indirme vardır. Okuma/anahtar/bozuk kayıt hatası boş profil sayılmaz. Eski günlük kilit UI kaldırıldı.
+- Kartlı taşınabilir şifreli yedek ayrı uzun parola ister; eski cari yedekleri okunur. Maskeli inceleme,
+  açık birleştirme onayı ve çelişkide tamamen durma vardır; telefon/kart sessizce ezilmez.
+- Gerçek yerel OCR Tesseract.js 7.0.0; worker/WASM/model kendi yayınımızda, harici servis/CDN yok.
+  Yalnızca numara/tarih adayları, manuel kontrol zorunlu; 10 MiB/20 MP/90 saniye sınırı ve iptal temizliği.
+  Gerçek fotoğraf hiçbir teste/varlığa konmadı. CVV/OTP/fotoğraf/ham OCR depoya yazılmaz.
+- Saf kart/profil/fotoğraf kuralları core’da; Web Crypto/IndexedDB/OCR platform’da; UI ayrı bileşenlerde.
+  Çoklu sekme eski kaydı ezemez, geç işlem iptali/rota çıkışı nesil denetimli; gizli/boşta form kapanır.
+- Kalıcı Playwright testleri ve CI tarayıcı aşaması eklendi. Sentetik Chromium’da profil kalıcılığı,
+  iki cari bağı, gerçek yerel OCR ve iptal, düzenleme/silme, taşınabilir yedek, çoklu sekme, eski kasa
+  geçişi/ön yedek ve engellenmiş depoda yeniden deneme vardır. Taklit POS formu gerçek ödeme yapmaz.
+- Otomatik POS kart doldurma/SMS başlatma için sağlayıcı sözleşmesi bulunamadı/doğrulanmadı;
+  kullanıcıya entegrasyon dokümanı soruldu, yanıt bekleniyor. Giriş POST’u kart API’si diye kullanılmadı.
+
+Yerel doğrulama başarılı: `npm run kontrol` (24 dosya / 325 test, tip/lint/biçim/derleme),
+`npm run test:tarayici` (8 senaryo), `npm audit` (bilinen açık yok), `git diff --check`.
+Yayın `main` gönderiminden sonra GitHub Actions’ın aynı kontrolleri geçmesine bağlıdır.
+
+# 3 Ekim 2026 — cari profili / kayıtlı kartlar planı ve ilk tasarım
+
+Kullanıcı seçilen cariyle girişin çalıştığını bildirdi. Günlük kasa PIN’i istemiyor; cari profilinde
+isimli kartlar, elle numara/tarih/kart sahibi ekleme, iletişim telefonu ve sonrasında fotoğraftan
+okuma istedi. Önce iyi bir plan ve dikkatli tasarım talep etti. Üretim sürümü **1.3.1 olarak kaldı**;
+kart saklama veya PIN kaldırma uygulanmadı/yayımlanmadı.
+
+- Ayrıntılı plan: [SANAL_POS_PROFIL_PLANI.md](SANAL_POS_PROFIL_PLANI.md). Mevcut kasadan bir kez
+  eski PIN/parola ile kayıpsız geçiş, PIN’siz yerel şifreleme, ayrı uzun parolalı yedek ve katmanlar tanımlı.
+- Telefonun kart başına mı cari başına mı olacağı soruldu. Henüz yanıt yok; ilk tasarım kart başına
+  isteğe bağlı iletişim telefonu varsayıyor. Bu alan bankanın SMS/mobil doğrulama hedefini değiştirmez.
+- Etkileşimli önizleme `/tmp/cal-bup-pos-profil-tasarimi/` içinde; tüm veriler yapaydır. Cari arama,
+  kart seçimi, elle ekleme/düzenleme/silme/iptal ve açık/koyu/dar görünüm vardır. Cari değişimi,
+  yeniden POS adımı ve kart değişiminde seçim/kontrol/açık numara temizliği denendi.
+  Tek dosyalı çevrimdışı çıktı üst çalışma klasöründe `Sanal POS profil tasarimi.html` olarak
+  teslim edildi; gömülü varlıklar ve içerik güvenliği politikası Chromium’da ayrıca denendi.
+- Önizleme depoya/panoya yazmaz, gerçek POS’a veya harici adrese bağlanmaz. Fotoğraf/OCR,
+  otomatik kart aktarımı, cari kayıt formu ve gerçek şifreli depo ilk tasarımın parçası değildir.
+- Sağlanan gerçek fotoğraf CVV içerir; test, kod, Git, önizleme ve yayın varlıklarında kullanılmadı.
+  CVV/OTP/fotoğraf/ham OCR saklanmayacak. Sağlayıcı kart aktarım sözleşmesi henüz doğrulanmadı.
+- Chromium önizleme denemeleri ve `npm run kontrol` geçti: 22 dosyada 286 test. Tasarım denemeleri
+  üretimde kart güvenliğinin veya sağlayıcı entegrasyonunun doğrulanması diye sunulmaz.
+
+Sıradaki uygulama: planın saf kart/telefon kuralları ve eski kasa dönüşüm sözleşmesi; ardından
+PIN’siz şifreli depo/yedek, sonra gerçek profil ekranları. Fotoğraftan okuma ve sağlayıcının
+desteklediği otomatik kart aktarımı ayrı sonraki aşamalar.
+
 # 3 Ekim 2026 — 1.3.1 seçilen cariyle POS giriş isteği
 
 Kullanıcı nerede kaldığımızı sordu; eksik olarak cari kaydından sonra “POS’u aç” dediğinde doğrudan

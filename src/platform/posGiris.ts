@@ -55,7 +55,7 @@ export async function posBilgisiniKopyala(metin: string): Promise<void> {
     await navigator.clipboard.writeText(metin);
   } catch {
     throw new KullaniciHatasi(
-      'Kopyalama izni verilmedi. “Giriş bilgilerini göster” ile elle yazabilirsiniz.',
+      'Kopyalama izni verilmedi. İlgili bilgiyi ekranda gösterip elle yazabilirsiniz.',
     );
   }
 }

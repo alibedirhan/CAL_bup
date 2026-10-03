@@ -8,12 +8,28 @@ interface Ozellikler {
   cari: PosCari;
   izin: () => boolean;
   bildir: (mesaj: string, hata?: boolean) => void;
+  firmaKontrolu?: (onay: boolean) => void;
+  girisBasladi?: () => void;
+  gizlilikNo?: number;
+  firmaDogrulandi?: boolean;
+  baslik?: string;
 }
 
-export function PosGirisYardimi({ cari, izin, bildir }: Ozellikler) {
-  const [goster, setGoster] = useState(false);
+export function PosGirisYardimi({
+  cari,
+  izin,
+  bildir,
+  firmaKontrolu,
+  girisBasladi,
+  gizlilikNo = 0,
+  firmaDogrulandi,
+  baslik,
+}: Ozellikler) {
+  const [gosterNo, setGosterNo] = useState<number | null>(null);
+  const goster = gosterNo === gizlilikNo;
   const [acildi, setAcildi] = useState(false);
-  const [dogrulandi, setDogrulandi] = useState(false);
+  const [onayNo, setOnayNo] = useState<number | null>(null);
+  const dogrulandi = firmaDogrulandi ?? onayNo === gizlilikNo;
   const kopyala = (tur: 'numara' | 'sifre') => {
     if (!izin()) return;
     const metin = tur === 'numara' ? cari.numara : posGirisSifresi(cari.numara);
@@ -34,7 +50,7 @@ export function PosGirisYardimi({ cari, izin, bildir }: Ozellikler) {
   return (
     <section className="kart one-cikan" aria-labelledby="pos-giris-baslik">
       <span className="etiket">Seçilen cari</span>
-      <h2 id="pos-giris-baslik">{cari.ad}</h2>
+      <h2 id="pos-giris-baslik">{baslik ?? cari.ad}</h2>
       <p className="rakam">{numaraMaskesi(cari.numara)}</p>
       <ol className="pos-adimlar">
         <li>POS’ta başka cari açıksa önce o oturumdan çıkın.</li>
@@ -50,7 +66,9 @@ export function PosGirisYardimi({ cari, izin, bildir }: Ozellikler) {
             try {
               posCariyleGirisYap(cari.numara);
               setAcildi(true);
-              setDogrulandi(false);
+              setOnayNo(null);
+              firmaKontrolu?.(false);
+              girisBasladi?.();
               bildir(
                 'Seçtiğiniz carinin giriş bilgileri POS’a gönderildi. Açılan sekmede firma adını ve numarasını kontrol edin. Giriş ekranında kalırsa bilgileri elle yazın.',
               );
@@ -84,7 +102,9 @@ export function PosGirisYardimi({ cari, izin, bildir }: Ozellikler) {
             return;
           }
           setAcildi(true);
-          setDogrulandi(false);
+          setOnayNo(null);
+          firmaKontrolu?.(false);
+          girisBasladi?.();
         }}
       >
         Giriş sayfasını elle aç
@@ -94,7 +114,7 @@ export function PosGirisYardimi({ cari, izin, bildir }: Ozellikler) {
         type="button"
         aria-expanded={goster}
         onClick={() => {
-          if (izin()) setGoster(!goster);
+          if (izin()) setGosterNo(goster ? null : gizlilikNo);
         }}
       >
         {goster ? 'Giriş bilgilerini gizle' : 'Giriş bilgilerini göster'}
@@ -117,7 +137,10 @@ export function PosGirisYardimi({ cari, izin, bildir }: Ozellikler) {
             type="checkbox"
             checked={dogrulandi}
             onChange={(e) => {
-              if (izin()) setDogrulandi(e.target.checked);
+              if (izin()) {
+                setOnayNo(e.target.checked ? gizlilikNo : null);
+                firmaKontrolu?.(e.target.checked);
+              }
             }}
           />
           POS’taki firma adı ve numaranın seçtiğim cariyle eşleştiğini kontrol ettim.

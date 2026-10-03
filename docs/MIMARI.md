@@ -41,8 +41,13 @@ useDepoKontrol (React)  ──  oturum.ts: azalt(eylem) + turet(durum) → ekran
 
 ## Yeni rapor eklemek
 
-Sanal POS bir rapor değildir: ayrı rota ve şifreli yerel kasa kullanır. Cari bilgisi rapor/Drive
-geçmişine karışmaz. Veri sınırları, şifreleme, eşzamanlı kayıt ve elle işlem akışı: [SANAL_POS.md](SANAL_POS.md).
+Sanal POS bir rapor değildir: ayrı rota ve şifreli yerel profil kullanır. Cari/kart bilgisi rapor/Drive
+geçmişine karışmaz. `cekirdek/posKart`, `posProfil` ve `posKartFotografi` saf doğrulama/birleştirme kurallarıdır.
+`platform/posProfilDeposu` atomik IndexedDB, nesil denetimi ve eski kasa geçişini yönetir;
+`posProfilSifreleme` Web Crypto sınırıdır. React akışı `arayuz/sayfalar/pos/usePosProfili` üzerinden
+bu depoyu çağırır. `posKartOkuma` isteğe bağlı ayrı OCR worker’ını yükler; Vite `tools/ocrVarliklari`
+ile worker/WASM/modeli kendi yayınına koyar. CDN veya fotoğrafı dışarı gönderen servis yoktur.
+Veri sınırları ve sağlayıcı entegrasyonunun mevcut sınırı: [SANAL_POS.md](SANAL_POS.md).
 
 1. `src/raporlar/kayit.ts`'ye bir kayıt ekleyin (`durum: 'yapimda'`).
 2. Gerekirse `src/kaynaklar/`'a yeni LED okuyucusu (dosyayı içeriğinden tanıyan bir `tani` işleviyle).
@@ -84,7 +89,10 @@ yüklenmez.
 | Altın (yerel) | `npm test`              | `ornekler/` varsa gerçek dosyalarla uçtan uca; yoksa atlanır     |
 | Derleme       | `npm run build`         | Yayına çıkacak paket                                             |
 
-`npm run kontrol` hepsini sırayla çalıştırır; GitHub Actions da aynısını yapar.
+`npm run kontrol` tablodaki kontrolleri sırayla çalıştırır. Ek olarak `npm run test:tarayici`, gerçek
+Chromium/IndexedDB’de profil kaydı, cari bağı, POS formu (taklit sağlayıcı), kartlı yedek, eski kasa
+geçişi, engellenmiş depo, çoklu sekme ve yerel OCR akışlarını doğrular. Ekran görüntüleri `/tmp`’dedir.
+GitHub Actions iki komut başarılı olmadan yayınlamaz; gerçek ödeme isteği testlerde gönderilmez.
 
 ## Eski araçla eşdeğerlik
 

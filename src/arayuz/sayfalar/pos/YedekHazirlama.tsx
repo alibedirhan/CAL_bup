@@ -39,8 +39,8 @@ export function YedekHazirlama({
       }}
     >
       <p>
-        Bu yedek başka bilgisayarda açılabilir. Kısa PIN’den ayrı, en az 14 karakterlik bir yedek parolası
-        belirleyin. Bu parola günlük kasa açılışında sorulmaz.
+        Bu yedek başka bilgisayarda açılabilir. En az 14 karakterlik ayrı bir yedek parolası belirleyin. Bu
+        parola günlük kullanımda sorulmaz.
       </p>
       <label htmlFor="pos-tasinabilir-parola">Taşınabilir yedek parolası</label>
       <input

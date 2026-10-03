@@ -1,67 +1,43 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
-import { cariKaydet, numaraMaskesi, type PosCari } from '../../../cekirdek/posCari';
+import { numaraMaskesi, type PosCari } from '../../../cekirdek/posCari';
+import {
+  profilCariKaydet,
+  profilCariSil,
+  profilKartKaydet,
+  profilKartSil,
+  type PosProfilVerisi,
+} from '../../../cekirdek/posProfil';
 import { indir } from '../../../platform/dosya';
-import { EN_BUYUK_POS_YEDEK } from '../../../platform/posSifreleme';
 import { Mesaj } from '../../bilesenler/Mesaj';
 import { SayfaBasligi } from '../../bilesenler/SayfaBasligi';
-import { Simge } from '../../bilesenler/Simge';
 import { CariFormu } from './CariFormu';
-import { KasaBakimi } from './KasaBakimi';
-import { KasaKilidi } from './KasaKilidi';
-import { PosGirisYardimi } from './PosGirisYardimi';
-import { usePosKasasi } from './usePosKasasi';
+import { CariProfili } from './CariProfili';
+import { EskiKasaGecisi } from './EskiKasaGecisi';
+import { ProfilYedegi } from './ProfilYedegi';
+import { usePosProfili } from './usePosProfili';
 
-type Oturum = ReturnType<typeof usePosKasasi>;
-
-function AcikKasa({ oturum }: { oturum: Oturum }) {
-  const { kasa, veri, mesgul, calistir, setHata, setBilgi, kilitle } = oturum;
+type Oturum = ReturnType<typeof usePosProfili>;
+function AcikProfil({ oturum }: { oturum: Oturum }) {
+  const { depo, veri, mesgul, calistir, seciliId, setSeciliId, gizlilikNo, veriNo, bildir } = oturum;
   const [arama, setArama] = useState('');
-  const { seciliId: secili, setSeciliId: setSecili } = oturum;
-  const [form, setForm] = useState<{ cari: PosCari | null } | null>(null);
-  const cariler = veri?.cariler ?? [];
-  const cari = cariler.find((c) => c.id === secili);
-
-  const izin = () => {
-    if (mesgul) return false;
-    try {
-      kasa.etkinlik();
-      return true;
-    } catch {
-      kilitle();
-      return false;
-    }
-  };
-
-  const kaydet = async (c: PosCari) => {
-    if (!izin()) return false;
-    try {
-      const yeni = cariKaydet(cariler, c);
-      const tamam = await calistir(() => kasa.kaydet(yeni), 'Cari kaydedildi.');
-      if (tamam) setSecili(c.id);
-      return tamam;
-    } catch (e) {
-      setHata(e instanceof KullaniciHatasi ? e.message : 'Cari kaydedilemedi.');
-      return false;
-    }
-  };
-
-  const sil = (c: PosCari) => {
-    if (!izin() || !window.confirm(`“${c.ad}” cari kaydı silinsin mi? POS’taki hesap etkilenmez.`)) return;
-    void calistir(() => kasa.kaydet(cariler.filter((s) => s.id !== c.id)), 'Cari kaydı silindi.').then(
-      (tamam) => {
-        if (tamam) {
-          setSecili(null);
-          setForm(null);
-        }
-      },
-    );
-  };
-
+  const [form, setForm] = useState<{ cari: PosCari | null; no: number } | null>(null);
+  if (!veri) return null;
+  const cariler = veri.cariler;
+  const cari = cariler.find((c) => c.id === seciliId);
   const gorunen = cariler.filter((c) =>
     c.ad.toLocaleLowerCase('tr-TR').includes(arama.trim().toLocaleLowerCase('tr-TR')),
   );
-
+  const guncelle = async (is: () => PosProfilVerisi, mesaj: string) => {
+    if (mesgul) return false;
+    try {
+      return await calistir(() => depo.kaydet(is()), mesaj);
+    } catch (e) {
+      bildir(e instanceof KullaniciHatasi ? e.message : 'Bilgileri kontrol edin.', true);
+      return false;
+    }
+  };
+  const acikForm = form?.no === gizlilikNo ? form : null;
   return (
     <>
       <div className="pos-yerlesim">
@@ -75,10 +51,8 @@ function AcikKasa({ oturum }: { oturum: Oturum }) {
               type="button"
               disabled={mesgul}
               onClick={() => {
-                if (izin()) {
-                  setSecili(null);
-                  setForm({ cari: null });
-                }
+                setSeciliId(null);
+                setForm({ cari: null, no: gizlilikNo });
               }}
             >
               Yeni cari
@@ -88,8 +62,8 @@ function AcikKasa({ oturum }: { oturum: Oturum }) {
             Cari adına göre ara
           </label>
           <input
-            className="girdi"
             id="pos-cari-ara"
+            className="girdi"
             type="search"
             autoComplete="off"
             maxLength={120}
@@ -98,11 +72,11 @@ function AcikKasa({ oturum }: { oturum: Oturum }) {
             disabled={mesgul}
             onChange={(e) => setArama(e.target.value)}
           />
-          {gorunen.length === 0 ? (
+          {!gorunen.length ? (
             <p>
-              {cariler.length === 0
-                ? 'Henüz cari yok. “Yeni cari” ile adını ve numarasını kaydedin.'
-                : 'Bu adla cari bulunamadı.'}
+              {cariler.length
+                ? 'Bu adla cari bulunamadı.'
+                : 'Henüz cari yok. “Yeni cari” ile adını ve numarasını kaydedin.'}
             </p>
           ) : (
             <ul className="pos-cari-listesi">
@@ -111,28 +85,25 @@ function AcikKasa({ oturum }: { oturum: Oturum }) {
                   <button
                     className="pos-cari"
                     type="button"
-                    aria-pressed={secili === c.id}
+                    aria-pressed={c.id === seciliId}
                     disabled={mesgul}
                     onClick={() => {
-                      if (izin()) {
-                        setSecili(c.id);
-                        setForm(null);
-                      }
+                      setSeciliId(c.id);
+                      setForm(null);
                     }}
                   >
                     <b>{c.ad}</b>
                     <span className="rakam">{numaraMaskesi(c.numara)}</span>
+                    <span>{veri.kartlar.filter((k) => k.cariId === c.id).length} kayıtlı kart</span>
                   </button>
                   <button
                     className="dugme kucuk"
                     type="button"
-                    aria-label={`${c.ad} kaydını düzenle`}
                     disabled={mesgul}
+                    aria-label={`${c.ad} kaydını düzenle`}
                     onClick={() => {
-                      if (izin()) {
-                        setSecili(null);
-                        setForm({ cari: c });
-                      }
+                      setSeciliId(c.id);
+                      setForm({ cari: c, no: gizlilikNo });
                     }}
                   >
                     Düzenle
@@ -142,175 +113,164 @@ function AcikKasa({ oturum }: { oturum: Oturum }) {
             </ul>
           )}
         </section>
-        {form ? (
+        {acikForm ? (
           <div className="pos-form-alani">
             <CariFormu
-              key={form.cari?.id ?? 'yeni'}
-              cari={form.cari}
+              key={acikForm.cari?.id ?? 'yeni'}
+              cari={acikForm.cari}
               mesgul={mesgul}
-              kaydet={kaydet}
               vazgec={() => setForm(null)}
+              kaydet={async (c) => {
+                const tamam = await guncelle(
+                  () => profilCariKaydet(veri, c),
+                  'Cari kaydedildi. Kartlarını profiline ekleyebilirsiniz.',
+                );
+                if (tamam) {
+                  setSeciliId(c.id);
+                  setForm(null);
+                }
+                return tamam;
+              }}
             />
-            {form.cari && (
+            {acikForm.cari && (
               <button
                 className="dugme hayalet"
                 type="button"
                 disabled={mesgul}
                 onClick={() => {
-                  if (form.cari) sil(form.cari);
+                  const c = acikForm.cari;
+                  if (!c) return;
+                  const sayi = veri.kartlar.filter((k) => k.cariId === c.id).length;
+                  if (
+                    !window.confirm(
+                      `“${c.ad}” ve ona bağlı ${sayi} kart silinsin mi? POS’taki hesap etkilenmez.`,
+                    )
+                  )
+                    return;
+                  void guncelle(() => profilCariSil(veri, c.id), 'Cari ve bağlı kartları silindi.').then(
+                    (tamam) => {
+                      if (tamam) {
+                        setSeciliId(null);
+                        setForm(null);
+                      }
+                    },
+                  );
                 }}
               >
-                Bu cari kaydını sil
+                Bu cari ve bağlı kartlarını sil
               </button>
             )}
           </div>
         ) : cari ? (
-          <PosGirisYardimi
-            key={`${cari.id}-${cari.numara}`}
+          <CariProfili
+            key={`${cari.id}-${cari.numara}-${veriNo}`}
             cari={cari}
-            izin={izin}
-            bildir={(m, h) => {
-              if (h) {
-                setHata(m);
-                setBilgi('');
-              } else {
-                setBilgi(m);
-                setHata('');
-              }
-            }}
+            kartlar={veri.kartlar.filter((k) => k.cariId === cari.id)}
+            gizlilikNo={gizlilikNo}
+            mesgul={mesgul}
+            bildir={bildir}
+            duzenle={() => setForm({ cari, no: gizlilikNo })}
+            kartKaydet={(k) =>
+              guncelle(() => profilKartKaydet(veri, k), 'Kart bu carinin profiline kaydedildi.')
+            }
+            kartSil={(k) =>
+              guncelle(() => profilKartSil(veri, cari.id, k.id), 'Kart bu carinin profilinden silindi.')
+            }
           />
         ) : (
           <div className="bos">
-            <Simge ad="kart" boyut={32} />
             <h2>İşlem yapacağınız cariyi seçin</h2>
-            <p>Giriş bilgilerini hazırlayın, POS’ta firma adını doğrulayın ve ödemeyi orada tamamlayın.</p>
+            <p>Cariyi seçince kayıtlı kartları ve “Kart ekle” bölümü görünür.</p>
           </div>
         )}
       </div>
-      <KasaBakimi
+      <ProfilYedegi
+        key={gizlilikNo}
         mesgul={mesgul}
-        yedekIndir={(parola) => {
-          if (!izin() || !veri) return Promise.resolve(false);
-          return calistir(
-            async () => {
-              const yedek = await kasa.yedekle(parola);
+        ekle={(gelen) => calistir(() => depo.yedektenEkle(gelen), 'Yedekteki cari ve kartlar eklendi.')}
+        indir={async (parola) => {
+          if (mesgul) return false;
+          return oturum.dosyaCalistir(
+            () => depo.yedekle(parola),
+            (b) =>
               indir(
-                yedek,
-                `CAL-bup-cari-yedegi-${new Date().toISOString().slice(0, 10)}.calpos`,
+                b,
+                `CAL-bup-profil-yedegi-${new Date().toISOString().slice(0, 10)}.calpos`,
                 'application/octet-stream',
-              );
-              return veri;
-            },
-            'Taşınabilir şifreli yedek hazırlandı. Yedek dosyasını ve uzun yedek parolasını ayrı saklayın.',
-            false,
+              ),
+            'Şifreli cari ve kart yedeği indirildi. Yedek parolasını ayrı saklayın.',
           );
         }}
-        yedekEkle={(dosya, parola) =>
-          calistir(async () => {
-            if (dosya.size > EN_BUYUK_POS_YEDEK)
-              throw new KullaniciHatasi('Cari yedeği en fazla 256 KB olabilir.');
-            return kasa.yedektenEkle(new Uint8Array(await dosya.arrayBuffer()), parola);
-          }, 'Yedekteki cariler eklendi. Mevcut kayıtlar korundu.')
-        }
-        parolaDegistir={(parola) =>
-          calistir(
-            () => kasa.parolaDegistir(parola),
-            'Kasa parolası değiştirildi. Yeni bir şifreli yedek indirin.',
-          )
-        }
       />
     </>
   );
 }
-
 export function SanalPosSayfasi() {
-  const oturum = usePosKasasi();
-  const {
-    veri,
-    varMi,
-    mesgul,
-    hata,
-    bilgi,
-    kasa,
-    calistir,
-    kilitle,
-    yukleniyor,
-    kontrol,
-    asama,
-    asamayiBildir,
-  } = oturum;
+  const oturum = usePosProfili();
   const hataKutusu = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (hata) hataKutusu.current?.focus();
-  }, [hata]);
+    if (oturum.hata) hataKutusu.current?.focus();
+  }, [oturum.hata]);
   return (
     <>
-      <div className="kart-ust">
-        <SayfaBasligi ust="İşlemler" baslik="Sanal POS">
-          Carilerinizi elle kaydedin, giriş bilgilerini hazırlayın ve POS’ta işleminizi tamamlayın.
-        </SayfaBasligi>
-        {veri && (
-          <button className="dugme" type="button" onClick={kilitle}>
-            <Simge ad="kilit" />
-            Kasayı kilitle
-          </button>
-        )}
-      </div>
-      {veri && (
-        <p className="ipucu">
-          Kasa 30 dakika kullanılmayınca kilitlenir. Açık POS sekmesi etkilenmez; kasayı yeniden açınca
-          seçtiğiniz cari geri gelir.
-        </p>
-      )}
+      <SayfaBasligi ust="İşlemler" baslik="Sanal POS">
+        Carinizi seçin, kartını hazırlayın ve tutarı POS’ta kendiniz girin.
+      </SayfaBasligi>
       <Mesaj ton="bilgi">
-        Kart numarası, kart fotoğrafı, CVV ve banka şifresi bu bölümde alınmaz. Cari listesi Drive’a
-        gönderilmez.
+        Cari ve kart bilgileri bu tarayıcıda şifreli tutulur. Günlük PIN sorulmaz; bu tarayıcıyı kullanan
+        kişiler kayıtlara erişebilir. CVV ve banka doğrulama kodları kaydedilmez.
       </Mesaj>
-      {hata && (
+      {oturum.hata && (
         <div ref={hataKutusu} tabIndex={-1}>
-          <Mesaj
-            ton="hata"
-            eylem={
-              !veri && (
-                <button
-                  className="dugme"
-                  type="button"
-                  disabled={mesgul || yukleniyor}
-                  onClick={() => void kontrol()}
-                >
-                  Kasa durumunu yeniden kontrol et
-                </button>
-              )
-            }
-          >
-            {hata}
-          </Mesaj>
+          <Mesaj ton="hata">{oturum.hata}</Mesaj>
         </div>
       )}
-      {bilgi && <Mesaj ton="bilgi">{bilgi}</Mesaj>}
-      {mesgul && (
+      {oturum.bilgi && <Mesaj ton="bilgi">{oturum.bilgi}</Mesaj>}
+      {(oturum.yukleniyor || oturum.mesgul) && (
         <Mesaj
           ton="bilgi"
           eylem={
-            <button className="dugme" type="button" onClick={kilitle}>
+            <button className="dugme" type="button" onClick={oturum.durdur}>
               İşlemi durdur
             </button>
           }
         >
-          {asama}
+          {oturum.yukleniyor ? 'Cari ve kart profili açılıyor…' : 'Şifreli profil işlemi yürütülüyor…'}
         </Mesaj>
       )}
-      {veri ? (
-        <AcikKasa oturum={oturum} />
-      ) : yukleniyor || varMi === null ? (
-        yukleniyor && <p role="status">Cari deposu kontrol ediliyor…</p>
-      ) : (
-        <KasaKilidi
-          varMi={varMi}
-          mesgul={mesgul}
-          ac={(p) => calistir(() => kasa.ac(p, !varMi, asamayiBildir), 'Cari kasası açıldı.', !varMi)}
-        />
-      )}
+      {!oturum.yukleniyor &&
+        (oturum.eski && !oturum.veri ? (
+          <EskiKasaGecisi
+            key={oturum.gizlilikNo}
+            mesgul={oturum.mesgul}
+            tasi={(p) =>
+              oturum.calistir(
+                () => oturum.depo.eskiKasayiTasi(p),
+                'Carileriniz taşındı. Artık günlük PIN gerekmiyor.',
+              )
+            }
+            yedekle={(eski, p) =>
+              oturum.dosyaCalistir(
+                () => oturum.depo.eskiYedekle(eski, p),
+                (b) => indir(b, 'CAL-bup-eski-cari-yedegi.calpos', 'application/octet-stream'),
+                'Eski cari listenizin şifreli yedeği indirildi. Geçişe devam edebilirsiniz.',
+              )
+            }
+          />
+        ) : oturum.veri ? (
+          <AcikProfil oturum={oturum} />
+        ) : (
+          <button
+            className="dugme"
+            type="button"
+            disabled={oturum.mesgul}
+            onClick={() => {
+              void oturum.kontrol();
+            }}
+          >
+            Profil durumunu yeniden kontrol et
+          </button>
+        ))}
     </>
   );
 }
