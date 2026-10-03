@@ -150,3 +150,15 @@ Bu tarayıcıya erişen kişi veriyi açabilir; kullanıcı doğrulaması değil
 PIN/parolayla bir kez taşınır, cari kimlikleri korunur. Yanlış parola/geçiş hatası eski kaydı korur.
 Taşınabilir cari/kart yedeği ayrı en az 14 karakterlik uzun parola kullanır; eski cari yedekleri okunur.
 Veriler rapor/Drive kaydına girmez. Ayrıntı: [SANAL_POS.md](SANAL_POS.md).
+
+## Fotoğraf ve işlem sonuçları (1.5.0)
+
+Fotoğraf alanları ayrı geçici taslaktır: kullanıcı aday numara/tarihi seçip fotoğrafla karşılaştırmayı
+onaylamadan forma uygulanmaz. Uygulama eski PAN/tarihi birlikte değiştirir; eksik alanın boşaltılacağı
+önceden açıklanır. Boş fotoğraf manuel alanları değiştirmez; manuel düzenleme eski adayları kaldırır.
+Etiketsiz dört rakam tarih sayılmaz, Luhn için rakam uydurulmaz; çoklu tarih otomatik seçilmez.
+
+Kayıt sonucu kalıcı depo doğrulandığında başarıdır. İndirme düğmesi yalnızca indirme isteğinin
+başlatıldığını bildirir; dosya sisteminde tamamlandığını iddia etmez. Ayar kaydı başarısızken yalnızca
+oturumda geçerli olduğu açıklanır. Okunamayan/bozuk geçmiş boş liste değildir. Belirsiz veya durdurulmuş
+yazı kesin geri alınmış sayılmaz; otomatik yeniden yazma yapılmaz. [Kapanış raporu](OCR_VE_BILDIRIM_UYGULAMA_SONUCU.md).

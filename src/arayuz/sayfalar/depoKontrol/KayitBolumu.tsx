@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { KullaniciHatasi } from '../../../cekirdek/hata';
+import { FormHatasi } from '../../bilesenler/FormHatasi';
 import { DriveRaporunuKaydet } from '../drive/DriveRaporu';
 import { indir } from '../../../platform/dosya';
 import { yedekBaytlari } from '../../../platform/gecmis';
@@ -48,22 +51,28 @@ export function KayitCubugu({ dk }: { dk: DepoKontrol }) {
 }
 
 export function SonucKarti({ dk }: { dk: DepoKontrol }) {
+  const [hata, setHata] = useState('');
   const s = dk.sonuc;
   if (!s) return null;
   const yedekIndir = async () => {
     if (!s.yedekId) return;
-    const bayt = await yedekBaytlari(s.yedekId);
-    if (bayt) indir(bayt, `YEDEK ${s.hedef.ad}`);
+    try {
+      const bayt = await yedekBaytlari(s.yedekId, true);
+      if (bayt) indir(bayt, `YEDEK ${s.hedef.ad}`);
+    } catch (e) {
+      setHata(e instanceof KullaniciHatasi ? e.message : 'Yedek açılamadı. Yeniden deneyin.');
+    }
   };
   return (
     <section className="kart sonuc" aria-live="polite">
+      <FormHatasi hata={hata} id="sonuc-yedek-hata" />
       <div className="sonuc-ust">
         <span className="sonuc-simge">
           <Simge ad="tik" boyut={22} />
         </span>
         <div>
           <h2>
-            {s.sayfa} sayfası {s.kayit === 'dosyaya' ? 'kaydedildi' : 'hazır, dosya indirildi'}
+            {s.sayfa} sayfası {s.kayit === 'dosyaya' ? 'kaydedildi' : 'hazır, indirme başlatıldı'}
           </h2>
           <p>
             {s.kayit === 'dosyaya'

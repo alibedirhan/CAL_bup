@@ -1,3 +1,4 @@
+import type { IslemSonucu } from '../../../cekirdek/islemSonucu';
 import { useState } from 'react';
 import { YedekHazirlama } from './YedekHazirlama';
 
@@ -7,8 +8,8 @@ export function EskiKasaGecisi({
   yedekle,
 }: {
   mesgul: boolean;
-  tasi: (parola: string) => Promise<boolean>;
-  yedekle: (eskiParola: string, yedekParolasi: string) => Promise<boolean>;
+  tasi: (parola: string) => Promise<IslemSonucu>;
+  yedekle: (eskiParola: string, yedekParolasi: string) => Promise<IslemSonucu>;
 }) {
   const [parola, setParola] = useState('');
   const [yedekAcik, setYedekAcik] = useState(false);

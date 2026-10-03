@@ -1,9 +1,13 @@
+import { useIslem } from '../../bilesenler/useIslem';
+import { IslemBildirimi } from '../../bilesenler/IslemBildirimi';
+import { FormHatasi } from '../../bilesenler/FormHatasi';
+import type { IslemSonucu } from '../../../cekirdek/islemSonucu';
 import { useEffect, useRef, useState } from 'react';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
 import type { PosProfilVerisi } from '../../../cekirdek/posProfil';
 import { kartMaskesi } from '../../../cekirdek/posKart';
 import { profilYedeginiAc, EN_BUYUK_PROFIL_YEDEGI } from '../../../platform/posProfilSifreleme';
-import { kasaParolasiDogrula } from '../../../cekirdek/posParola';
+import { yedekParolasiDogrula } from '../../../cekirdek/posParola';
 import { YedekHazirlama } from './YedekHazirlama';
 
 export function ProfilYedegi({
@@ -12,17 +16,17 @@ export function ProfilYedegi({
   ekle,
 }: {
   mesgul: boolean;
-  indir: (parola: string) => Promise<boolean>;
-  ekle: (veri: PosProfilVerisi) => Promise<boolean>;
+  indir: (parola: string) => Promise<IslemSonucu>;
+  ekle: (veri: PosProfilVerisi) => Promise<IslemSonucu>;
 }) {
   const [acik, setAcik] = useState(false);
   const [parola, setParola] = useState('');
   const [hata, setHata] = useState('');
-  const [inceleniyor, setInceleniyor] = useState(false);
+  const islem = useIslem('profil-yedek-inceleme');
+  const inceleniyor = islem.mesgul;
   const [onizleme, setOnizleme] = useState<PosProfilVerisi | null>(null);
   const dosya = useRef<HTMLInputElement>(null);
   const bagli = useRef(false);
-  const kilit = useRef(false);
   useEffect(() => {
     bagli.current = true;
     return () => {
@@ -56,7 +60,7 @@ export function ProfilYedegi({
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
-            if (mesgul || kilit.current) return;
+            if (mesgul || inceleniyor) return;
             setHata('');
             setOnizleme(null);
             const f = dosya.current?.files?.[0];
@@ -70,28 +74,24 @@ export function ProfilYedegi({
             }
             const p = String(new FormData(e.currentTarget).get('profilYedekParolasi') ?? '');
             try {
-              kasaParolasiDogrula(p);
+              yedekParolasiDogrula(p);
             } catch (e) {
               setHata(e instanceof KullaniciHatasi ? e.message : 'Yedek parolasını kontrol edin.');
               return;
             }
             setParola('');
-            setInceleniyor(true);
-            kilit.current = true;
-            void (async () => {
+            void islem.calistir(async (signal) => {
               let b: Uint8Array | undefined;
               try {
                 b = new Uint8Array(await f.arrayBuffer());
+                signal.throwIfAborted();
                 const v = await profilYedeginiAc(b, p);
-                if (bagli.current) setOnizleme(v);
-              } catch (e) {
-                if (bagli.current) setHata(e instanceof KullaniciHatasi ? e.message : 'Yedek okunamadı.');
+                signal.throwIfAborted();
+                setOnizleme(v);
               } finally {
                 b?.fill(0);
-                kilit.current = false;
-                if (bagli.current) setInceleniyor(false);
               }
-            })();
+            }, 'Yedek açıldı. Kayıtları inceleyip açıkça ekleyebilirsiniz.');
           }}
         >
           <label htmlFor="pos-profil-yedek-dosyasi">Şifreli profil veya eski cari yedeği</label>
@@ -155,7 +155,9 @@ export function ProfilYedegi({
                 disabled={mesgul}
                 onClick={() => {
                   void ekle(onizleme).then((tamam) => {
-                    if (tamam && bagli.current) setOnizleme(null);
+                    if (!bagli.current) return;
+                    if (tamam.durum === 'tamam') setOnizleme(null);
+                    else setHata(tamam.mesaj);
                   });
                 }}
               >
@@ -167,11 +169,8 @@ export function ProfilYedegi({
             </div>
           </div>
         )}
-        {hata && (
-          <p className="alan-hatasi" role="alert">
-            {hata}
-          </p>
-        )}
+        <IslemBildirimi islem={islem} />
+        <FormHatasi hata={hata} id="ProfilYedegi-hata" />
       </details>
     </section>
   );

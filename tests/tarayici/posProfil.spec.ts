@@ -217,9 +217,13 @@ test('fotoğraf gerçek yerel OCR ile okunur; CVV/fotoğraf kayda girmez; iptal 
   await page
     .getByLabel('Kart fotoğrafından numara ve tarih oku')
     .setInputFiles({ name: 'yapay-kart.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64') });
-  await expect(page.getByLabel('Kart numarası', { exact: true })).toHaveValue('4242424242424242', {
+  await expect(page.getByRole('heading', { name: 'Fotoğraftan bulunan alanlar', exact: true })).toBeVisible({
     timeout: 60_000,
   });
+  await expect(page.getByLabel('Kart numarası', { exact: true })).toHaveValue('');
+  await page.getByLabel('Bulunan numara ve tarihi fotoğrafla karşılaştırdım.').check();
+  await page.getByRole('button', { name: 'Kontrol ettiğim alanları uygula', exact: true }).click();
+  await expect(page.getByLabel('Kart numarası', { exact: true })).toHaveValue('4242424242424242');
   await expect(page.getByLabel('Son kullanma ayı', { exact: true })).toHaveValue('12');
   await expect(page.getByLabel('Son kullanma yılı', { exact: true })).toHaveValue('2035');
   await page.getByLabel('Karta vereceğiniz isim').fill('Fotoğraftan Yapay Kart');

@@ -1,3 +1,5 @@
+import { useIslem } from '../../bilesenler/useIslem';
+import { IslemBildirimi } from '../../bilesenler/IslemBildirimi';
 import { useState } from 'react';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
 import { numaraMaskesi, posGirisSifresi, type PosCari } from '../../../cekirdek/posCari';
@@ -25,6 +27,7 @@ export function PosGirisYardimi({
   firmaDogrulandi,
   baslik,
 }: Ozellikler) {
+  const kopyalama = useIslem('pos-kopyalama');
   const [gosterNo, setGosterNo] = useState<number | null>(null);
   const goster = gosterNo === gizlilikNo;
   const [acildi, setAcildi] = useState(false);
@@ -33,18 +36,15 @@ export function PosGirisYardimi({
   const kopyala = (tur: 'numara' | 'sifre') => {
     if (!izin()) return;
     const metin = tur === 'numara' ? cari.numara : posGirisSifresi(cari.numara);
-    void posBilgisiniKopyala(metin)
-      .then(() => {
-        if (izin())
-          bildir(
-            tur === 'numara'
-              ? 'Numara kopyalandı. Vergi no ve kullanıcı alanlarına yapıştırın.'
-              : 'POS giriş şifresi kopyalandı. POS’taki şifre alanına yapıştırın.',
-          );
-      })
-      .catch((e: unknown) => {
-        if (izin()) bildir(e instanceof KullaniciHatasi ? e.message : 'Kopyalanamadı. Elle yazın.', true);
-      });
+    void kopyalama.calistir(
+      async (signal) => {
+        await posBilgisiniKopyala(metin);
+        signal.throwIfAborted();
+      },
+      tur === 'numara'
+        ? 'Numara kopyalandı. Vergi no ve kullanıcı alanlarına yapıştırın.'
+        : 'POS giriş şifresi kopyalandı. POS’taki şifre alanına yapıştırın.',
+    );
   };
 
   return (
@@ -79,13 +79,14 @@ export function PosGirisYardimi({
         >
           POS’u aç
         </button>
-        <button className="dugme" type="button" onClick={() => kopyala('numara')}>
+        <button className="dugme" type="button" disabled={kopyalama.mesgul} onClick={() => kopyala('numara')}>
           Numarayı kopyala
         </button>
-        <button className="dugme" type="button" onClick={() => kopyala('sifre')}>
+        <button className="dugme" type="button" disabled={kopyalama.mesgul} onClick={() => kopyala('sifre')}>
           Giriş şifresini kopyala
         </button>
       </div>
+      <IslemBildirimi islem={kopyalama} />
       <p className="ipucu">
         Bu düğme seçilen carinin numarasını ve giriş şifresini doğrudan POS’a gönderir. Giriş kabul edilirse
         cari hesabı açılır; CAL bup sonucu okuyamaz. Açılan sekmeyi göremiyorsanız tarayıcının açılır pencere

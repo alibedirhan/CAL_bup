@@ -1,35 +1,18 @@
 import { KullaniciHatasi } from './hata';
-import { kartNumarasi } from './posKart';
+import { kartMetniniCoz } from './kartMetni';
 
 export const EN_BUYUK_KART_FOTOGRAFI = 10 * 1024 * 1024;
 export const EN_FAZLA_KART_PIKSELI = 20_000_000;
 export interface KartOkumaSonucu {
   numaralar: string[];
   tarihler: { ay: string; yil: string }[];
+  kanitlar?: KartAlanKaniti[];
+  gecersizNumara?: boolean;
 }
 
 /** Ham metin dışarı çıkmaz: yalnızca numara/tarih adayları; CVV, ad ve telefon çıkarılmaz. */
 export function kartMetnindenAlanlar(metin: string): KartOkumaSonucu {
-  if (metin.length > 100_000)
-    throw new KullaniciHatasi('Fotoğrafta çok fazla metin var. Daha yakın bir kart fotoğrafı seçin.');
-  const numaralar = new Set<string>();
-  const tarihler = new Map<string, { ay: string; yil: string }>();
-  for (const satir of metin.split(/[\r\n]/)) {
-    for (const eslesme of satir.matchAll(/(?<![0-9])(?:[0-9][ -]?){11,18}[0-9](?![0-9])/g)) {
-      try {
-        numaralar.add(kartNumarasi(eslesme[0].replace(/-/g, '')));
-      } catch {
-        /* Aday geçersiz. */
-      }
-    }
-    for (const m of satir.matchAll(/(?<![0-9])(0[1-9]|1[0-2])\s*[/.-]\s*(20[0-9]{2}|[0-9]{2})(?![0-9])/g)) {
-      if (!m[1] || !m[2]) continue;
-      const ay = m[1];
-      const yil = m[2].length === 2 ? '20' + m[2] : m[2];
-      tarihler.set(ay + yil, { ay, yil });
-    }
-  }
-  return { numaralar: [...numaralar], tarihler: [...tarihler.values()] };
+  return kartMetniniCoz(metin);
 }
 /** Başlıktaki piksel sınırı görüntüyü çözmeden uygulanır. Dosya adı/MIME tek başına güvenilmez. */
 export function kartGoruntuBoyutu(b: Uint8Array): { genislik: number; yukseklik: number } {
@@ -89,3 +72,27 @@ export function kartGoruntuBoyutu(b: Uint8Array): { genislik: number; yukseklik:
     );
   return { genislik, yukseklik };
 }
+
+export interface KartAlanKaniti {
+  tur: 'numara' | 'tarih';
+  deger: string;
+  guven: number;
+  bolge?: { x: number; y: number; genislik: number; yukseklik: number };
+  donus: number;
+}
+export interface KartGoruntuDuzeltmesi {
+  donus: number;
+  egim: number;
+  sol: number;
+  ust: number;
+  genislik: number;
+  yukseklik: number;
+}
+export const DUZ_KART_GORUNTUSU: KartGoruntuDuzeltmesi = {
+  donus: 0,
+  egim: 0,
+  sol: 0,
+  ust: 0,
+  genislik: 100,
+  yukseklik: 100,
+};

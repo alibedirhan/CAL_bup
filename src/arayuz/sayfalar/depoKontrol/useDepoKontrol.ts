@@ -1,6 +1,7 @@
+import { useIslem } from '../../bilesenler/useIslem';
 // Günlük depo kontrol ekranının durumu ve eylemleri.
 
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import type { Ayarlar } from '../../../cekirdek/ayarlar';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
 import { tarihtenCevir } from '../../../cekirdek/tarih';
@@ -19,14 +20,8 @@ import { dosyalariTani, hedefAc, kaydet, type KayitSonucu } from './islemler';
 
 export type Mesgul = null | 'aciliyor' | 'okunuyor' | 'kaydediliyor';
 
-function hataMetni(e: unknown): string {
-  if (e instanceof KullaniciHatasi) return e.message;
-  console.error(e);
-  return 'Beklenmeyen bir hata oluştu. Sayfayı yenileyip yeniden deneyin.';
-}
-
 export function useDepoKontrol(ayarlar: Ayarlar) {
-  const kilit = useRef(false);
+  const islem = useIslem('depo-kontrol');
   const [oturum, gonder] = useReducer(azalt, BOS_OTURUM);
   const [motor, setMotor] = useState<Motor | null>(null);
   const [mesgul, setMesgul] = useState<Mesgul>(null);
@@ -36,7 +31,13 @@ export function useDepoKontrol(ayarlar: Ayarlar) {
   const bugun = useMemo(() => tarihtenCevir(new Date()), []);
 
   useEffect(() => {
-    void hatirlananHedef().then(setHatirlanan);
+    let bagli = true;
+    void hatirlananHedef().then((h) => {
+      if (bagli) setHatirlanan(h);
+    });
+    return () => {
+      bagli = false;
+    };
   }, []);
 
   const gorunum = useMemo(
@@ -44,27 +45,31 @@ export function useDepoKontrol(ayarlar: Ayarlar) {
     [oturum, ayarlar, bugun, motor],
   );
 
-  const calistir = useCallback(async (tur: Exclude<Mesgul, null>, is: () => Promise<void>) => {
-    if (kilit.current) return false;
-    kilit.current = true;
+  const calistir = async (tur: Exclude<Mesgul, null>, is: (signal: AbortSignal) => Promise<void>) => {
+    if (islem.mesgul) return false;
     setMesgul(tur);
     setHata(null);
-    try {
-      await is();
-      setMotor(await motorYukle());
-      return true;
-    } catch (e) {
-      setHata(hataMetni(e));
-      return false;
-    } finally {
-      kilit.current = false;
-      setMesgul(null);
-    }
-  }, []);
+    const s = await islem.calistir(
+      async (signal) => {
+        await is(signal);
+        signal.throwIfAborted();
+        const m = await motorYukle();
+        signal.throwIfAborted();
+        setMotor(m);
+      },
+      tur === 'kaydediliyor' ? 'Rapor hazır. Sonuç bölümünü kontrol edin.' : '',
+      tur === 'kaydediliyor',
+    );
+    if (!islem.uygulanabilir(s)) return false;
+    setMesgul(null);
+    if (s.durum !== 'tamam') setHata(s.mesaj);
+    return s.durum === 'tamam';
+  };
 
   const hedefYukle = useCallback(
-    async (d: SecilenDosya) => {
+    async (d: SecilenDosya, signal?: AbortSignal) => {
       const hedef = await hedefAc(d, ayarlar, bugun);
+      signal?.throwIfAborted();
       gonder({ tur: 'hedefYuklendi', hedef });
       setSonuc(null);
       if (d.tanitici) setHatirlanan(d.tanitici);
@@ -73,77 +78,81 @@ export function useDepoKontrol(ayarlar: Ayarlar) {
   );
 
   /** Kaydedilebilir dosya seçici (Chrome/Edge); yoksa false döner ve arayüz dosya girişini açar. */
-  const hedefSec = useCallback(async () => {
+  const hedefSec = async () => {
     let secildi = false;
-    await calistir('aciliyor', async () => {
+    await calistir('aciliyor', async (signal) => {
       const d = await kaydedilebilirDosyaSec();
       if (d) {
         secildi = true;
-        await hedefYukle(d);
+        await hedefYukle(d, signal);
       }
     });
     return secildi;
-  }, [calistir, hedefYukle]);
+  };
 
-  const hatirlananiAc = useCallback(async () => {
+  const hatirlananiAc = async () => {
     if (!hatirlanan) return;
-    await calistir('aciliyor', async () => {
+    await calistir('aciliyor', async (signal) => {
       if (!(await yazmaIzni(hatirlanan))) throw new KullaniciHatasi('Dosyaya erişim izni verilmedi.');
-      await hedefYukle(await dosyaOku(await hatirlanan.getFile(), hatirlanan));
+      signal.throwIfAborted();
+      await hedefYukle(await dosyaOku(await hatirlanan.getFile(), hatirlanan), signal);
     });
-  }, [calistir, hatirlanan, hedefYukle]);
+  };
 
-  const hatirlananiUnut = useCallback(async () => {
-    await hedefiUnut();
-    setHatirlanan(null);
-  }, []);
+  const hatirlananiUnut = () =>
+    calistir('aciliyor', async (signal) => {
+      await hedefiUnut();
+      signal.throwIfAborted();
+      setHatirlanan(null);
+    });
 
   /** Sürüklenip bırakılan ya da seçilen dosyalar. */
-  const dosyalarGeldi = useCallback(
-    async (kaynak: DataTransfer | File[]) => {
-      await calistir('okunuyor', async () => {
-        const dosyalar = Array.isArray(kaynak)
-          ? kaynak.map((dosya) => ({ dosya }))
-          : await birakilanDosyalar(kaynak);
-        if (dosyalar.length === 0) return;
-        const s = await dosyalariTani(dosyalar, ayarlar);
-        if (s.hedef) await hedefYukle(s.hedef);
-        gonder({ tur: 'kaynaklarEklendi', kaynaklar: s.kaynaklar, reddedilenler: s.reddedilenler });
-        if (Object.keys(s.kaynaklar).length > 0) setSonuc(null);
-      });
-    },
-    [ayarlar, calistir, hedefYukle],
-  );
+  const dosyalarGeldi = async (kaynak: DataTransfer | File[]) => {
+    await calistir('okunuyor', async (signal) => {
+      const dosyalar = Array.isArray(kaynak)
+        ? kaynak.map((dosya) => ({ dosya }))
+        : await birakilanDosyalar(kaynak);
+      if (dosyalar.length === 0) return;
+      const s = await dosyalariTani(dosyalar, ayarlar);
+      signal.throwIfAborted();
+      if (s.hedef) await hedefYukle(s.hedef, signal);
+      gonder({ tur: 'kaynaklarEklendi', kaynaklar: s.kaynaklar, reddedilenler: s.reddedilenler });
+      if (Object.keys(s.kaynaklar).length > 0) setSonuc(null);
+    });
+  };
 
-  const kaydetIste = useCallback(
-    async (kip: 'dosyaya' | 'indir') => {
-      const { hedef } = oturum;
-      const { secim, plan } = gorunum;
-      if (!hedef || !secim || !plan || !gorunum.kaydedilebilir) return;
-      await calistir('kaydediliyor', async () => {
-        const s = await kaydet(hedef, secim, plan, ayarlar, bugun, kip);
-        gonder({ tur: 'kaydedildi', hedef: s.hedef });
-        s.ledDosyalari = Object.values(oturum.kaynaklar).flatMap((k) =>
-          k.bayt ? [{ ad: k.dosyaAdi, bayt: k.bayt }] : [],
-        );
-        setSonuc(s);
-      });
-    },
-    [ayarlar, bugun, calistir, gorunum, oturum],
-  );
+  const kaydetIste = async (kip: 'dosyaya' | 'indir') => {
+    const { hedef } = oturum;
+    const { secim, plan } = gorunum;
+    if (!hedef || !secim || !plan || !gorunum.kaydedilebilir) return;
+    await calistir('kaydediliyor', async (signal) => {
+      const s = await kaydet(hedef, secim, plan, ayarlar, bugun, kip, signal);
+      signal.throwIfAborted();
+      gonder({ tur: 'kaydedildi', hedef: s.hedef });
+      s.ledDosyalari = Object.values(oturum.kaynaklar).flatMap((k) =>
+        k.bayt ? [{ ad: k.dosyaAdi, bayt: k.bayt }] : [],
+      );
+      setSonuc(s);
+    });
+  };
 
   return {
     oturum,
     gorunum,
     mesgul,
     hata,
+    islem,
     sonuc,
     hatirlanan,
     bugun,
     hataKapat: () => setHata(null),
     sonucKapat: () => setSonuc(null),
-    driveHedefAc: async (d: SecilenDosya) => {
-      if (!(await calistir('aciliyor', () => hedefYukle(d))))
+    driveHedefAc: async (d: SecilenDosya, disSignal?: AbortSignal) => {
+      if (
+        !(await calistir('aciliyor', (signal) =>
+          hedefYukle(d, disSignal ? AbortSignal.any([disSignal, signal]) : signal),
+        ))
+      )
         throw new KullaniciHatasi('Depo kontrol dosyası açılamadı. Ekrandaki hata açıklamasına bakın.');
     },
     hedefSec,

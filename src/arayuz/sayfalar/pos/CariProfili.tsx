@@ -1,3 +1,4 @@
+import type { IslemSonucu } from '../../../cekirdek/islemSonucu';
 import { useState } from 'react';
 import { numaraMaskesi, type PosCari } from '../../../cekirdek/posCari';
 import { kartMaskesi, type PosKart } from '../../../cekirdek/posKart';
@@ -19,8 +20,8 @@ export function CariProfili({
   mesgul: boolean;
   gizlilikNo: number;
   duzenle: () => void;
-  kartKaydet: (k: PosKart) => Promise<boolean>;
-  kartSil: (k: PosKart) => Promise<boolean>;
+  kartKaydet: (k: PosKart) => Promise<IslemSonucu>;
+  kartSil: (k: PosKart) => Promise<IslemSonucu>;
   bildir: (m: string, h?: boolean) => void;
 }) {
   const [onayNo, setOnayNo] = useState<number | null>(null);
@@ -48,7 +49,6 @@ export function CariProfili({
         mesgul={mesgul}
         gizlilikNo={gizlilikNo}
         firmaOnay={firmaOnay}
-        bildir={bildir}
         kaydet={kartKaydet}
         kartDegisti={() => setOnayNo(null)}
         sil={(k) => {

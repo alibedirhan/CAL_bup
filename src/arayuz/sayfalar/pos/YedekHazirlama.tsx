@@ -1,6 +1,8 @@
+import { FormHatasi } from '../../bilesenler/FormHatasi';
+import type { IslemSonucu } from '../../../cekirdek/islemSonucu';
 import { useState } from 'react';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
-import { yeniKasaParolasiDogrula } from '../../../cekirdek/posParola';
+import { yedekParolasiDogrula } from '../../../cekirdek/posParola';
 
 export function YedekHazirlama({
   mesgul,
@@ -8,7 +10,7 @@ export function YedekHazirlama({
   vazgec,
 }: {
   mesgul: boolean;
-  hazirla: (parola: string) => Promise<boolean>;
+  hazirla: (parola: string) => Promise<IslemSonucu>;
   vazgec: () => void;
 }) {
   const [parola, setParola] = useState('');
@@ -25,7 +27,7 @@ export function YedekHazirlama({
         const p = String(d.get('yedekParolasi') ?? '');
         const t = String(d.get('yedekTekrar') ?? '');
         try {
-          yeniKasaParolasiDogrula(p, t, true);
+          yedekParolasiDogrula(p, t);
         } catch (e) {
           setHata(e instanceof KullaniciHatasi ? e.message : 'Yedek parolasını kontrol edin.');
           return;
@@ -34,7 +36,8 @@ export function YedekHazirlama({
         setTekrar('');
         setHata('');
         void hazirla(p).then((tamam) => {
-          if (tamam) vazgec();
+          if (tamam.durum === 'tamam') vazgec();
+          else setHata(tamam.mesaj);
         });
       }}
     >
@@ -72,11 +75,7 @@ export function YedekHazirlama({
           setHata('');
         }}
       />
-      {hata && (
-        <p className="alan-hatasi" role="alert">
-          {hata}
-        </p>
-      )}
+      <FormHatasi hata={hata} id="YedekHazirlama-hata" />
       <div className="satir-dugmeleri">
         <button className="dugme birincil" type="submit" disabled={mesgul}>
           Yedeği şifrele ve indir

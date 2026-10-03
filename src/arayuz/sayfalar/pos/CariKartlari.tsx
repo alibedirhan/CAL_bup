@@ -1,8 +1,10 @@
+import { useIslem } from '../../bilesenler/useIslem';
+import { IslemBildirimi } from '../../bilesenler/IslemBildirimi';
+import type { IslemSonucu } from '../../../cekirdek/islemSonucu';
 import { useState } from 'react';
 import type { PosCari } from '../../../cekirdek/posCari';
 import { kartMaskesi, kartSuresiGecti, type PosKart } from '../../../cekirdek/posKart';
 import { posBilgisiniKopyala } from '../../../platform/posGiris';
-import { KullaniciHatasi } from '../../../cekirdek/hata';
 import { KartFormu } from './KartFormu';
 
 export function CariKartlari({
@@ -13,7 +15,6 @@ export function CariKartlari({
   gizlilikNo,
   kaydet,
   sil,
-  bildir,
   kartDegisti,
 }: {
   cari: PosCari;
@@ -21,25 +22,25 @@ export function CariKartlari({
   mesgul: boolean;
   firmaOnay: boolean;
   gizlilikNo: number;
-  kaydet: (k: PosKart) => Promise<boolean>;
+  kaydet: (k: PosKart) => Promise<IslemSonucu>;
   sil: (k: PosKart) => void;
-  bildir: (m: string, hata?: boolean) => void;
   kartDegisti: () => void;
 }) {
+  const kopyalama = useIslem('kart-kopyalama');
+  const blok = mesgul || kopyalama.mesgul;
   const [seciliId, setSeciliId] = useState<string | null>(null);
   const [form, setForm] = useState<{ kart: PosKart | null; no: number } | null>(null);
   const [gosterNo, setGosterNo] = useState<number | null>(null);
   const secili = kartlar.find((k) => k.id === seciliId && k.cariId === cari.id);
-  const izinli = Boolean(secili && !kartSuresiGecti(secili) && firmaOnay && !mesgul);
+  const izinli = Boolean(secili && !kartSuresiGecti(secili) && firmaOnay && !blok);
   const acik = izinli && gosterNo === gizlilikNo;
   const kopyala = (tur: 'numara' | 'tarih' | 'sahibi') => {
     if (!izinli || !secili) return;
     const s = tur === 'tarih' ? `${secili.ay}/${secili.yil}` : secili[tur];
-    void posBilgisiniKopyala(s)
-      .then(() => bildir('Seçili kart bilgisi kopyalandı. POS’taki ilgili alana yapıştırın.'))
-      .catch((e: unknown) =>
-        bildir(e instanceof KullaniciHatasi ? e.message : 'Kopyalanamadı. Elle yazın.', true),
-      );
+    void kopyalama.calistir(async (signal) => {
+      await posBilgisiniKopyala(s);
+      signal.throwIfAborted();
+    }, 'Seçili kart bilgisi kopyalandı. POS’taki ilgili alana yapıştırın.');
   };
   return (
     <section className="kart" aria-labelledby="pos-kartlar-baslik">
@@ -50,7 +51,7 @@ export function CariKartlari({
         <button
           className="dugme"
           type="button"
-          disabled={mesgul || kartlar.length >= 10}
+          disabled={blok || kartlar.length >= 10}
           onClick={() => {
             setGosterNo(null);
             setForm({ kart: null, no: gizlilikNo });
@@ -76,7 +77,7 @@ export function CariKartlari({
                 <button
                   className="pos-odeme-karti"
                   type="button"
-                  disabled={mesgul || eski}
+                  disabled={blok || eski}
                   aria-pressed={k.id === seciliId}
                   onClick={() => {
                     if (seciliId !== k.id) kartDegisti();
@@ -96,7 +97,7 @@ export function CariKartlari({
                   <button
                     className="dugme kucuk"
                     type="button"
-                    disabled={mesgul}
+                    disabled={blok}
                     aria-label={`${k.ad} kartını düzenle`}
                     onClick={() => {
                       setGosterNo(null);
@@ -108,7 +109,7 @@ export function CariKartlari({
                   <button
                     className="dugme kucuk hayalet"
                     type="button"
-                    disabled={mesgul}
+                    disabled={blok}
                     aria-label={`${k.ad} kartını sil`}
                     onClick={() => sil(k)}
                   >
@@ -177,6 +178,7 @@ export function CariKartlari({
           </p>
         </div>
       )}
+      <IslemBildirimi islem={kopyalama} />
       {form && form.no === gizlilikNo && (
         <KartFormu
           key={form.kart?.id ?? 'yeni'}

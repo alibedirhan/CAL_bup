@@ -85,8 +85,11 @@ export async function kaydet(
   ayarlar: Ayarlar,
   bugun: Tarih,
   kip: 'dosyaya' | 'indir',
+  signal?: AbortSignal,
 ): Promise<KayitSonucu> {
+  signal?.throwIfAborted();
   const motor = await motorYukle();
+  signal?.throwIfAborted();
 
   if (kip === 'dosyaya') {
     if (!hedef.tanitici) throw new KullaniciHatasi('Bu tarayıcı dosyanın üzerine kaydedemiyor; indirin.');
@@ -107,9 +110,11 @@ export async function kaydet(
 
   // Oluşan dosya tekrar açılabilir olmalı; bu kontrol indirme/yazmadan önce yapılır.
   const yeniHedef = await hedefAc({ ad: hedef.ad, bayt, sonDegisiklik: Date.now() }, ayarlar, bugun);
+  signal?.throwIfAborted();
   let yenidenAcUyarisi: string | null = null;
   let yedekId: string | null = null;
   if (kip === 'dosyaya' && hedef.tanitici) {
+    signal?.throwIfAborted();
     yedekId = await yedekAl(hedef.ad, hedef.bayt);
     if (!yedekId)
       throw new KullaniciHatasi(
@@ -118,8 +123,10 @@ export async function kaydet(
     const sonDisk = await dosyaOku(await hedef.tanitici.getFile());
     if (sonDisk.bayt.length !== hedef.bayt.length || !sonDisk.bayt.every((b, i) => b === hedef.bayt[i]))
       throw new KullaniciHatasi('Depo kontrol dosyası işlem sırasında değişti. Yeniden açın.');
-    await dosyayaYaz(hedef.tanitici, bayt);
+    signal?.throwIfAborted();
+    await dosyayaYaz(hedef.tanitici, bayt, signal);
   } else {
+    signal?.throwIfAborted();
     indir(bayt, hedef.ad);
   }
 

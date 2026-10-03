@@ -131,3 +131,19 @@ ExcelJS 4.4.0 sürümüne sabitlenmiştir; yükseltirken aşağıdakileri ve alt
 
 Sayfa sırası `orderNo` ile belirlenir. ExcelJS hücre tarihlerini UTC verir; `kaynaklar/excel.ts`
 aynı takvim gününü yerel saatte kurar.
+
+## İşlem sonuçları ve OCR (1.5.0)
+
+`cekirdek/islemSonucu.ts` kapsam/kimlik/kod ve tamam/doğrulama/hata/iptal/belirsiz sözleşmesidir.
+`platform/islemOturumu.ts` enjekte edilen işlevlere AbortSignal verir; tek işlem, süre ve nesil denetler.
+`arayuz/bilesenler/useIslem` geç sonucu bağlı olmayan/yeni kapsama uygulamaz. POS atomik depo sınıfı
+mevcut CAS/nesil korumasıyla aynı saf sonuç sözleşmesini döndürür. Belirsiz yazı otomatik tekrarlanmaz.
+
+`FormHatasi` kendi formuna odaklanır/scroll eder; `BildirimAlani` tek genel görünür duyuruyu yönetir.
+`HataSiniri` ham hata/yığın günlüğü olmadan kurtarma ekranı sunar. Drive sinyalleri çok adımlı akış ve
+fetch'e taşınır; iptal edilmiş OAuth yanıtı token açamaz. Dosya yazısı kapanmadan başarı sayılmaz.
+
+OCR görüntü/motor/aday adaptörleri `platform/ocr/` içinde; `useKartFotografi` geçici okuma taslağıdır.
+`FotoAdaylari` açık kontrolle PAN/tarih çiftini uygular, profil kurallarını atlamaz. Tesseract.js 7.0.0
+worker protokolü sabitlenmiştir; yükseltme arıza/iptal/matris testlerini geçmelidir. Ödeme hesabı ve rapor
+saf planı değişmedi. Ayrıntı ve ölçüm sınırları: [kapanış raporu](OCR_VE_BILDIRIM_UYGULAMA_SONUCU.md).

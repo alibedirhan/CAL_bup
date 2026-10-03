@@ -108,9 +108,21 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.4.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.5.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-04 OCR/bildirim üç aşaması (1.5.0):** Kullanıcı aşamaları sırayla uygulamayı yetkilendirdi.
+20 bulgu kod/regresyon düzeyinde giderildi; [kapanış raporu](docs/OCR_VE_BILDIRIM_UYGULAMA_SONUCU.md).
+Modal hata özeti, tek görünür bildirim, kesin ayar/geçmiş/yedek sonuçları, worker kurulum iptali;
+geçici fotoğraf önizleme/döndürme/kırpma ve açık aday uygulaması; ortak işlem denetimi/Drive sinyali/
+React kurtarma ekranı. 341 yerel test + 49 Chromium senaryosu, 17 OCR referansı başarılı.
+İlk 15 resimde 90/270 dönüşüm kadrajı rakamı kesiyordu; kayıp rakam tahmin edilmez, yeni matris
+boyutu koruyarak dönüşümü sınar. Windows/gerçek fotoğraf/Google/banka kabulü yapılmış sayılmaz.
+OCR motoru native worker referansını kurulumdan önce alır; Tesseract.js 7.0.0 protokolü sabittir.
+Paket yükseltirken model/worker/WASM arızası, iptal/timeout ve gerçek OCR matrisi zorunludur.
+Fotoğraf/ham OCR/CVV/PAN/telefon veya bunların hash'lerini günlük, test ve yayın varlıklarına koyma.
+[İlk araştırma](docs/OCR_VE_BILDIRIM_ARASTIRMA_RAPORU.md) tarihsel 1.4.0 kaydıdır.
 
 **2026-10-03 profil tamamlaması (1.4.0):** Kullanıcı eksik kalan Sanal POS işlerinin tamamlanmasını
 istedi. Gerçek cari profilinde kart ekleme/düzenleme/silme, isimli maskeli kartlar, iletişim telefonu,

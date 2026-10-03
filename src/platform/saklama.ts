@@ -12,10 +12,12 @@ export function oku(anahtar: string): string | null {
   }
 }
 
-export function yaz(anahtar: string, deger: string): void {
+export function yaz(anahtar: string, deger: string): boolean {
   try {
-    globalThis.localStorage?.setItem(ONEK + anahtar, deger);
+    if (!globalThis.localStorage) return false;
+    globalThis.localStorage.setItem(ONEK + anahtar, deger);
+    return globalThis.localStorage.getItem(ONEK + anahtar) === deger;
   } catch {
-    // Kaydedilemezse yalnızca bu oturumda geçerli olur.
+    return false;
   }
 }

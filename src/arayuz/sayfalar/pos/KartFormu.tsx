@@ -1,9 +1,11 @@
+import { kartFormunuDenetle } from '../../../cekirdek/posFormDenetimi';
+import { FormHatasi } from '../../bilesenler/FormHatasi';
+import { KartFotografi } from './KartFotografi';
+import type { IslemSonucu } from '../../../cekirdek/islemSonucu';
 import { useEffect, useRef, useState } from 'react';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
 import { kartDogrula, kartSuresiGecti, type PosKart } from '../../../cekirdek/posKart';
 import type { PosCari } from '../../../cekirdek/posCari';
-import { EN_BUYUK_KART_FOTOGRAFI, type KartOkumaSonucu } from '../../../cekirdek/posKartFotografi';
-import { kartFotografiniOku } from '../../../platform/posKartOkuma';
 
 export function KartFormu({
   cari,
@@ -15,7 +17,7 @@ export function KartFormu({
   cari: PosCari;
   kart: PosKart | null;
   mesgul: boolean;
-  kaydet: (kart: PosKart) => Promise<boolean>;
+  kaydet: (kart: PosKart) => Promise<IslemSonucu>;
   vazgec: () => void;
 }) {
   const [ad, setAd] = useState(kart?.ad ?? '');
@@ -26,76 +28,32 @@ export function KartFormu({
   const [telefon, setTelefon] = useState(kart?.telefon ?? '');
   const [kontrol, setKontrol] = useState(false);
   const [hata, setHata] = useState('');
-  const [bilgi, setBilgi] = useState('');
+  const [alanlar, setAlanlar] = useState<Record<string, string>>({});
+  const [formNo, setFormNo] = useState(0);
   const [okunuyor, setOkunuyor] = useState(false);
-  const [yuzde, setYuzde] = useState(0);
-  const [adaylar, setAdaylar] = useState<KartOkumaSonucu | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
-  const iptal = useRef<AbortController | null>(null);
   const bagli = useRef(false);
-  const kilit = useRef(false);
   useEffect(() => {
     bagli.current = true;
     const pencere = dialog.current;
     pencere?.showModal();
     return () => {
       bagli.current = false;
-      iptal.current?.abort();
       pencere?.close();
     };
   }, []);
   const degistir = (f: (s: string) => void, deger: string) => {
     f(deger);
+    setFormNo((n) => n + 1);
     setKontrol(false);
     setHata('');
-  };
-  const oku = async (dosya: File) => {
-    if (kilit.current || mesgul) return;
-    if (dosya.size > EN_BUYUK_KART_FOTOGRAFI) {
-      setHata('Fotoğraf en fazla 10 MB olabilir.');
-      return;
-    }
-    iptal.current?.abort();
-    const c = new AbortController();
-    iptal.current = c;
-    kilit.current = true;
-    setOkunuyor(true);
-    setYuzde(0);
-    setHata('');
-    setBilgi('');
-    setKontrol(false);
-    setAdaylar(null);
-    try {
-      const sonuc = await kartFotografiniOku(dosya, c.signal, (p) => {
-        if (bagli.current && !c.signal.aborted) setYuzde(p);
-      });
-      if (!bagli.current || c.signal.aborted) return;
-      setAdaylar(sonuc);
-      const n = sonuc.numaralar[0];
-      const t = sonuc.tarihler[0];
-      if (sonuc.numaralar.length === 1 && n) setNumara(n);
-      if (sonuc.tarihler.length === 1 && t) {
-        setAy(t.ay);
-        setYil(t.yil);
-      }
-      setBilgi(
-        sonuc.numaralar.length || sonuc.tarihler.length
-          ? 'Bulunan alanları fotoğrafla karşılaştırın. Eksik veya yanlış alanları elle düzeltin.'
-          : 'Numara veya tarih okunamadı. Daha net bir fotoğraf seçebilir veya elle ekleyebilirsiniz.',
-      );
-    } catch (e) {
-      if (bagli.current && !c.signal.aborted)
-        setHata(e instanceof KullaniciHatasi ? e.message : 'Fotoğraf okunamadı. Elle devam edin.');
-    } finally {
-      kilit.current = false;
-      if (bagli.current) setOkunuyor(false);
-    }
+    setAlanlar({});
   };
   const simdi = new Date().getFullYear();
   const yillar = [
     ...new Set([
       ...(kart ? [kart.yil] : []),
-      ...(adaylar?.tarihler.map((t) => t.yil) ?? []),
+      ...(yil ? [yil] : []),
       ...Array.from({ length: 15 }, (_, i) => String(simdi + i)),
     ]),
   ].sort();
@@ -124,56 +82,20 @@ export function KartFormu({
       <p>
         Bu kart <b>{cari.ad}</b> profiline kaydedilecek.
       </p>
-      <div className="pos-fotograf">
-        <label htmlFor="pos-kart-fotograf">Kart fotoğrafından numara ve tarih oku</label>
-        <input
-          id="pos-kart-fotograf"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          disabled={mesgul || okunuyor}
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            e.target.value = '';
-            if (f) void oku(f);
-          }}
-        />
-        <p className="ipucu">
-          İsteğe bağlı. Fotoğraf bu tarayıcıda okunur, kaydedilmez ve gönderilmez. CVV çıkarılmaz.
-          JPG/PNG/WebP, en fazla 10 MB.
-        </p>
-        {okunuyor && (
-          <div className="satir-dugmeleri">
-            <p role="status">Fotoğraf okunuyor… %{yuzde}</p>
-            <button className="dugme kucuk" type="button" onClick={() => iptal.current?.abort()}>
-              Okumayı durdur
-            </button>
-          </div>
-        )}
-        {bilgi && <p role="status">{bilgi}</p>}
-        {adaylar && adaylar.numaralar.length > 1 && (
-          <label>
-            Birden fazla numara bulundu
-            <select
-              className="girdi"
-              value=""
-              onChange={(e) => {
-                const n = adaylar.numaralar[Number(e.target.value)];
-                if (n) degistir(setNumara, n);
-              }}
-            >
-              <option value="">Numarayı son dört rakamına göre seçin</option>
-              {adaylar.numaralar.map((n, i) => (
-                <option key={i} value={i}>
-                  •••• {n.slice(-4)}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-        {adaylar && adaylar.tarihler.length > 1 && (
-          <p className="ipucu">Birden fazla tarih bulundu. Son kullanma tarihini aşağıda elle seçin.</p>
-        )}
-      </div>
+      <KartFotografi
+        mesgul={mesgul}
+        formNo={formNo}
+        durum={setOkunuyor}
+        uygula={(n, t) => {
+          setNumara(n);
+          setAy(t?.ay ?? '');
+          setYil(t?.yil ?? '');
+          setKontrol(false);
+          setHata('');
+          setAlanlar({});
+        }}
+      />
+      <FormHatasi hata={hata} id="pos-kart-hata" />
       <form
         className="pos-form"
         noValidate
@@ -183,11 +105,7 @@ export function KartFormu({
           if (mesgul || okunuyor) return;
           setHata('');
           try {
-            if (!kontrol)
-              throw new KullaniciHatasi(
-                'Kaydetmeden önce kartı ve bağlı cariyi kontrol edip kutuyu işaretleyin.',
-              );
-            const k = kartDogrula({
+            const taslak = {
               id: kart?.id ?? crypto.randomUUID(),
               cariId: cari.id,
               ad,
@@ -197,10 +115,19 @@ export function KartFormu({
               yil,
               telefon,
               onayTarihi: new Date().toISOString(),
-            });
+            };
+            const hatalar = kartFormunuDenetle(taslak, kontrol);
+            setAlanlar(hatalar);
+            if (Object.keys(hatalar).length) {
+              setHata(Object.values(hatalar).join(' '));
+              return;
+            }
+            const k = kartDogrula(taslak);
             if (kartSuresiGecti(k)) throw new KullaniciHatasi('Kartın son kullanma tarihi geçmiş.');
             void kaydet(k).then((tamam) => {
-              if (tamam && bagli.current) vazgec();
+              if (!bagli.current) return;
+              if (tamam.durum === 'tamam') vazgec();
+              else setHata(tamam.mesaj);
             });
           } catch (e) {
             setHata(e instanceof KullaniciHatasi ? e.message : 'Kart bilgilerini kontrol edin.');
@@ -210,6 +137,8 @@ export function KartFormu({
         <label htmlFor="pos-kart-ad">Karta vereceğiniz isim</label>
         <input
           id="pos-kart-ad"
+          aria-invalid={Boolean(alanlar['pos-kart-ad'])}
+          aria-describedby={alanlar['pos-kart-ad'] ? 'pos-kart-hata' : undefined}
           className="girdi"
           maxLength={80}
           placeholder="Örn. Şirket kartı"
@@ -221,6 +150,8 @@ export function KartFormu({
         <label htmlFor="pos-kart-numara">Kart numarası</label>
         <input
           id="pos-kart-numara"
+          aria-invalid={Boolean(alanlar['pos-kart-numara'])}
+          aria-describedby={alanlar['pos-kart-numara'] ? 'pos-kart-hata' : undefined}
           className="girdi rakam"
           inputMode="numeric"
           maxLength={23}
@@ -233,6 +164,8 @@ export function KartFormu({
         <label htmlFor="pos-kart-sahibi">Kart üzerindeki ad</label>
         <input
           id="pos-kart-sahibi"
+          aria-invalid={Boolean(alanlar['pos-kart-sahibi'])}
+          aria-describedby={alanlar['pos-kart-sahibi'] ? 'pos-kart-hata' : undefined}
           className="girdi"
           maxLength={120}
           value={sahibi}
@@ -244,6 +177,9 @@ export function KartFormu({
             Son kullanma ayı
             <select
               className="girdi"
+              id="pos-kart-ay"
+              aria-invalid={Boolean(alanlar['pos-kart-ay'])}
+              aria-describedby={alanlar['pos-kart-ay'] ? 'pos-kart-hata' : undefined}
               aria-label="Son kullanma ayı"
               value={ay}
               disabled={mesgul || okunuyor}
@@ -259,6 +195,9 @@ export function KartFormu({
             Son kullanma yılı
             <select
               className="girdi"
+              id="pos-kart-yil"
+              aria-invalid={Boolean(alanlar['pos-kart-yil'])}
+              aria-describedby={alanlar['pos-kart-yil'] ? 'pos-kart-hata' : undefined}
               aria-label="Son kullanma yılı"
               value={yil}
               disabled={mesgul || okunuyor}
@@ -274,6 +213,7 @@ export function KartFormu({
         <label htmlFor="pos-kart-telefon">Kart sahibinin iletişim telefonu (isteğe bağlı)</label>
         <input
           id="pos-kart-telefon"
+          aria-invalid={Boolean(alanlar['pos-kart-telefon'])}
           className="girdi"
           inputMode="tel"
           maxLength={24}
@@ -281,7 +221,9 @@ export function KartFormu({
           disabled={mesgul || okunuyor}
           placeholder="05xx xxx xx xx"
           onChange={(e) => degistir(setTelefon, e.target.value)}
-          aria-describedby="pos-kart-telefon-notu"
+          aria-describedby={
+            alanlar['pos-kart-telefon'] ? 'pos-kart-hata pos-kart-telefon-notu' : 'pos-kart-telefon-notu'
+          }
         />
         <p id="pos-kart-telefon-notu" className="ipucu">
           Bu kayıt bankadaki telefonu değiştirmez. Doğrulama SMS’inin veya mobil onayın gideceği yeri banka
@@ -292,6 +234,9 @@ export function KartFormu({
         </p>
         <label className="pos-onay">
           <input
+            id="pos-kart-onay"
+            aria-invalid={Boolean(alanlar['pos-kart-onay'])}
+            aria-describedby={alanlar['pos-kart-onay'] ? 'pos-kart-hata' : undefined}
             type="checkbox"
             checked={kontrol}
             disabled={mesgul || okunuyor}
@@ -299,11 +244,6 @@ export function KartFormu({
           />
           Kart bilgilerini ve bu cari altında kaydetmeyi kontrol ettim.
         </label>
-        {hata && (
-          <p className="alan-hatasi" role="alert">
-            {hata}
-          </p>
-        )}
         <div className="satir-dugmeleri">
           <button className="dugme birincil" type="submit" disabled={mesgul || okunuyor}>
             Kartı kaydet

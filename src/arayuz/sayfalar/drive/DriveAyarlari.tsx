@@ -1,4 +1,9 @@
-import { useRef, useState } from 'react';
+import type { IslemSonucu } from '../../../cekirdek/islemSonucu';
+import { KullaniciHatasi } from '../../../cekirdek/hata';
+import { useIslem } from '../../bilesenler/useIslem';
+import { IslemBildirimi } from '../../bilesenler/IslemBildirimi';
+import { Bildirim } from '../../bilesenler/Bildirim';
+import { useState } from 'react';
 import type { Ayarlar } from '../../../cekirdek/ayarlar';
 import { driveListele, type DriveDosyasi } from '../../../platform/drive';
 import {
@@ -17,39 +22,27 @@ import {
   istemciKimligi,
 } from '../../../platform/driveKimlik';
 import { Mesaj } from '../../bilesenler/Mesaj';
-import { driveHatasi, useDrive } from './useDrive';
+import { useDrive } from './useDrive';
 
 export function DriveAyarlari({
   ayarlar,
   ayarDegisti,
 }: {
   ayarlar: Ayarlar;
-  ayarDegisti: (a: Ayarlar) => void;
+  ayarDegisti: (a: Ayarlar) => IslemSonucu;
 }) {
   const bagli = useDrive();
   const [kimlik, setKimlik] = useState(istemciKimligi);
   const [hazir, setHazir] = useState(driveHazir);
-  const [mesgul, setMesgul] = useState(false);
-  const kilit = useRef(false);
+  const islem = useIslem('drive-ayar');
+  const mesgul = islem.mesgul;
   const [mesaj, setMesaj] = useState('');
-  const [hata, setHata] = useState('');
   const [liste, setListe] = useState<DriveDosyasi[]>([]);
   const [secim, setSecim] = useState<DriveOturumu | null>(null);
   const [izinOnayi, setIzinOnayi] = useState(false);
-  const is = async (eylem: () => Promise<void>) => {
-    if (kilit.current) return;
-    kilit.current = true;
-    setMesgul(true);
-    setHata('');
+  const is = async (eylem: (signal: AbortSignal) => Promise<void>, yazma = false) => {
     setMesaj('');
-    try {
-      await eylem();
-    } catch (e) {
-      setHata(driveHatasi(e));
-    } finally {
-      kilit.current = false;
-      setMesgul(false);
-    }
+    return islem.calistir(eylem, '', yazma);
   };
   return (
     <section className="kart" aria-labelledby="drive-baslik">
@@ -116,9 +109,10 @@ export function DriveAyarlari({
               className="dugme"
               disabled={mesgul || !kimlik.trim()}
               onClick={() =>
-                void is(async () => {
+                void is(async (signal) => {
                   istemciKaydet(kimlik.trim());
-                  await driveHazirla();
+                  await driveHazirla(signal);
+                  signal.throwIfAborted();
                   setHazir(true);
                   setMesaj('Bağlantı hazır. Şimdi Drive’a bağlanın.');
                 })
@@ -131,8 +125,9 @@ export function DriveAyarlari({
               className="dugme birincil"
               disabled={mesgul || !hazir}
               onClick={() =>
-                void is(async () => {
-                  await driveBaglan();
+                void is(async (signal) => {
+                  await driveBaglan(signal);
+                  signal.throwIfAborted();
                   setListe([]);
                   setSecim(null);
                   setMesaj('Drive’a bağlandınız. Raporu kaydettikten sonra Drive’a da gönderebilirsiniz.');
@@ -152,10 +147,11 @@ export function DriveAyarlari({
               className="dugme birincil"
               disabled={mesgul}
               onClick={() =>
-                void is(async () => {
-                  await driveEsitle(ayarlar);
+                void is(async (signal) => {
+                  await driveEsitle(ayarlar, signal);
+                  signal.throwIfAborted();
                   setMesaj('Ayarlar Drive’a kaydedildi, geçmiş iki taraftan birleştirildi.');
-                })
+                }, true)
               }
             >
               Ayarları ve geçmişi eşitle
@@ -165,9 +161,11 @@ export function DriveAyarlari({
               className="dugme"
               disabled={mesgul}
               onClick={() =>
-                void is(async () => {
+                void is(async (signal) => {
                   setSecim(null);
-                  setListe(await driveListele('oturum'));
+                  const l = await driveListele('oturum', signal);
+                  signal.throwIfAborted();
+                  setListe(l);
                   setMesaj('Drive kayıtları aşağıda listelendi.');
                 })
               }
@@ -204,13 +202,14 @@ export function DriveAyarlari({
                   className="dugme"
                   disabled={mesgul}
                   onClick={() =>
-                    void is(async () => {
+                    void is(async (signal) => {
                       await driveIzniKaldir();
+                      signal.throwIfAborted();
                       setIzinOnayi(false);
                       setListe([]);
                       setSecim(null);
                       setMesaj('Google izni kaldırıldı.');
-                    })
+                    }, true)
                   }
                 >
                   Evet, izni kaldır
@@ -234,9 +233,11 @@ export function DriveAyarlari({
                     className="dugme kucuk"
                     disabled={mesgul}
                     onClick={() =>
-                      void is(async () => {
+                      void is(async (signal) => {
                         setSecim(null);
-                        setSecim(await driveOturumOku(d));
+                        const o = await driveOturumOku(d, signal);
+                        signal.throwIfAborted();
+                        setSecim(o);
                       })
                     }
                   >
@@ -261,11 +262,12 @@ export function DriveAyarlari({
                   className="dugme"
                   disabled={mesgul}
                   onClick={() =>
-                    void is(async () => {
-                      await driveGecmisiUygula(secim);
+                    void is(async (signal) => {
+                      await driveGecmisiUygula(secim, signal);
+                      signal.throwIfAborted();
                       setSecim(null);
                       setMesaj('Geçmiş bu tarayıcıya getirildi.');
-                    })
+                    }, true)
                   }
                 >
                   Yalnız geçmişi getir
@@ -274,12 +276,15 @@ export function DriveAyarlari({
                   className="dugme"
                   disabled={mesgul}
                   onClick={() =>
-                    void is(async () => {
-                      await driveGecmisiUygula(secim);
-                      ayarDegisti(secim.ayarlar);
+                    void is(async (signal) => {
+                      await driveGecmisiUygula(secim, signal);
+                      signal.throwIfAborted();
+                      const kayit = ayarDegisti(secim.ayarlar);
+                      if (kayit.durum !== 'tamam')
+                        throw new KullaniciHatasi('Geçmiş birleştirildi. ' + kayit.mesaj);
                       setSecim(null);
                       setMesaj('Ayarlar getirildi, geçmiş birleştirildi.');
-                    })
+                    }, true)
                   }
                 >
                   Ayarları ve geçmişi getir
@@ -292,9 +297,8 @@ export function DriveAyarlari({
           )}
         </>
       )}
-      {mesgul && <p role="status">Drive işlemi sürüyor…</p>}
-      {hata && <Mesaj ton="hata">{hata}</Mesaj>}
-      {mesaj && <Mesaj ton="tamam">{mesaj}</Mesaj>}
+      <IslemBildirimi islem={islem} />
+      <Bildirim mesaj={mesaj} />
     </section>
   );
 }

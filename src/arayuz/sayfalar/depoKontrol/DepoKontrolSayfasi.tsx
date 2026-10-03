@@ -1,3 +1,4 @@
+import { IslemBildirimi } from '../../bilesenler/IslemBildirimi';
 import { useRef, useState, type DragEvent } from 'react';
 import type { Ayarlar } from '../../../cekirdek/ayarlar';
 import type { RaporTanimi } from '../../../raporlar/kayit';
@@ -92,19 +93,7 @@ export function DepoKontrolSayfasi({ rapor, ayarlar }: { rapor: RaporTanimi; aya
           {MESGUL_METNI[dk.mesgul]}
         </div>
       )}
-      {dk.hata && (
-        <Mesaj
-          ton="hata"
-          baslik="İşlem tamamlanamadı"
-          eylem={
-            <button type="button" className="dugme kucuk" onClick={dk.hataKapat}>
-              Kapat
-            </button>
-          }
-        >
-          {dk.hata}
-        </Mesaj>
-      )}
+      <IslemBildirimi islem={dk.islem} />
 
       <div className="dk-izgara">
         <div className="dk-sol">

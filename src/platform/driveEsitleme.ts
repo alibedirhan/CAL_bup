@@ -1,3 +1,5 @@
+import { gecmisGecerli } from '../cekirdek/gecmis';
+export { gecmisGecerli } from '../cekirdek/gecmis';
 import { ayarGecerli } from '../cekirdek/ayarDenetimi';
 import { VARSAYILAN_AYARLAR, type Ayarlar } from '../cekirdek/ayarlar';
 import { KullaniciHatasi } from '../cekirdek/hata';
@@ -20,23 +22,6 @@ export interface DriveOturumu {
   gecmis: GecmisKaydi[];
 }
 const EN_BUYUK_OTURUM = 2 * 1024 * 1024;
-const metin = (v: unknown, en = 512) => typeof v === 'string' && v.length <= en;
-export function gecmisGecerli(v: unknown): v is GecmisKaydi {
-  const k = v as GecmisKaydi | null;
-  return (
-    !!k &&
-    metin(k.zaman, 40) &&
-    Number.isFinite(Date.parse(k.zaman)) &&
-    [k.rapor, k.dosya, k.sayfa].every((v) => metin(v)) &&
-    metin(k.aciklama, 100000) &&
-    ['Tamam', 'Uyarı', 'Hata'].includes(k.durum) &&
-    ['dosyaya', 'indirildi'].includes(k.kayit) &&
-    [k.ledStogu, k.depoSayimi, k.gelenMal].every((v) => typeof v === 'number' && Number.isFinite(v)) &&
-    Number.isInteger(k.uyariSayisi) &&
-    k.uyariSayisi >= 0 &&
-    k.uyariSayisi <= 100000
-  );
-}
 export function oturumCoz(metin: string): DriveOturumu {
   try {
     if (new TextEncoder().encode(metin).byteLength > EN_BUYUK_OTURUM) throw new Error();
@@ -68,20 +53,22 @@ export function gecmisBirlestir(a: readonly GecmisKaydi[], b: readonly GecmisKay
   for (const k of [...b, ...a]) kayitlar.set(anahtar(k), k);
   return [...kayitlar.values()].sort((a, b) => b.zaman.localeCompare(a.zaman)).slice(0, 500);
 }
-export async function driveOturumOku(d: DriveDosyasi): Promise<DriveOturumu> {
-  return oturumCoz(new TextDecoder('utf-8', { fatal: true }).decode(await driveIndir(d, EN_BUYUK_OTURUM)));
+export async function driveOturumOku(d: DriveDosyasi, signal?: AbortSignal): Promise<DriveOturumu> {
+  return oturumCoz(
+    new TextDecoder('utf-8', { fatal: true }).decode(await driveIndir(d, EN_BUYUK_OTURUM, signal)),
+  );
 }
 /** Geçmiş iki taraftan birleştirilir. Ayarlar sadece kullanıcının açık seçimiyle uygulanır. */
-export async function driveEsitle(a: Ayarlar): Promise<DriveDosyasi> {
+export async function driveEsitle(a: Ayarlar, signal?: AbortSignal): Promise<DriveDosyasi> {
   const token = driveToken();
-  const liste = await driveListele('oturum');
+  const liste = await driveListele('oturum', signal);
   const uzak: GecmisKaydi[] = [];
   // Birden fazla cihazın eş zamanlı kopyaları da korunur; otomatik üzerine yazma yoktur.
   for (const d of liste.slice(0, 10)) {
     driveHesabiDogrula(token);
-    uzak.push(...(await driveOturumOku(d)).gecmis);
+    uzak.push(...(await driveOturumOku(d, signal)).gecmis);
   }
-  const gecmis = gecmisBirlestir(await gecmisListesi(), uzak);
+  const gecmis = gecmisBirlestir(await gecmisListesi(true), uzak);
   if (!ayarGecerli(a)) throw new KullaniciHatasi('Ayarlar geçersiz.');
   const oturum: DriveOturumu = {
     surum: 1,
@@ -93,21 +80,31 @@ export async function driveEsitle(a: Ayarlar): Promise<DriveDosyasi> {
   if (bayt.byteLength > EN_BUYUK_OTURUM)
     throw new KullaniciHatasi('Geçmiş kaydı çok büyük. Önce CSV olarak arşivleyin.');
   driveHesabiDogrula(token);
-  const d = await driveYukle(`Ayarlar ve geçmiş ${oturum.zaman.replace(/[:.]/g, '-')}.json`, bayt, 'oturum');
+  const d = await driveYukle(
+    `Ayarlar ve geçmiş ${oturum.zaman.replace(/[:.]/g, '-')}.json`,
+    bayt,
+    'oturum',
+    signal,
+  );
+  signal?.throwIfAborted();
   driveHesabiDogrula(token);
   if (
-    !(await idb.guncelle('gecmis', (onceki) => gecmisBirlestir(Array.isArray(onceki) ? onceki : [], gecmis)))
+    !(await idb.guncelle('gecmis', (onceki) => {
+      signal?.throwIfAborted();
+      return gecmisBirlestir(Array.isArray(onceki) ? onceki : [], gecmis);
+    }))
   )
     throw new KullaniciHatasi(
       'Drive kopyası kaydedildi fakat bu tarayıcıda geçmiş saklanamadı. Site verisi iznini kontrol edin.',
     );
   return d;
 }
-export async function driveGecmisiUygula(o: DriveOturumu): Promise<void> {
+export async function driveGecmisiUygula(o: DriveOturumu, signal?: AbortSignal): Promise<void> {
   if (
-    !(await idb.guncelle('gecmis', (onceki) =>
-      gecmisBirlestir(Array.isArray(onceki) ? onceki : [], o.gecmis),
-    ))
+    !(await idb.guncelle('gecmis', (onceki) => {
+      signal?.throwIfAborted();
+      return gecmisBirlestir(Array.isArray(onceki) ? onceki : [], o.gecmis);
+    }))
   )
     throw new KullaniciHatasi('Geçmiş tarayıcıya kaydedilemedi. Site verisi iznini kontrol edin.');
 }

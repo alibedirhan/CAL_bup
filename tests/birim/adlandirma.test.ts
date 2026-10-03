@@ -1,3 +1,4 @@
+import { tamam } from '../../src/cekirdek/islemSonucu';
 import { readFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -40,7 +41,7 @@ describe('CAL bup adı ve yayın adresi', () => {
         tema: 'sistem',
         temaDegisti: () => {},
         ayarlar: VARSAYILAN_AYARLAR,
-        ayarDegisti: () => {},
+        ayarDegisti: () => tamam(undefined, '', { kapsam: 'ayarlar', islemId: 1 }),
       }),
     );
     expect(html).toContain('href="https://github.com/alibedirhan/CAL_bup"');

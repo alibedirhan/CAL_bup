@@ -1,3 +1,5 @@
+import { BildirimAlani } from './arayuz/bilesenler/BildirimAlani';
+import { HataSiniri } from './arayuz/bilesenler/HataSiniri';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import '@fontsource-variable/onest';
@@ -16,13 +18,17 @@ import { Uygulama } from './arayuz/Uygulama';
 import { kayitliTercih, temaUygula } from './arayuz/tema';
 
 // Tema ilk çizimden önce uygulanır, yoksa koyu temada bir an beyaz görünür.
-temaUygula(kayitliTercih());
+temaUygula(kayitliTercih(), false);
 
 const kok = document.getElementById('kok');
 if (!kok) throw new Error('#kok bulunamadı');
 
-createRoot(kok).render(
+createRoot(kok, { onCaughtError: () => undefined, onRecoverableError: () => undefined }).render(
   <StrictMode>
-    <Uygulama />
+    <HataSiniri>
+      <BildirimAlani>
+        <Uygulama />
+      </BildirimAlani>
+    </HataSiniri>
   </StrictMode>,
 );

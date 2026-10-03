@@ -250,3 +250,23 @@
   text-align: right;
   overflow-wrap: anywhere;
 }
+
+.bildirim {
+  position: fixed;
+  z-index: 80;
+  bottom: 18px;
+  right: 18px;
+  width: min(540px, calc(100vw - 36px));
+  max-height: 30dvh;
+  overflow-y: auto;
+  box-shadow: var(--golge);
+  border-radius: var(--yaricap);
+}
+.bildirim .mesaj {
+  margin: 0;
+  background: var(--yuzey);
+}
+[aria-invalid='true'] {
+  outline: 2px solid var(--hata);
+  outline-offset: 2px;
+}

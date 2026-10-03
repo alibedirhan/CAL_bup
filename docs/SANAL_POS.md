@@ -1,4 +1,4 @@
-# Sanal POS — 1.4.0
+# Sanal POS — 1.5.0
 
 Cari profili ve isimli kart yönetimi gerçek uygulamanın Sanal POS bölümündedir. Seçilen carinin
 altında “Kayıtlı kartlar / Kart ekle” görünür. Elle kart kaydı, fotoğraftan numara/tarih okuma,
@@ -11,7 +11,8 @@ numara/tarih/ad gösterme-kopyalama vardır. Tutar ve banka doğrulaması POS/ba
    öncesinde ayrı uzun parolalı eski cari yedeği indirme seçeneği vardır. Sonraki açılışlar PIN’sizdir.
 2. Cariyi seçin veya “Yeni cari” ile kaydedin. Kaydetme sonrası cari seçilir.
 3. “Kart ekle” ile kart adı, numara, son kullanma, kart üzerindeki ad ve isteğe bağlı telefonu girin.
-   Fotoğraf seçmek zorunlu değildir. Kaydetmeden önce kart ve cari kontrol kutusunu işaretleyin.
+   Fotoğraf seçmek zorunlu değildir. Okunan numara/tarihi fotoğrafla karşılaştırıp açıkça uygulayın;
+   gerekirse önizlemeden döndürün/kırpın. Kaydetmeden önce kart ve cari kontrol kutusunu işaretleyin.
 4. Kartı açıkça seçin. POS’a giriş yapın; firma adı/numara eşleşmesini kontrol ettiğinizi işaretleyin.
    Kart numarası gösterme ve kopyalama bundan sonra açılır. Bu beyan sağlayıcı doğrulaması değildir.
 5. Tutar, CVV ve banka doğrulaması yalnızca POS/banka ekranlarında tamamlanır.
@@ -82,15 +83,25 @@ fotoğrafını silemez. Unutulan yedek/eski kasa parolasını kurtarma servisi y
 10 MiB, 20 megapiksel; hareketli WebP reddedilir. Kod/HTML/SVG görüntü diye işlenmez. Çözülen boyut
 ikinci kez denetlenir. Okuma görüntüsü en uzun kenarı 2400 piksele düşürülerek geçici canvas’a çizilir.
 
-`platform/posKartOkuma.ts` Tesseract.js 7.0.0 ve sabitlenmiş İngilizce sayısal modeli ayrı worker’da
-çalıştırır. Worker, WASM ve model Vite eklentisiyle kendi yayınımıza konur; CDN veya harici OCR çağrısı
-yoktur. Model önbelleği kapalıdır. Sayısal karakter listesiyle yalnızca Luhn geçen numara ve tarih
-adayları çıkarılır; CVV/ad/telefon çıkarılmaz. Birden fazla aday kullanıcı seçimi/düzeltmesi ister.
-Okuma hiçbir zaman otomatik kayıt yapmaz. Formun kontrol kutusu alan değişiminde sıfırlanır.
+`platform/posKartOkuma.ts` Tesseract.js 7.0.0 modelini `platform/ocr/` adaptörüyle ayrı native
+worker'da çalıştırır. Referans worker oluşturulurken alınır; kurulum/model başarısız olsa bile
+iptal/90 saniye sınırı sonlandırmayı sağlar. Sürümün mesaj protokolüne bağımlı küçük adaptördür;
+bağımlılık yükseltmesinde gerçek OCR ve worker/model/WASM arıza testleri gerekir.
+Worker, WASM ve model kendi yayınımızdadır; CDN/harici OCR veya model önbelleği yoktur.
 
-İptal/form/rota/sekme çıkışında worker sonlandırılır, görüntü/canvas temizlenir ve geç sonuçlar
-kabul edilmez; okuma en geç 90 saniyede durur. Görüntü/ham metin/yedek/raw OCR depoya yazılmaz.
-JS/işletim sistemi belleğinin kesin silinmesi iddia edilmez. Gerçek fotoğraf test veya Git’te kullanılmaz.
+Dört yön, sınırlı küçük eğiklik ve kontrast dönüşümüyle en fazla beş deneme yapılır. Tuval kenarı
+2400 piksel sınırındadır; küçük görüntü en fazla iki kat büyütülür. Çıktı yalnızca Luhn geçen PAN,
+tarih adayları ve bu adayların geçici güven/konum bilgisidir. Ad/telefon/CVV çıkarılmaz; ham metin
+form/veri deposuna çıkmaz. Kesilen kenar adayları ve etiketsiz dört rakamlık olası CVV/tarih tahmin edilmez.
+
+Fotoğraf form alanlarını otomatik değiştirmez. Önizlemedeki adaylar ayrı seçilir, fotoğrafla kontrol
+kutusu ve “Kontrol ettiğim alanları uygula” ile PAN/tarih birlikte uygulanır. Eksik alanın boşaltılacağı
+önceden açıklanır; eski tarih yeni numarayla sessiz birleşmez. Elle değişiklik eski adayları kaldırır.
+Döndürme/kırpma sonrası yeniden okuma gerekir; bu kontrol kart sahipliği doğrulaması değildir.
+
+İptal/form/rota/sekme çıkışında worker, canvas ve önizleme URL'si kapatılır; eski sonuç uygulanmaz.
+Fotoğraf/ham OCR saklanmaz veya dışarı gönderilmez. JS/işletim sistemi belleğinin kesin silinmesi
+iddia edilmez. [Üç aşama kapanış ve ölçüm raporu](OCR_VE_BILDIRIM_UYGULAMA_SONUCU.md).
 
 ## Giriş isteği
 

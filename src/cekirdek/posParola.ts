@@ -29,3 +29,14 @@ export function yeniKasaParolasiDogrula(parola: string, tekrar: string, sadeceUz
   if (!tekrar) throw new KullaniciHatasi('Aynı kasa parolasını tekrar alanına da yazın.');
   if (parola !== tekrar) throw new KullaniciHatasi('İki kasa parolası aynı olmalı. Yazımı kontrol edin.');
 }
+
+export function yedekParolasiDogrula(parola: string, tekrar?: string): void {
+  if (!parola) throw new KullaniciHatasi('Yedek parolasını yazın.');
+  if (parola.trim().length < KASA_PAROLA_EN_AZ || parola.length > KASA_PAROLA_EN_FAZLA)
+    throw new KullaniciHatasi('Yedek parolası 14–128 karakter olmalı.');
+  if (tekrar !== undefined) {
+    if (parola !== parola.trim())
+      throw new KullaniciHatasi('Yedek parolasının başında veya sonunda boşluk olmasın.');
+    if (parola !== tekrar) throw new KullaniciHatasi('İki yedek parolası aynı olmalı.');
+  }
+}

@@ -81,7 +81,10 @@ export async function hatirlananHedef(): Promise<FileSystemFileHandle | null> {
 }
 
 export async function hedefiUnut(): Promise<void> {
-  await idb.sil(HEDEF_ANAHTARI);
+  if (!(await idb.sil(HEDEF_ANAHTARI)))
+    throw new KullaniciHatasi(
+      'Hatırlanan dosya tarayıcıdan kaldırılamadı. Site verisi iznini kontrol edip yeniden deneyin.',
+    );
 }
 
 type IzinliTanitici = FileSystemFileHandle & {
@@ -98,14 +101,29 @@ export async function yazmaIzni(tanitici: FileSystemFileHandle): Promise<boolean
 }
 
 /** Dosyanın üzerine yazar. Dosya Excel'de açıksa anlaşılır bir hata verir. */
-export async function dosyayaYaz(tanitici: FileSystemFileHandle, bayt: Uint8Array): Promise<void> {
+export async function dosyayaYaz(
+  tanitici: FileSystemFileHandle,
+  bayt: Uint8Array,
+  signal?: AbortSignal,
+): Promise<void> {
+  signal?.throwIfAborted();
   if (!(await yazmaIzni(tanitici))) {
     throw new KullaniciHatasi('Dosyaya yazma izni verilmedi. Yeni dosya olarak indirebilirsiniz.');
   }
+  let yazici: FileSystemWritableFileStream | undefined;
+  let kapandi = false;
+  const iptal = () => {
+    void yazici?.abort().catch(() => undefined);
+  };
+  signal?.addEventListener('abort', iptal, { once: true });
   try {
-    const yazici = await tanitici.createWritable();
+    signal?.throwIfAborted();
+    yazici = await tanitici.createWritable();
+    signal?.throwIfAborted();
     await yazici.write(bayt as unknown as BufferSource);
+    signal?.throwIfAborted();
     await yazici.close();
+    kapandi = true;
   } catch (e) {
     const ad = e instanceof DOMException ? e.name : '';
     if (ad === 'NoModificationAllowedError' || ad === 'InvalidStateError' || ad === 'NotReadableError') {
@@ -115,6 +133,9 @@ export async function dosyayaYaz(tanitici: FileSystemFileHandle, bayt: Uint8Arra
       );
     }
     throw e;
+  } finally {
+    signal?.removeEventListener('abort', iptal);
+    if (!kapandi) await yazici?.abort().catch(() => undefined);
   }
 }
 
@@ -126,7 +147,10 @@ export function indir(bayt: Uint8Array, ad: string, tur = XLSX_MIME): void {
   a.href = url;
   a.download = ad;
   document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  try {
+    a.click();
+  } finally {
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  }
 }

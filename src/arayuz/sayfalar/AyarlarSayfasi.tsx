@@ -1,3 +1,6 @@
+import type { IslemSonucu } from '../../cekirdek/islemSonucu';
+import { KullaniciHatasi } from '../../cekirdek/hata';
+import { AyarGirdisi } from '../bilesenler/AyarGirdisi';
 import type { ReactNode } from 'react';
 import { VARSAYILAN_AYARLAR, sutunNo, type Ayarlar, type TabloDuzeni } from '../../cekirdek/ayarlar';
 import { ayarGecerli } from '../../cekirdek/ayarDenetimi';
@@ -11,7 +14,7 @@ interface Ozellikler {
   tema: TemaTercihi;
   temaDegisti: (t: TemaTercihi) => void;
   ayarlar: Ayarlar;
-  ayarDegisti: (a: Ayarlar) => void;
+  ayarDegisti: (a: Ayarlar) => IslemSonucu;
 }
 
 function Anahtar({ id, deger, degisti }: { id: string; deger: boolean; degisti: (d: boolean) => void }) {
@@ -63,16 +66,19 @@ function SayiGirdisi({
   en?: number;
 }) {
   return (
-    <input
-      id={id}
-      className="girdi rakam kisa"
-      inputMode="decimal"
-      defaultValue={String(deger).replace('.', ',')}
+    <AyarGirdisi
       key={deger}
-      onBlur={(e) => {
-        const n = Number(e.target.value.replace(',', '.'));
-        if (Number.isFinite(n) && n >= en && n <= (en === 0 ? 1000 : 100000)) degisti(n);
-        else e.target.value = String(deger).replace('.', ',');
+      id={id}
+      deger={String(deger).replace('.', ',')}
+      className="girdi rakam kisa"
+      sayi
+      denetle={(v) => {
+        const n = Number(v.replace(',', '.'));
+        if (!v.trim() || !Number.isFinite(n) || n < en || n > (en === 0 ? 1000 : 100000))
+          throw new Error(
+            `Değer ${en}–${en === 0 ? 1000 : 100000} arasında bir sayı olmalı. Önceki ayar korundu.`,
+          );
+        degisti(n);
       }}
     />
   );
@@ -90,15 +96,15 @@ function MetinGirdisi({
   kisa?: boolean;
 }) {
   return (
-    <input
-      id={id}
-      className={kisa ? 'girdi kisa' : 'girdi'}
-      defaultValue={deger}
+    <AyarGirdisi
       key={deger}
-      onBlur={(e) => {
-        const s = e.target.value.trim();
-        if (s && s.length <= 256) degisti(s);
-        else e.target.value = deger;
+      id={id}
+      deger={deger}
+      className={kisa ? 'girdi kisa' : 'girdi'}
+      denetle={(v) => {
+        const s = v.trim();
+        if (!s || s.length > 256) throw new Error('1–256 karakter yazın. Önceki ayar korundu.');
+        degisti(s);
       }}
     />
   );
@@ -125,13 +131,13 @@ function DuzenSatiri({
       <th scope="row">{ad}</th>
       {SUTUN_ALANLARI.map(({ anahtar }) => (
         <td key={anahtar}>
-          <input
+          <AyarGirdisi
             className="girdi rakam mini"
             aria-label={`${ad} ${anahtar}`}
-            defaultValue={String(duzen[anahtar])}
+            deger={String(duzen[anahtar])}
             key={String(duzen[anahtar])}
-            onBlur={(e) => {
-              const v = e.target.value.trim().toUpperCase();
+            denetle={(taslak) => {
+              const v = taslak.trim().toUpperCase();
               try {
                 if (anahtar === 'ilkVeriSatiri') {
                   const n = Number(v);
@@ -148,7 +154,9 @@ function DuzenSatiri({
                   degisti({ ...duzen, [anahtar]: v });
                 }
               } catch {
-                e.target.value = String(duzen[anahtar]);
+                throw new Error(
+                  'Satır 1–100000; sütun A–IV olmalı ve diğer sütunlardan farklı olmalı. Önceki ayar korundu.',
+                );
               }
             }}
           />
@@ -160,7 +168,11 @@ function DuzenSatiri({
 
 export function AyarlarSayfasi({ tema, temaDegisti, ayarlar: a, ayarDegisti }: Ozellikler) {
   const guvenliDegis = (yeni: Ayarlar) => {
-    if (ayarGecerli(yeni)) ayarDegisti(yeni);
+    if (!ayarGecerli(yeni))
+      throw new KullaniciHatasi(
+        'Ayar değeri geçersiz. Satır, sütun ve metin sınırlarını kontrol edin. Önceki ayar korundu.',
+      );
+    return ayarDegisti(yeni);
   };
   const degis = (p: Partial<Ayarlar>) => guvenliDegis({ ...a, ...p });
 

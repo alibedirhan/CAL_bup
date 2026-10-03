@@ -1,3 +1,4 @@
+import { yedekParolasiDogrula } from '../cekirdek/posParola';
 import { KullaniciHatasi } from '../cekirdek/hata';
 import { POS_KIMLIK } from '../cekirdek/posKart';
 import { posProfilDogrula, type PosProfilVerisi } from '../cekirdek/posProfil';
@@ -137,6 +138,7 @@ export async function profilYedegiOlustur(
   veri: PosProfilVerisi,
   parola: string,
 ): Promise<Uint8Array<ArrayBuffer>> {
+  yedekParolasiDogrula(parola);
   const tuz = yeniTuz();
   const anahtar = await kasaAnahtari(parola, tuz);
   const z = await profilSifrele(veri, anahtar, crypto.randomUUID(), tuz);
@@ -144,6 +146,7 @@ export async function profilYedegiOlustur(
   return new TextEncoder().encode(JSON.stringify(z));
 }
 export async function profilYedeginiAc(b: Uint8Array, parola: string): Promise<PosProfilVerisi> {
+  yedekParolasiDogrula(parola);
   if (b.byteLength > EN_BUYUK_PROFIL_YEDEGI)
     throw new KullaniciHatasi('Profil yedeği en fazla 2 MB olabilir.');
   let ham: unknown;

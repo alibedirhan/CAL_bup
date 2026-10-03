@@ -1,3 +1,4 @@
+import { FormHatasi } from '../../bilesenler/FormHatasi';
 import { useRef } from 'react';
 import { tarihMetni } from '../../../cekirdek/tarih';
 import { DOSYA_TURU_ADLARI } from '../../../kaynaklar/tani';
@@ -111,6 +112,14 @@ export function KaynakBolumu({ dk }: { dk: DepoKontrol }) {
         })}
       </ul>
 
+      <FormHatasi
+        id="led-dosya-hata"
+        hata={
+          dk.oturum.reddedilenler.length
+            ? `${dk.oturum.reddedilenler.length} dosya okunamadı. ${dk.oturum.reddedilenler[0]?.mesaj ?? ''}`
+            : ''
+        }
+      />
       {dk.oturum.reddedilenler.map((r) => (
         <p key={r.dosyaAdi} className="alan-hatasi">
           <b>{r.dosyaAdi}:</b> {r.mesaj}

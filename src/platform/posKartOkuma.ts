@@ -1,90 +1,102 @@
 import { KullaniciHatasi } from '../cekirdek/hata';
 import {
-  EN_BUYUK_KART_FOTOGRAFI,
-  EN_FAZLA_KART_PIKSELI,
-  kartGoruntuBoyutu,
-  kartMetnindenAlanlar,
+  DUZ_KART_GORUNTUSU,
+  type KartGoruntuDuzeltmesi,
   type KartOkumaSonucu,
 } from '../cekirdek/posKartFotografi';
-import type { Worker as OcrWorker } from 'tesseract.js';
+import { KartOkumaMotoru, type OkumaAsamasi } from './ocr/motor';
+import { kartGoruntusu, goruntuyuDondur, egimiBul, okumaSuruyor } from './ocr/goruntu';
+import { okumaAlanlari } from './ocr/alanlar';
 
 export async function kartFotografiniOku(
   dosya: File,
   signal: AbortSignal,
   ilerleme: (yuzde: number) => void,
+  asama: (a: OkumaAsamasi) => void = () => undefined,
+  duzeltme: KartGoruntuDuzeltmesi = DUZ_KART_GORUNTUSU,
 ): Promise<KartOkumaSonucu> {
-  if (!dosya.size || dosya.size > EN_BUYUK_KART_FOTOGRAFI)
-    throw new KullaniciHatasi('Kart fotoğrafı en fazla 10 MB olabilir.');
-  let worker: OcrWorker | undefined;
-  let bitmap: ImageBitmap | undefined;
-  let ham: Uint8Array | undefined;
+  let worker: KartOkumaMotoru | undefined;
   let canvas: HTMLCanvasElement | undefined;
-  let durdu = false;
-  let sure: ReturnType<typeof setTimeout> | undefined;
-  let iptalEt!: () => void;
-  const iptal = new Promise<never>((_, reddet) => {
-    iptalEt = () => {
-      durdu = true;
-      void worker?.terminate().catch(() => undefined);
-      reddet(new KullaniciHatasi('Fotoğraf okuma durduruldu. Elle devam edebilirsiniz.'));
-    };
-    signal.addEventListener('abort', iptalEt, { once: true });
-    sure = setTimeout(iptalEt, 90_000);
+  let gecici: HTMLCanvasElement | undefined;
+  const c = new AbortController();
+  let reddet!: (e: Error) => void;
+  const iptal = new Promise<never>((_, r) => {
+    reddet = r;
   });
-  const denetle = () => {
-    if (signal.aborted || durdu) throw new KullaniciHatasi('Fotoğraf okuma durduruldu.');
+  const durdur = (hata: Error) => {
+    c.abort();
+    worker?.kapat(hata);
+    reddet(hata);
   };
+  const iptalEt = () => durdur(new KullaniciHatasi('Fotoğraf okuma durduruldu. Elle devam edebilirsiniz.'));
+  signal.addEventListener('abort', iptalEt, { once: true });
+  const sure = setTimeout(
+    () =>
+      durdur(
+        new KullaniciHatasi(
+          'Fotoğraf okuma süresi doldu. Daha yakın bir fotoğrafla yeniden deneyin veya elle devam edin.',
+        ),
+      ),
+    90_000,
+  );
   const is = async (): Promise<KartOkumaSonucu> => {
     try {
-      denetle();
-      ham = new Uint8Array(await dosya.arrayBuffer());
-      denetle();
-      kartGoruntuBoyutu(ham);
-      bitmap = await createImageBitmap(dosya);
-      denetle();
-      if (bitmap.width * bitmap.height > EN_FAZLA_KART_PIKSELI)
-        throw new KullaniciHatasi('Fotoğraf en fazla 20 megapiksel olabilir.');
-      canvas = document.createElement('canvas');
-      const oran = Math.min(1, 2400 / Math.max(bitmap.width, bitmap.height));
-      canvas.width = Math.round(bitmap.width * oran);
-      canvas.height = Math.round(bitmap.height * oran);
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new KullaniciHatasi('Tarayıcı fotoğrafı açamadı. Elle ekleyebilirsiniz.');
-      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-      bitmap.close();
-      bitmap = undefined;
-      const { createWorker } = await import('tesseract.js');
-      denetle();
-      const yerel = new URL(import.meta.env.BASE_URL + 'ocr/', location.origin).href;
-      worker = await createWorker('eng', 1, {
-        workerPath: yerel + 'worker.min.js',
-        corePath: yerel,
-        langPath: yerel,
-        workerBlobURL: false,
-        cacheMethod: 'none',
-        logger: (m) => {
-          if (!signal.aborted && m.status === 'recognizing text') ilerleme(Math.round(m.progress * 100));
-        },
-        errorHandler: () => undefined,
+      okumaSuruyor(signal);
+      asama('denetim');
+      canvas = await kartGoruntusu(dosya, c.signal, duzeltme);
+      okumaSuruyor(c.signal);
+      asama('model');
+      worker = new KartOkumaMotoru((p) => {
+        if (!c.signal.aborted) ilerleme(p);
       });
-      denetle();
-      await worker.setParameters({
-        tessedit_char_whitelist: '0123456789 /.-',
-        preserve_interword_spaces: '1',
-      });
-      const { data } = await worker.recognize(canvas);
-      denetle();
-      const sonuc = kartMetnindenAlanlar(data.text);
-      data.text = '';
+      await worker.hazirla();
+      const sonuc: KartOkumaSonucu = { numaralar: [], tarihler: [], kanitlar: [], gecersizNumara: false };
+      // Dört yön, bir kontrast düzeltmesi: en fazla beş deneme, toplam 90 saniye.
+      for (const [donus, kontrast] of [
+        [0, false],
+        [90, false],
+        [180, false],
+        [270, false],
+        [0, true],
+      ] as const) {
+        okumaSuruyor(c.signal);
+        asama('hazirlama');
+        gecici = goruntuyuDondur(canvas, donus, kontrast);
+        const egim = egimiBul(gecici);
+        if (egim) {
+          const duz = goruntuyuDondur(gecici, egim);
+          gecici.width = 0;
+          gecici.height = 0;
+          gecici = duz;
+        }
+        asama('okuma');
+        ilerleme(0);
+        const alanlar = okumaAlanlari(await worker.oku(gecici, { rotateAuto: false }), donus);
+        okumaSuruyor(c.signal);
+        sonuc.gecersizNumara ||= Boolean(alanlar.gecersizNumara);
+        // Yönler arası alanlar birleştirilmez: aynı okumanın numarası ve tarihi birlikte sunulur.
+        if (
+          alanlar.numaralar.length > sonuc.numaralar.length ||
+          (alanlar.numaralar.length === sonuc.numaralar.length &&
+            alanlar.tarihler.length > sonuc.tarihler.length)
+        )
+          Object.assign(sonuc, alanlar);
+        gecici.width = 0;
+        gecici.height = 0;
+        gecici = undefined;
+        if (sonuc.numaralar.length && sonuc.tarihler.length) break;
+      }
       return sonuc;
     } finally {
-      bitmap?.close();
-      ham?.fill(0);
+      worker?.kapat();
       if (canvas) {
         canvas.width = 0;
         canvas.height = 0;
       }
-      if (worker) await worker.terminate().catch(() => undefined);
+      if (gecici) {
+        gecici.width = 0;
+        gecici.height = 0;
+      }
     }
   };
   try {
@@ -96,14 +108,7 @@ export async function kartFotografiniOku(
   } finally {
     clearTimeout(sure);
     signal.removeEventListener('abort', iptalEt);
-    durdu = true;
-    bitmap?.close();
-    ham?.fill(0);
-    if (canvas) {
-      canvas.width = 0;
-      canvas.height = 0;
-    }
-    if (worker) await worker.terminate().catch(() => undefined);
-    // Worker kurulması iptalden sonra biterse de eski okuma yeniden etkinleşemez.
+    c.abort();
+    worker?.kapat();
   }
 }

@@ -1,3 +1,8 @@
+import { IslemOturumu } from '../../platform/islemOturumu';
+import { useIslem } from '../bilesenler/useIslem';
+import { IslemBildirimi } from '../bilesenler/IslemBildirimi';
+import { FormHatasi } from '../bilesenler/FormHatasi';
+import { Bildirim } from '../bilesenler/Bildirim';
 import { useEffect, useState } from 'react';
 import { sayiMetni } from '../../cekirdek/sayi';
 import { indir } from '../../platform/dosya';
@@ -28,21 +33,56 @@ export function GecmisSayfasi() {
   const [kayitlar, setKayitlar] = useState<GecmisKaydi[] | null>(null);
   const [yedekler, setYedekler] = useState<Omit<Yedek, 'bayt'>[]>([]);
 
+  const [hata, setHata] = useState('');
+  const [bilgi, setBilgi] = useState('');
+  const [yenileme, setYenileme] = useState(0);
+  const [yukleniyor, setYukleniyor] = useState(true);
+  const islem = useIslem('gecmis-indirme');
+  const indiriliyor = islem.mesgul;
   useEffect(() => {
-    void gecmisListesi().then(setKayitlar);
-    void yedekListesi().then(setYedekler);
-  }, []);
+    let bagli = true;
+    const o = new IslemOturumu('gecmis-okuma');
+    void o
+      .calistir(async (signal) => {
+        const s = await Promise.all([gecmisListesi(true), yedekListesi(true)]);
+        signal.throwIfAborted();
+        return s;
+      }, '')
+      .then((s) => {
+        if (!bagli) return;
+        if (s.durum === 'tamam') {
+          setKayitlar(s.deger[0]);
+          setYedekler(s.deger[1]);
+          setHata('');
+        } else
+          setHata(
+            'Geçmiş ve yedekler açılamadı. Tarayıcının site verisi iznini kontrol edip yeniden deneyin.',
+          );
+        setYukleniyor(false);
+      });
+    return () => {
+      bagli = false;
+      o.kapat();
+    };
+  }, [yenileme]);
 
   const csvIndir = () => {
     if (!kayitlar) return;
     const bayt = new TextEncoder().encode(gecmisCsv(kayitlar));
-    indir(bayt, gecmisDosyaAdi(), 'text/csv;charset=utf-8');
+    try {
+      indir(bayt, gecmisDosyaAdi(), 'text/csv;charset=utf-8');
+      setBilgi('Geçmiş indirmesi başlatıldı. Tarayıcının indirmelerini kontrol edin.');
+    } catch {
+      setHata('İndirme başlatılamadı. Yeniden deneyin.');
+    }
   };
 
-  const yedekIndir = async (y: Omit<Yedek, 'bayt'>) => {
-    const bayt = await yedekBaytlari(y.id);
-    if (bayt) indir(bayt, `YEDEK ${zaman(y.zaman).replace(/[.:]/g, '-')} ${y.dosyaAdi}`);
-  };
+  const yedekIndir = (y: Omit<Yedek, 'bayt'>) =>
+    islem.calistir(async (signal) => {
+      const bayt = await yedekBaytlari(y.id, true);
+      signal.throwIfAborted();
+      if (bayt) indir(bayt, `YEDEK ${zaman(y.zaman).replace(/[.:]/g, '-')} ${y.dosyaAdi}`);
+    }, 'Yedek indirmesi başlatıldı. Tarayıcının indirmelerini kontrol edin.');
 
   return (
     <>
@@ -51,6 +91,22 @@ export function GecmisSayfasi() {
         bilgisayardaki tarayıcıda durur.
       </SayfaBasligi>
 
+      <IslemBildirimi islem={islem} />
+      <FormHatasi hata={hata} id="gecmis-hata" />
+      {hata && (
+        <button
+          className="dugme"
+          disabled={yukleniyor}
+          onClick={() => {
+            setYukleniyor(true);
+            setYenileme((n) => n + 1);
+          }}
+        >
+          Yeniden dene
+        </button>
+      )}
+      <Bildirim mesaj={bilgi} />
+      {yukleniyor && <p role="status">Geçmiş ve yedekler açılıyor…</p>}
       {kayitlar && kayitlar.length === 0 ? (
         <div className="bos">
           <Simge ad="gecmis" boyut={28} />
@@ -85,7 +141,7 @@ export function GecmisSayfasi() {
                     <td>
                       <b>{k.sayfa}</b>
                       <span className="hucre-alt">
-                        {k.kayit === 'dosyaya' ? 'dosyaya kaydedildi' : 'indirildi'}
+                        {k.kayit === 'dosyaya' ? 'dosyaya kaydedildi' : 'indirme başlatıldı'}
                       </span>
                     </td>
                     <td>
@@ -109,7 +165,7 @@ export function GecmisSayfasi() {
           Depo kontrol dosyasının üzerine her kaydetmeden önce dosyanın o anki hâli yedeklenir. Son{' '}
           {EN_FAZLA_YEDEK} yedek saklanır.
         </p>
-        {yedekler.length === 0 ? (
+        {!yukleniyor && !hata && yedekler.length === 0 ? (
           <p className="ipucu">Henüz yedek yok.</p>
         ) : (
           <ul className="yedek-listesi">
@@ -122,7 +178,12 @@ export function GecmisSayfasi() {
                   <b>{y.dosyaAdi}</b>
                   <span>{zaman(y.zaman)} öncesi</span>
                 </div>
-                <button type="button" className="dugme kucuk" onClick={() => void yedekIndir(y)}>
+                <button
+                  type="button"
+                  className="dugme kucuk"
+                  disabled={indiriliyor}
+                  onClick={() => void yedekIndir(y)}
+                >
                   İndir
                 </button>
               </li>

@@ -33,10 +33,10 @@ export function ayarlariOku(): Ayarlar {
   }
 }
 
-export function ayarlariYaz(a: Ayarlar): void {
+export function ayarlariYaz(a: Ayarlar): boolean {
   if (!ayarGecerli(a))
     throw new KullaniciHatasi('Ayar değeri geçersiz. Satır, sütun ve tolerans sınırlarını kontrol edin.');
-  yaz(ANAHTAR, JSON.stringify(a));
+  return yaz(ANAHTAR, JSON.stringify(a));
 }
 
 export { birlestir as ayarBirlestir };

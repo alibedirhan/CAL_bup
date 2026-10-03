@@ -1,3 +1,5 @@
+import { basarisiz } from '../../../cekirdek/islemSonucu';
+import { Bildirim } from '../../bilesenler/Bildirim';
 import { useRef, useState, useEffect } from 'react';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
 import { numaraMaskesi, type PosCari } from '../../../cekirdek/posCari';
@@ -28,13 +30,19 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
   const gorunen = cariler.filter((c) =>
     c.ad.toLocaleLowerCase('tr-TR').includes(arama.trim().toLocaleLowerCase('tr-TR')),
   );
-  const guncelle = async (is: () => PosProfilVerisi, mesaj: string) => {
-    if (mesgul) return false;
+  const guncelle = async (is: () => PosProfilVerisi, mesaj: string, yerel = false) => {
+    if (mesgul)
+      return basarisiz('dogrulama', 'Başka bir işlem sürüyor.', 'MESGUL', { kapsam: 'pos', islemId: veriNo });
     try {
-      return await calistir(() => depo.kaydet(is()), mesaj);
+      return await calistir(() => depo.kaydet(is()), mesaj, yerel);
     } catch (e) {
-      bildir(e instanceof KullaniciHatasi ? e.message : 'Bilgileri kontrol edin.', true);
-      return false;
+      if (!yerel) bildir(e instanceof KullaniciHatasi ? e.message : 'Bilgileri kontrol edin.', true);
+      return basarisiz(
+        'dogrulama',
+        e instanceof KullaniciHatasi ? e.message : 'Bilgileri kontrol edin.',
+        'DOGRULAMA',
+        { kapsam: 'pos', islemId: veriNo },
+      );
     }
   };
   const acikForm = form?.no === gizlilikNo ? form : null;
@@ -124,8 +132,9 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
                 const tamam = await guncelle(
                   () => profilCariKaydet(veri, c),
                   'Cari kaydedildi. Kartlarını profiline ekleyebilirsiniz.',
+                  true,
                 );
-                if (tamam) {
+                if (tamam.durum === 'tamam') {
                   setSeciliId(c.id);
                   setForm(null);
                 }
@@ -149,7 +158,7 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
                     return;
                   void guncelle(() => profilCariSil(veri, c.id), 'Cari ve bağlı kartları silindi.').then(
                     (tamam) => {
-                      if (tamam) {
+                      if (tamam.durum === 'tamam') {
                         setSeciliId(null);
                         setForm(null);
                       }
@@ -171,7 +180,7 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
             bildir={bildir}
             duzenle={() => setForm({ cari, no: gizlilikNo })}
             kartKaydet={(k) =>
-              guncelle(() => profilKartKaydet(veri, k), 'Kart bu carinin profiline kaydedildi.')
+              guncelle(() => profilKartKaydet(veri, k), 'Kart bu carinin profiline kaydedildi.', true)
             }
             kartSil={(k) =>
               guncelle(() => profilKartSil(veri, cari.id, k.id), 'Kart bu carinin profilinden silindi.')
@@ -189,7 +198,11 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
         mesgul={mesgul}
         ekle={(gelen) => calistir(() => depo.yedektenEkle(gelen), 'Yedekteki cari ve kartlar eklendi.')}
         indir={async (parola) => {
-          if (mesgul) return false;
+          if (mesgul)
+            return basarisiz('dogrulama', 'Başka bir işlem sürüyor.', 'MESGUL', {
+              kapsam: 'pos',
+              islemId: veriNo,
+            });
           return oturum.dosyaCalistir(
             () => depo.yedekle(parola),
             (b) =>
@@ -198,7 +211,7 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
                 `CAL-bup-profil-yedegi-${new Date().toISOString().slice(0, 10)}.calpos`,
                 'application/octet-stream',
               ),
-            'Şifreli cari ve kart yedeği indirildi. Yedek parolasını ayrı saklayın.',
+            'Şifreli cari ve kart yedeğinin indirmesi başlatıldı. Yedek parolasını ayrı saklayın.',
           );
         }}
       />
@@ -209,7 +222,7 @@ export function SanalPosSayfasi() {
   const oturum = usePosProfili();
   const hataKutusu = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (oturum.hata) hataKutusu.current?.focus();
+    if (oturum.hata && !document.querySelector('dialog[open]')) hataKutusu.current?.focus();
   }, [oturum.hata]);
   return (
     <>
@@ -225,7 +238,7 @@ export function SanalPosSayfasi() {
           <Mesaj ton="hata">{oturum.hata}</Mesaj>
         </div>
       )}
-      {oturum.bilgi && <Mesaj ton="bilgi">{oturum.bilgi}</Mesaj>}
+      <Bildirim mesaj={oturum.bilgi} />
       {(oturum.yukleniyor || oturum.mesgul) && (
         <Mesaj
           ton="bilgi"
@@ -237,6 +250,11 @@ export function SanalPosSayfasi() {
         >
           {oturum.yukleniyor ? 'Cari ve kart profili açılıyor…' : 'Şifreli profil işlemi yürütülüyor…'}
         </Mesaj>
+      )}
+      {!oturum.yukleniyor && oturum.veri && !oturum.depo.acik && (
+        <button className="dugme" disabled={oturum.mesgul} onClick={() => void oturum.kontrol()}>
+          Profil durumunu yeniden kontrol et
+        </button>
       )}
       {!oturum.yukleniyor &&
         (oturum.eski && !oturum.veri ? (
@@ -253,7 +271,7 @@ export function SanalPosSayfasi() {
               oturum.dosyaCalistir(
                 () => oturum.depo.eskiYedekle(eski, p),
                 (b) => indir(b, 'CAL-bup-eski-cari-yedegi.calpos', 'application/octet-stream'),
-                'Eski cari listenizin şifreli yedeği indirildi. Geçişe devam edebilirsiniz.',
+                'Eski cari listenizin şifreli yedeğinin indirmesi başlatıldı. Geçişe devam edebilirsiniz.',
               )
             }
           />

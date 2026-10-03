@@ -1,3 +1,44 @@
+# 4 Ekim 2026 — 1.5.0 OCR/bildirim üç aşaması
+
+Kullanıcı üç aşamayı sırayla uygulamayı istedi; geliştirme ve yerel kabul kapıları tamamlandı.
+[Kapanış raporu](OCR_VE_BILDIRIM_UYGULAMA_SONUCU.md) 20 bulgunun uygulama/test eşlemesini içerir.
+
+- 1: form kapsamlı görünür/odaklı hata, tek görünür başarı, ayar kalıcılığı, geçmiş/yedek hataları,
+  indirme kesinliği ve kurulum başarısız olsa da kapanan OCR worker.
+- 2: geçici önizleme/kırpma/döndürme, sınırlı eğiklik/kontrast/yön denemesi, ayrı fotoğraf taslağı,
+  açık numara/tarih seçimi ve uygulaması; kısmi fotoğraf eski tarihle sessiz birleşmez.
+- 3: saf sonuç sözleşmesi + ortak tek işlem/iptal/süre/nesil denetimi; Drive/rapor/yedek/pano kapsamı,
+  bozuk geçmiş ve React hatasında anlaşılır kurtarma; kalıcı arıza/rota/OCR testleri.
+- Yerel `kontrol`: 27 dosya / 341 test; Chromium: 49 senaryo. `npm audit`: bilinen açık 0.
+  17 okunabilir OCR referansında 16 tek doğru sonuç + bir iki-tarih seçimi; geniş başarı oranı değildir.
+- İlk 15 örnekteki 90/270 görüntülerde rakamlar kadrajdan kesilmişti; bunlar güvenle boş bırakılır.
+  Yeni dönüşüm testleri görüntü boyutunu korur. Gerçek fotoğraf/cari verisi kullanılmadı.
+- Yeni sürüm 1.5.0; önceki yayın yetkisi sürüyor. Main gönderimi, Actions ve canlı izole kabul son adımdır.
+  Windows/gerçek fotoğraf/Google/banka kabulü kullanıcıyla yapılır; otomatik ödeme/SMS eklenmedi.
+
+# 3 Ekim 2026 — OCR ve işlem bildirimleri araştırması
+
+Kullanıcı fotoğraftan okumadaki sorunları ve görünmeyen hata/başarı mesajlarını ayrıntılı araştırıp
+önce rapor istedi; ardından üç aşamalı çözüm uygulanacak. Bu çalışma araştırma/rapordur:
+üretim kodu/sürüm değişmedi ve yeni yayın yapılmadı. Canlı sürüm 1.4.0 (`9d18259`);
+bunun önceki yayın çalışması GitHub Actions 37149340885’te başarılıdır.
+
+- Ana rapor: [OCR_VE_BILDIRIM_ARASTIRMA_RAPORU.md](OCR_VE_BILDIRIM_ARASTIRMA_RAPORU.md).
+  Kanıt: [OCR_VE_BILDIRIM_KANITLARI.md](OCR_VE_BILDIRIM_KANITLARI.md).
+- 20 bulgu: 8 OCR/okuma arayüzü, 9 bildirim, 3 mimari/test eksikliği. Kanıt türü ayrı;
+  kodda görülen riskler gerçek olay diye sunulmadı. 15 yapay görüntü + 8 saf metin + arıza/UI denemeleri.
+- Önemli doğrulamalar: döndürülmüş resimlerde boş OCR; satır bölünmesi/yan yana tarih numarayı bozuyor;
+  ikinci fotoğraf eski/yeni alanları birleştirebiliyor; model 404/erken iptalden sonra aktif worker 1.
+- Yinelenen kart hatası dialog dışında/arkasında; yerel hata veya başarı ekran dışında kalıyor.
+  Geçersiz ayar/saklama engeli sessiz; geçmiş depo hatası boş liste oluyor; eksik yedek indirilmiyor,
+  hata da yok. Günlük kasa dili bazı yedek hatalarında kaldı.
+- Baz kontrol yeniden geçti: `npm run kontrol`, 24 dosya / 325 test; 8 tarayıcı senaryosu.
+  Bunlar geniş fotoğraf doğruluğu/mesajın okunabilirliği kanıtı değildir.
+- Geçici scriptler, yapay ekran görüntüleri ve JSON `/tmp/cal-bup-arastirma/` içinde.
+  Gerçek cari ekran görüntüsündeki ad/numara rapora alınmadı; gerçek kart fotoğrafı işlenmedi.
+- Sonraki uygulama sırası: 1) işlem sonucu/bildirim/kayıt hataları + worker yaşam döngüsü, 2) denetlenebilir fotoğraf/adayı inceleme hattı, 3) bütün ekranlar/regresyon/yayın kapısı.
+  Her aşama çıkış ölçütleri ana raporda; bütün bulgular henüz açık. Hedef ağır bir yeniden yazım değil.
+
 # 3 Ekim 2026 — 1.4.0 gerçek cari profili ve kart yönetimi
 
 Kullanıcı tasarımda kalan kart alanlarını gerçek programda göremediğini bildirdi ve tüm eksik uygulama

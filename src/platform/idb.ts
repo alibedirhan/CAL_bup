@@ -152,11 +152,12 @@ export async function yaz(anahtar: string, deger: unknown): Promise<boolean> {
   }
 }
 
-export async function sil(anahtar: string): Promise<void> {
+export async function sil(anahtar: string): Promise<boolean> {
   try {
     await islem('readwrite', (d) => d.delete(anahtar));
+    return true;
   } catch {
-    // yok sayılır
+    return false;
   }
 }
 

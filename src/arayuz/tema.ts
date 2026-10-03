@@ -20,10 +20,10 @@ export function kayitliTercih(): TemaTercihi {
   return tercihCoz(oku(ANAHTAR));
 }
 
-export function temaUygula(tercih: TemaTercihi): void {
+export function temaUygula(tercih: TemaTercihi, kaydet = true): boolean {
   const oz = temaOzniteligi(tercih);
   const kok = document.documentElement;
   if (oz) kok.setAttribute('data-theme', oz);
   else kok.removeAttribute('data-theme');
-  yaz(ANAHTAR, tercih);
+  return !kaydet || yaz(ANAHTAR, tercih);
 }

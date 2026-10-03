@@ -1,3 +1,4 @@
+import { basarisiz, tamam, hataSonucu } from '../../../cekirdek/islemSonucu';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
 import type { PosProfilVerisi } from '../../../cekirdek/posProfil';
@@ -16,6 +17,7 @@ export function usePosProfili() {
   const [veriNo, setVeriNo] = useState(0);
   const bagli = useRef(false);
   const nesil = useRef(0);
+  const islemNo = useRef(0);
   const kilit = useRef(false);
   const kanal = useRef<BroadcastChannel | null>(null);
   const bildir = (m: string, h = false) => {
@@ -107,15 +109,24 @@ export function usePosProfili() {
       kanal.current = null;
     };
   }, [depo, kontrol]);
-  const calistir = async (is: () => Promise<PosProfilVerisi>, mesaj: string) => {
-    if (kilit.current) return false;
+  const calistir = async (is: () => Promise<PosProfilVerisi>, mesaj: string, yerel = false) => {
+    if (kilit.current)
+      return basarisiz('dogrulama', 'Başka bir işlem sürüyor.', 'MESGUL', {
+        kapsam: 'pos',
+        islemId: islemNo.current,
+      });
     kilit.current = true;
     setMesgul(true);
     bildir('');
     const n = nesil.current;
+    const islemId = ++islemNo.current;
     try {
       const v = await is();
-      if (!bagli.current || n !== nesil.current || !depo.acik) return false;
+      if (!bagli.current || n !== nesil.current || !depo.acik)
+        return basarisiz('iptal', 'İşlem durduruldu. Güncel kayıtları yeniden kontrol edin.', 'IPTAL', {
+          kapsam: 'pos',
+          islemId,
+        });
       setVeri(v);
       setVeriNo((s) => s + 1);
       setEski(false);
@@ -126,13 +137,16 @@ export function usePosProfili() {
       } catch {
         /* Kayıt tamamlandı. */
       }
-      return true;
+      return tamam(undefined, mesaj, { kapsam: 'pos', islemId });
     } catch (e) {
       if (bagli.current && n === nesil.current) {
-        setHata(e instanceof KullaniciHatasi ? e.message : 'İşlem tamamlanamadı. Mevcut kayıtlar korundu.');
-        if (!depo.acik) setVeri(null);
+        if (!yerel)
+          setHata(
+            e instanceof KullaniciHatasi ? e.message : 'İşlem tamamlanamadı. Güncel kayıtları kontrol edin.',
+          );
+        if (!depo.acik && !yerel) setVeri(null);
       }
-      return false;
+      return hataSonucu(e, { kapsam: 'pos', islemId }, !depo.acik);
     } finally {
       kilit.current = false;
       if (bagli.current) setMesgul(false);
@@ -151,21 +165,30 @@ export function usePosProfili() {
     kaydet: (b: Uint8Array<ArrayBuffer>) => void,
     mesaj: string,
   ) => {
-    if (kilit.current) return false;
+    if (kilit.current)
+      return basarisiz('dogrulama', 'Başka bir işlem sürüyor.', 'MESGUL', {
+        kapsam: 'pos',
+        islemId: islemNo.current,
+      });
     kilit.current = true;
     setMesgul(true);
     bildir('');
     const n = nesil.current;
+    const islemId = ++islemNo.current;
     try {
       const b = await is();
-      if (!bagli.current || n !== nesil.current) return false;
+      if (!bagli.current || n !== nesil.current)
+        return basarisiz('iptal', 'İşlem durduruldu. Güncel kayıtları yeniden kontrol edin.', 'IPTAL', {
+          kapsam: 'pos',
+          islemId,
+        });
       kaydet(b);
       setBilgi(mesaj);
-      return true;
+      return tamam(undefined, mesaj, { kapsam: 'pos', islemId });
     } catch (e) {
       if (bagli.current && n === nesil.current)
         setHata(e instanceof KullaniciHatasi ? e.message : 'Yedek hazırlanamadı. Kayıtlar korundu.');
-      return false;
+      return hataSonucu(e, { kapsam: 'pos', islemId }, !depo.acik);
     } finally {
       kilit.current = false;
       if (bagli.current) setMesgul(false);

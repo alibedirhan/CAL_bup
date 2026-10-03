@@ -1,3 +1,4 @@
+import { IslemHatasi } from '../cekirdek/islemSonucu';
 import { KullaniciHatasi } from '../cekirdek/hata';
 import { oku, yaz } from './saklama';
 
@@ -48,7 +49,10 @@ export function istemciKaydet(k: string): void {
       'Google istemci kimliği geçersiz. .apps.googleusercontent.com ile biten kimliği yapıştırın.',
     );
   driveAyir();
-  yaz('drive-istemci', k);
+  if (!yaz('drive-istemci', k))
+    throw new KullaniciHatasi(
+      'Google istemci kimliği tarayıcıya kaydedilemedi. Site verisi iznini kontrol edip yeniden deneyin.',
+    );
 }
 export function driveDinle(d: () => void): () => void {
   dinleyiciler.add(d);
@@ -108,36 +112,50 @@ export function driveIzniKaldir(): Promise<void> {
 }
 
 /** Sadece Drive bölümünde hazırlanır; normal rapor kullanımında Google’a bağlantı kurulmaz. */
-export function driveHazirla(): Promise<void> {
+export function driveHazirla(signal?: AbortSignal): Promise<void> {
+  signal?.throwIfAborted();
   if (driveHazir()) return Promise.resolve();
   yukleme ??= new Promise<void>((coz, reddet) => {
+    let bitti = false;
     const s = document.createElement('script');
     s.src = 'https://accounts.google.com/gsi/client';
     s.async = true;
     const sure = setTimeout(() => hata(), 15000);
-    const hata = () => {
+    const iptal = () => hata(new IslemHatasi('iptal', 'IPTAL', 'Google bağlantısı hazırlama durduruldu.'));
+    const hata = (e?: Error) => {
+      if (bitti) return;
+      bitti = true;
+      signal?.removeEventListener('abort', iptal);
       clearTimeout(sure);
       s.remove();
       yukleme = null;
       reddet(
-        new KullaniciHatasi(
-          'Google bağlantısı yüklenemedi. İnternet bağlantısını kontrol edip yeniden deneyin.',
-        ),
+        e ??
+          new KullaniciHatasi(
+            'Google bağlantısı yüklenemedi. İnternet bağlantısını kontrol edip yeniden deneyin.',
+          ),
       );
     };
+    signal?.addEventListener('abort', iptal, { once: true });
     s.onload = () => {
+      if (bitti) return;
+      signal?.removeEventListener('abort', iptal);
       clearTimeout(sure);
-      if (driveHazir()) coz();
-      else hata();
+      signal?.throwIfAborted();
+      if (driveHazir()) {
+        bitti = true;
+        coz();
+      } else hata();
     };
-    s.onerror = hata;
+    s.onerror = () => hata();
     document.head.append(s);
   });
   return yukleme;
 }
 
 /** Açılır pencere aynı düğme tıklamasında açılır; bu işlevden önce await kullanılmaz. */
-export function driveBaglan(): Promise<void> {
+export function driveBaglan(signal?: AbortSignal): Promise<void> {
+  signal?.throwIfAborted();
   if (baglaniyor) return Promise.reject(new KullaniciHatasi('Drive bağlantısı zaten açılıyor.'));
   const g = google();
   const k = istemciKimligi();
@@ -155,11 +173,17 @@ export function driveBaglan(): Promise<void> {
       if (bitti) return;
       bitti = true;
       clearTimeout(sure);
+      signal?.removeEventListener('abort', iptal);
       baglaniyor = false;
       if (hata) reddet(hata);
       else coz();
       bildir();
     };
+    const iptal = () => {
+      driveAyir();
+      bitir(new IslemHatasi('iptal', 'IPTAL', 'Drive bağlantısı iptal edildi.'));
+    };
+    signal?.addEventListener('abort', iptal, { once: true });
     try {
       const istemci = g.accounts.oauth2.initTokenClient({
         client_id: k,

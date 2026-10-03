@@ -1,38 +1,21 @@
+import { KullaniciHatasi } from '../cekirdek/hata';
 // Her çalıştırmanın kaydı (eski aracın Geçmiş sayfası) ve kaydetmeden önce alınan yedekler.
 
 import * as idb from './idb';
 
-export interface GecmisKaydi {
-  /** ISO zaman damgası */
-  zaman: string;
-  rapor: string;
-  dosya: string;
-  sayfa: string;
-  durum: 'Tamam' | 'Uyarı' | 'Hata';
-  ledStogu: number;
-  depoSayimi: number;
-  gelenMal: number;
-  uyariSayisi: number;
-  aciklama: string;
-  /** Nasıl kaydedildi: dosyanın üzerine ya da indirme olarak. */
-  kayit: 'dosyaya' | 'indirildi';
-  yedekId?: string;
-}
-
-export interface Yedek {
-  id: string;
-  zaman: string;
-  dosyaAdi: string;
-  bayt: Uint8Array;
-}
+export type { GecmisKaydi, Yedek } from '../cekirdek/gecmis';
+import { gecmisGecerli, type GecmisKaydi, type Yedek } from '../cekirdek/gecmis';
 
 const GECMIS = 'gecmis';
 const YEDEK_LISTESI = 'yedekler';
 const EN_FAZLA_KAYIT = 500;
 export const EN_FAZLA_YEDEK = 10;
 
-export async function gecmisListesi(): Promise<GecmisKaydi[]> {
-  return (await idb.oku<GecmisKaydi[]>(GECMIS)) ?? [];
+export async function gecmisListesi(kesin = false): Promise<GecmisKaydi[]> {
+  const k = (await (kesin ? idb.okuKesin : idb.oku)<GecmisKaydi[]>(GECMIS)) ?? [];
+  if (kesin && (!Array.isArray(k) || k.length > 500 || !k.every(gecmisGecerli)))
+    throw new KullaniciHatasi('Geçmiş kaydının biçimi geçersiz. Mevcut kayıtlar silinmedi.');
+  return k;
 }
 
 export async function gecmiseEkle(k: GecmisKaydi): Promise<boolean> {
@@ -42,8 +25,24 @@ export async function gecmiseEkle(k: GecmisKaydi): Promise<boolean> {
 }
 
 /** Yedekler en yeniden eskiye; baytlar ayrı anahtarda durur, liste hafif kalır. */
-export async function yedekListesi(): Promise<Omit<Yedek, 'bayt'>[]> {
-  return (await idb.oku<Omit<Yedek, 'bayt'>[]>(YEDEK_LISTESI)) ?? [];
+export async function yedekListesi(kesin = false): Promise<Omit<Yedek, 'bayt'>[]> {
+  const k = (await (kesin ? idb.okuKesin : idb.oku)<Omit<Yedek, 'bayt'>[]>(YEDEK_LISTESI)) ?? [];
+  if (
+    kesin &&
+    (!Array.isArray(k) ||
+      k.length > EN_FAZLA_YEDEK ||
+      !k.every(
+        (y) =>
+          y &&
+          typeof y.id === 'string' &&
+          y.id.length < 256 &&
+          typeof y.dosyaAdi === 'string' &&
+          y.dosyaAdi.length <= 512 &&
+          Number.isFinite(Date.parse(y.zaman)),
+      ))
+  )
+    throw new KullaniciHatasi('Yedek listesinin biçimi geçersiz. Mevcut kayıtlar silinmedi.');
+  return k;
 }
 
 export async function yedekAl(dosyaAdi: string, bayt: Uint8Array): Promise<string | null> {
@@ -59,8 +58,13 @@ export async function yedekAl(dosyaAdi: string, bayt: Uint8Array): Promise<strin
   return id;
 }
 
-export async function yedekBaytlari(id: string): Promise<Uint8Array | null> {
-  return (await idb.oku<Uint8Array>(`yedek:${id}`)) ?? null;
+export async function yedekBaytlari(id: string, kesin = false): Promise<Uint8Array | null> {
+  const b = (await (kesin ? idb.okuKesin : idb.oku)<Uint8Array>(`yedek:${id}`)) ?? null;
+  if (kesin && (!(b instanceof Uint8Array) || !b.byteLength))
+    throw new KullaniciHatasi(
+      'Yedeğin dosya içeriği bulunamadı. Kayıt listesi korunuyor; başka bir yedeği deneyin.',
+    );
+  return b;
 }
 
 const csvHucre = (v: unknown) => {

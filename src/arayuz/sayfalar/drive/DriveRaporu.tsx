@@ -1,4 +1,6 @@
-import { useRef, useState } from 'react';
+import { useIslem } from '../../bilesenler/useIslem';
+import { IslemBildirimi } from '../../bilesenler/IslemBildirimi';
+import { useState } from 'react';
 import {
   driveDosyaAdresi,
   driveIndir,
@@ -10,28 +12,21 @@ import { driveHesabiDogrula, driveToken } from '../../../platform/driveKimlik';
 import type { SecilenDosya } from '../../../platform/dosya';
 import type { KayitSonucu } from '../depoKontrol/islemler';
 import { Mesaj } from '../../bilesenler/Mesaj';
-import { driveHatasi, useDrive } from './useDrive';
+import { useDrive } from './useDrive';
 
-export function DriveRaporunuAc({ ac, mesgul }: { ac: (d: SecilenDosya) => Promise<void>; mesgul: boolean }) {
+export function DriveRaporunuAc({
+  ac,
+  mesgul,
+}: {
+  ac: (d: SecilenDosya, signal?: AbortSignal) => Promise<void>;
+  mesgul: boolean;
+}) {
   const bagli = useDrive();
   const [liste, setListe] = useState<DriveDosyasi[] | null>(null);
-  const [calisiyor, setCalisiyor] = useState(false);
-  const kilit = useRef(false);
-  const [hata, setHata] = useState('');
-  const is = async (eylem: () => Promise<void>) => {
-    if (kilit.current) return;
-    kilit.current = true;
-    setCalisiyor(true);
-    setHata('');
-    try {
-      await eylem();
-    } catch (e) {
-      setHata(driveHatasi(e));
-    } finally {
-      kilit.current = false;
-      setCalisiyor(false);
-    }
-  };
+  const islem = useIslem('drive-ac');
+  const calisiyor = islem.mesgul;
+  const is = (eylem: (signal: AbortSignal) => Promise<void>) =>
+    islem.calistir(eylem, 'Drive dosyası hazırlandı.');
   if (!bagli) return null;
   return (
     <div>
@@ -40,8 +35,10 @@ export function DriveRaporunuAc({ ac, mesgul }: { ac: (d: SecilenDosya) => Promi
           className="dugme"
           disabled={mesgul || calisiyor}
           onClick={() =>
-            void is(async () => {
-              setListe(await driveListele('rapor'));
+            void is(async (signal) => {
+              const l = await driveListele('rapor', signal);
+              signal.throwIfAborted();
+              setListe(l);
             })
           }
         >
@@ -70,9 +67,11 @@ export function DriveRaporunuAc({ ac, mesgul }: { ac: (d: SecilenDosya) => Promi
                 className="dugme kucuk"
                 disabled={mesgul || calisiyor}
                 onClick={() =>
-                  void is(async () => {
-                    const bayt = await driveIndir(d);
-                    await ac({ ad: d.name, bayt, sonDegisiklik: Date.parse(d.createdTime) });
+                  void is(async (signal) => {
+                    const bayt = await driveIndir(d, undefined, signal);
+                    signal.throwIfAborted();
+                    await ac({ ad: d.name, bayt, sonDegisiklik: Date.parse(d.createdTime) }, signal);
+                    signal.throwIfAborted();
                     setListe(null);
                   })
                 }
@@ -83,8 +82,7 @@ export function DriveRaporunuAc({ ac, mesgul }: { ac: (d: SecilenDosya) => Promi
           ))}
         </ul>
       )}
-      {calisiyor && <p role="status">Drive dosyası hazırlanıyor…</p>}
-      {hata && <Mesaj ton="hata">{hata}</Mesaj>}
+      <IslemBildirimi islem={islem} />
     </div>
   );
 }
@@ -92,36 +90,30 @@ export function DriveRaporunuAc({ ac, mesgul }: { ac: (d: SecilenDosya) => Promi
 export function DriveRaporunuKaydet({ sonuc }: { sonuc: KayitSonucu }) {
   const bagli = useDrive();
   const [led, setLed] = useState(false);
-  const [mesgul, setMesgul] = useState(false);
-  const kilit = useRef(false);
-  const [hata, setHata] = useState('');
+  const islem = useIslem('drive-kayit');
+  const mesgul = islem.mesgul;
   const [kayit, setKayit] = useState<DriveDosyasi | null>(null);
-  const gonder = async () => {
-    if (kilit.current) return;
-    kilit.current = true;
-    setMesgul(true);
-    setHata('');
-    try {
-      const token = driveToken();
-      await driveYukle(`YEDEK ${sonuc.hedef.ad}`, sonuc.oncekiBayt, 'yedek');
-      driveHesabiDogrula(token);
-      const d = await driveYukle(sonuc.hedef.ad, sonuc.hedef.bayt, 'rapor');
-      if (led)
-        for (const kaynak of sonuc.ledDosyalari) {
-          driveHesabiDogrula(token);
-          await driveYukle(kaynak.ad, kaynak.bayt, 'led');
-        }
-      driveHesabiDogrula(token);
-      setKayit(d);
-    } catch (e) {
-      setHata(
-        `${driveHatasi(e)} İşlem kısmen tamamlanmış olabilir. Yeniden göndermek aynı içeriği çoğaltmaz.`,
-      );
-    } finally {
-      kilit.current = false;
-      setMesgul(false);
-    }
-  };
+  const gonder = () =>
+    islem.calistir(
+      async (signal) => {
+        const token = driveToken();
+        await driveYukle(`YEDEK ${sonuc.hedef.ad}`, sonuc.oncekiBayt, 'yedek', signal);
+        signal.throwIfAborted();
+        driveHesabiDogrula(token);
+        const d = await driveYukle(sonuc.hedef.ad, sonuc.hedef.bayt, 'rapor', signal);
+        if (led)
+          for (const kaynak of sonuc.ledDosyalari) {
+            signal.throwIfAborted();
+            driveHesabiDogrula(token);
+            await driveYukle(kaynak.ad, kaynak.bayt, 'led', signal);
+          }
+        signal.throwIfAborted();
+        driveHesabiDogrula(token);
+        setKayit(d);
+      },
+      'Dosya ve yedeği Drive’a kaydedildi.',
+      true,
+    );
   return (
     <div className="drive-sonuc">
       {bagli ? (
@@ -163,7 +155,7 @@ export function DriveRaporunuKaydet({ sonuc }: { sonuc: KayitSonucu }) {
           Drive kopyası için Ayarlar’dan Google Drive’a bağlanın, sonra bu ekrana dönün.
         </p>
       )}
-      {hata && <Mesaj ton="hata">{hata}</Mesaj>}
+      <IslemBildirimi islem={islem} />
       {kayit && (
         <Mesaj ton="tamam">
           Dosya ve yedeği Drive’a kaydedildi{led ? '; LED dosyaları da gönderildi' : ''}.
