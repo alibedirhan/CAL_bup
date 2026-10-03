@@ -1,12 +1,15 @@
 import { KullaniciHatasi } from '../cekirdek/hata';
 import { posVerisiDogrula, type PosVerisi } from '../cekirdek/posCari';
+import { kasaParolasiDogrula, kasaAcilisBilgisiDogrula } from '../cekirdek/posParola';
+export { kasaParolasiDogrula } from '../cekirdek/posParola';
 
 const TEKRAR = 600_000;
 export const EN_BUYUK_POS_YEDEK = 256 * 1024;
 
 export interface PosZarfi {
   bicim: 'cal-bup-pos';
-  surum: 1;
+  surum: 1 | 2;
+  cihaz?: string;
   tekrar: number;
   tuz: string;
   iv: string;
@@ -24,9 +27,19 @@ function bayt(metin: string): Uint8Array<ArrayBuffer> {
   return Uint8Array.from(atob(metin), (c) => c.charCodeAt(0));
 }
 
-export function kasaParolasiDogrula(parola: string): void {
-  if (parola.trim().length < 14 || parola.length > 128) {
-    throw new KullaniciHatasi('Kasa parolası 14–128 karakter olmalı. Uzun, size özel bir parola seçin.');
+export function posSifrelemeDestegi(): void {
+  if (globalThis.isSecureContext === false)
+    throw new KullaniciHatasi(
+      'Cari kasası güvenli bağlantı gerektirir. CAL bup’ın https://alibedirhan.github.io/CAL_bup/ adresini güncel Chrome veya Edge ile açın.',
+    );
+  if (
+    !globalThis.crypto?.subtle ||
+    typeof crypto.getRandomValues !== 'function' ||
+    typeof crypto.randomUUID !== 'function'
+  ) {
+    throw new KullaniciHatasi(
+      'Bu tarayıcı şifreli cari kasasını desteklemiyor. Güncel Chrome veya Edge kullanın.',
+    );
   }
 }
 
@@ -35,12 +48,20 @@ export function posZarfiDogrula(deger: unknown): PosZarfi {
   if (typeof deger !== 'object' || deger === null || Array.isArray(deger)) throw hata();
   const z = deger as Record<string, unknown>;
   if (
-    Object.keys(z).sort().join() !== 'bicim,iv,kimlik,surum,tekrar,tuz,veri' ||
+    Object.keys(z).sort().join() !==
+      (z.surum === 2
+        ? 'bicim,cihaz,iv,kimlik,surum,tekrar,tuz,veri'
+        : 'bicim,iv,kimlik,surum,tekrar,tuz,veri') ||
     z.bicim !== 'cal-bup-pos' ||
-    z.surum !== 1 ||
+    (z.surum !== 1 && z.surum !== 2) ||
     z.tekrar !== TEKRAR ||
     typeof z.kimlik !== 'string' ||
     !/^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(z.kimlik)
+  )
+    throw hata();
+  if (
+    z.surum === 2 &&
+    (typeof z.cihaz !== 'string' || !/^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(z.cihaz))
   )
     throw hata();
   for (const alan of ['tuz', 'iv', 'veri']) {
@@ -65,7 +86,8 @@ export function posZarfiDogrula(deger: unknown): PosZarfi {
     throw hata();
   return {
     bicim: 'cal-bup-pos',
-    surum: 1,
+    surum: sonuc.surum,
+    ...(sonuc.surum === 2 && sonuc.cihaz ? { cihaz: sonuc.cihaz } : {}),
     tekrar: TEKRAR,
     tuz: sonuc.tuz,
     iv: sonuc.iv,
@@ -75,20 +97,32 @@ export function posZarfiDogrula(deger: unknown): PosZarfi {
 }
 
 function ekVeri(z: Omit<PosZarfi, 'veri'>): Uint8Array<ArrayBuffer> {
-  return new TextEncoder().encode(`${z.bicim}|${z.surum}|${z.tekrar}|${z.tuz}|${z.kimlik}`);
+  return new TextEncoder().encode(
+    `${z.bicim}|${z.surum}|${z.tekrar}|${z.tuz}|${z.kimlik}${z.surum === 2 ? `|${z.cihaz}` : ''}`,
+  );
 }
 
 export function yeniTuz(): string {
+  posSifrelemeDestegi();
   return b64(crypto.getRandomValues(new Uint8Array(16)));
 }
 
-export async function kasaAnahtari(parola: string, tuz: string): Promise<CryptoKey> {
-  kasaParolasiDogrula(parola);
-  if (!globalThis.crypto?.subtle)
-    throw new KullaniciHatasi('Şifreli kasa bu tarayıcıda açılamıyor. Güncel Chrome veya Edge kullanın.');
+export async function kasaAnahtari(
+  parola: string,
+  tuz: string,
+  cihazAnahtari?: CryptoKey,
+): Promise<CryptoKey> {
+  if (cihazAnahtari) kasaAcilisBilgisiDogrula(parola);
+  else kasaParolasiDogrula(parola);
+  posSifrelemeDestegi();
   const parolaBaytlari = new TextEncoder().encode(parola);
+  let cihazBagli: Uint8Array<ArrayBuffer> | undefined;
   try {
-    const temel = await crypto.subtle.importKey('raw', parolaBaytlari, 'PBKDF2', false, ['deriveKey']);
+    if (cihazAnahtari)
+      cihazBagli = new Uint8Array(await crypto.subtle.sign('HMAC', cihazAnahtari, parolaBaytlari));
+    const temel = await crypto.subtle.importKey('raw', cihazBagli ?? parolaBaytlari, 'PBKDF2', false, [
+      'deriveKey',
+    ]);
     return await crypto.subtle.deriveKey(
       { name: 'PBKDF2', hash: 'SHA-256', iterations: TEKRAR, salt: bayt(tuz) },
       temel,
@@ -96,15 +130,26 @@ export async function kasaAnahtari(parola: string, tuz: string): Promise<CryptoK
       false,
       ['encrypt', 'decrypt'],
     );
+  } catch {
+    throw new KullaniciHatasi(
+      'Tarayıcı şifreleme anahtarını hazırlayamadı. Güncel Chrome veya Edge ile yeniden deneyin.',
+    );
   } finally {
     parolaBaytlari.fill(0);
+    cihazBagli?.fill(0);
   }
 }
 
-export async function kasaSifrele(veri: PosVerisi, anahtar: CryptoKey, tuz: string): Promise<PosZarfi> {
-  const z = {
+export async function kasaSifrele(
+  veri: PosVerisi,
+  anahtar: CryptoKey,
+  tuz: string,
+  cihaz?: string,
+): Promise<PosZarfi> {
+  const z: Omit<PosZarfi, 'veri'> = {
     bicim: 'cal-bup-pos' as const,
-    surum: 1 as const,
+    surum: cihaz ? 2 : 1,
+    ...(cihaz ? { cihaz } : {}),
     tekrar: TEKRAR,
     tuz,
     iv: b64(crypto.getRandomValues(new Uint8Array(12))),
@@ -152,7 +197,9 @@ export function posYedegiOku(baytlar: Uint8Array): PosZarfi {
   if (baytlar.byteLength > EN_BUYUK_POS_YEDEK)
     throw new KullaniciHatasi('Cari yedeği en fazla 256 KB olabilir.');
   try {
-    return posZarfiDogrula(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(baytlar)));
+    const z = posZarfiDogrula(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(baytlar)));
+    if (z.surum !== 1) throw new Error('Cihaz kaydı taşınabilir yedek değildir');
+    return z;
   } catch {
     throw new KullaniciHatasi('Bu dosya geçerli bir şifreli CAL bup cari yedeği değil.');
   }

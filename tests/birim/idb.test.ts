@@ -2,7 +2,55 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.useRealTimers();
   vi.resetModules();
+});
+
+describe('IndexedDB bekleme ve geç sonuç sınırları', () => {
+  it('açılış beklemesi biter; geç gelen bağlantı kapanır ve yeni deneme engellenmez', async () => {
+    vi.useFakeTimers();
+    const kapat = vi.fn();
+    const istekler: { onsuccess?: () => void; result: { close: () => void } }[] = [];
+    vi.stubGlobal('indexedDB', {
+      open: () => {
+        const istek = { result: { close: kapat } };
+        istekler.push(istek);
+        return istek;
+      },
+    });
+    const idb = await import('../../src/platform/idb');
+    const ilk = expect(idb.okuKesin('a')).rejects.toThrow(/zamanında/);
+    await vi.advanceTimersByTimeAsync(idb.DEPO_ACILIS_SURESI);
+    await ilk;
+    const ikinci = expect(idb.okuKesin('a')).rejects.toThrow(/zamanında/);
+    expect(istekler.length).toBe(2);
+    istekler[0]?.onsuccess?.();
+    expect(kapat).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(idb.DEPO_ACILIS_SURESI);
+    await ikinci;
+  });
+  it('sonuçlanmayan aktarımı iptal eder; geç başarı yazı sayılmaz', async () => {
+    vi.useFakeTimers();
+    const aktarim = {
+      oncomplete: null as (() => void) | null,
+      abort: vi.fn(),
+      objectStore: () => ({ put: () => ({ result: 'a' }) }),
+    };
+    vi.stubGlobal('indexedDB', {
+      open: () => {
+        const istek = { onsuccess: null as (() => void) | null, result: { transaction: () => aktarim } };
+        queueMicrotask(() => istek.onsuccess?.());
+        return istek;
+      },
+    });
+    const idb = await import('../../src/platform/idb');
+    const yazma = idb.yaz('a', 'b');
+    await vi.advanceTimersByTimeAsync(idb.DEPO_ISLEM_SURESI + 1);
+    expect(await yazma).toBe(false);
+    expect(aktarim.abort).toHaveBeenCalledTimes(1);
+    aktarim.oncomplete?.();
+    expect(await yazma).toBe(false);
+  });
 });
 
 describe('IndexedDB aktarım doğrulaması', () => {

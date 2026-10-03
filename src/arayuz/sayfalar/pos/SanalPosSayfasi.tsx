@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
 import { cariKaydet, numaraMaskesi, type PosCari } from '../../../cekirdek/posCari';
 import { indir } from '../../../platform/dosya';
@@ -17,7 +17,7 @@ type Oturum = ReturnType<typeof usePosKasasi>;
 function AcikKasa({ oturum }: { oturum: Oturum }) {
   const { kasa, veri, mesgul, calistir, setHata, setBilgi, kilitle } = oturum;
   const [arama, setArama] = useState('');
-  const [secili, setSecili] = useState<string | null>(null);
+  const { seciliId: secili, setSeciliId: setSecili } = oturum;
   const [form, setForm] = useState<{ cari: PosCari | null } | null>(null);
   const cariler = veri?.cariler ?? [];
   const cari = cariler.find((c) => c.id === secili);
@@ -187,19 +187,21 @@ function AcikKasa({ oturum }: { oturum: Oturum }) {
       </div>
       <KasaBakimi
         mesgul={mesgul}
-        yedekIndir={() => {
-          if (!izin()) return;
-          try {
-            indir(
-              kasa.yedek(),
-              `CAL-bup-cari-yedegi-${new Date().toISOString().slice(0, 10)}.calpos`,
-              'application/octet-stream',
-            );
-            setBilgi('Şifreli cari yedeği indirme için hazırlandı. İndirilen dosyayı saklayın.');
-            setHata('');
-          } catch {
-            setHata('Yedek hazırlanamadı. Kasayı yeniden açıp deneyin.');
-          }
+        yedekIndir={(parola) => {
+          if (!izin() || !veri) return Promise.resolve(false);
+          return calistir(
+            async () => {
+              const yedek = await kasa.yedekle(parola);
+              indir(
+                yedek,
+                `CAL-bup-cari-yedegi-${new Date().toISOString().slice(0, 10)}.calpos`,
+                'application/octet-stream',
+              );
+              return veri;
+            },
+            'Taşınabilir şifreli yedek hazırlandı. Yedek dosyasını ve uzun yedek parolasını ayrı saklayın.',
+            false,
+          );
         }}
         yedekEkle={(dosya, parola) =>
           calistir(async () => {
@@ -221,7 +223,24 @@ function AcikKasa({ oturum }: { oturum: Oturum }) {
 
 export function SanalPosSayfasi() {
   const oturum = usePosKasasi();
-  const { veri, varMi, mesgul, hata, bilgi, kasa, calistir, kilitle } = oturum;
+  const {
+    veri,
+    varMi,
+    mesgul,
+    hata,
+    bilgi,
+    kasa,
+    calistir,
+    kilitle,
+    yukleniyor,
+    kontrol,
+    asama,
+    asamayiBildir,
+  } = oturum;
+  const hataKutusu = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (hata) hataKutusu.current?.focus();
+  }, [hata]);
   return (
     <>
       <div className="kart-ust">
@@ -235,21 +254,59 @@ export function SanalPosSayfasi() {
           </button>
         )}
       </div>
+      {veri && (
+        <p className="ipucu">
+          Kasa 30 dakika kullanılmayınca kilitlenir. Açık POS sekmesi etkilenmez; kasayı yeniden açınca
+          seçtiğiniz cari geri gelir.
+        </p>
+      )}
       <Mesaj ton="bilgi">
         Kart numarası, kart fotoğrafı, CVV ve banka şifresi bu bölümde alınmaz. Cari listesi Drive’a
         gönderilmez.
       </Mesaj>
-      {hata && <Mesaj ton="hata">{hata}</Mesaj>}
+      {hata && (
+        <div ref={hataKutusu} tabIndex={-1}>
+          <Mesaj
+            ton="hata"
+            eylem={
+              !veri && (
+                <button
+                  className="dugme"
+                  type="button"
+                  disabled={mesgul || yukleniyor}
+                  onClick={() => void kontrol()}
+                >
+                  Kasa durumunu yeniden kontrol et
+                </button>
+              )
+            }
+          >
+            {hata}
+          </Mesaj>
+        </div>
+      )}
       {bilgi && <Mesaj ton="bilgi">{bilgi}</Mesaj>}
+      {mesgul && (
+        <Mesaj
+          ton="bilgi"
+          eylem={
+            <button className="dugme" type="button" onClick={kilitle}>
+              İşlemi durdur
+            </button>
+          }
+        >
+          {asama}
+        </Mesaj>
+      )}
       {veri ? (
         <AcikKasa oturum={oturum} />
-      ) : varMi === null ? (
-        !hata && <p role="status">Cari deposu kontrol ediliyor…</p>
+      ) : yukleniyor || varMi === null ? (
+        yukleniyor && <p role="status">Cari deposu kontrol ediliyor…</p>
       ) : (
         <KasaKilidi
           varMi={varMi}
           mesgul={mesgul}
-          ac={(p) => calistir(() => kasa.ac(p, !varMi), 'Cari kasası açıldı.', !varMi)}
+          ac={(p) => calistir(() => kasa.ac(p, !varMi, asamayiBildir), 'Cari kasası açıldı.', !varMi)}
         />
       )}
     </>

@@ -1,3 +1,48 @@
+# 3 Ekim 2026 — 1.3.0 kısa PIN ve kasa oluşturma düzeltmesi
+
+Kullanıcı kasa oluşturamadığını bildirdi; kısa sayı parolası ve müşteri banka şifresini beklerken
+beş dakikalık kilidin işlemi tekrar başlatmamasını istedi. Çalışmaları bitirme, denetleme ve ardından
+bilgisayarı kapatma talebi açıkça verildi. Başlangıç temiz main, commit `f29b269`.
+
+- Canlı 1.2.0 incelemesinde uzun parola ile oluşturma çalıştı; kısa parola HTML `minLength` doğrulamasına
+  takılarak React hata mesajına ulaşmıyordu. Yeni formlar açık hata verir, DOM otomatik doldurmasını da okur.
+- Yeni yerel kasa cihaz anahtarlı v2: 4–12 rakamlık PIN veya uzun parola. Rastgele dışa aktarılamayan
+  HMAC-SHA256 anahtarı depoda; PIN HMAC sonucu PBKDF2-SHA256/600.000 + AES-256-GCM’ye girer.
+  HMAC anahtarı ve zarf tek atomik aktarımda yazılır; AES oturum anahtarı kalıcı saklanmaz.
+  Bu tarayıcı profiline bağlı uygulama korumasıdır, donanım kasası veya uzun parola eşdeğeri değildir.
+- Taşınabilir yedek ayrı 14–128 karakterlik uzun parola ile yeniden şifrelenen v1 `.calpos` dosyasıdır;
+  PIN/cihaz anahtarı dışa aktarılmaz. Eski v1 kasa ve yedekler çalışır; parola değişimi v2’ye taşır.
+- Otomatik kilit 30 dakika. Aynı bölümde yeniden açınca seçilen cari geri gelir; firma onayı sıfırlanır.
+  CAL bup açık POS sekmesini kapatmaz/alanlarını silmez. Sağlayıcının kendi sürelerini değiştiremez.
+- Beş deneme/60 saniye sınırı atomik kalıcı sayaçla korunur, başarılı açılışta sıfırlanır.
+- Depo açılışı/aktarım ve şifreleme bekleme sınırları; görünür ilerleme, işlemi durdurma, yeniden kontrol.
+  Geç sonuçlar anahtarı tekrar etkinleştiremez; başarısı belirsiz yazı sonrası kasa yeniden okunur.
+- BroadcastChannel kurulamıyorsa uygulama çalışır; atomik çakışma kontrolü devam eder.
+  Başka sekmede değişmiş liste eski oturumdan taşınabilir yedek olarak sunulmaz.
+- Kullanım/gizlilik/iş kuralları güncellendi; yeni bağımlılık yok. Kart/ödeme alanları eklenmedi.
+
+Doğrulama:
+
+- `npm run kontrol`: **22 dosyada 283 test**, tip/lint/biçim/derleme geçti; gerçek Excel/ikiz altın testleri dahil.
+- `npm audit`: 0 bilinen açık; `git diff --check` temiz.
+- Gerçek Web Crypto testleri: PIN, dışa aktarılamayan anahtar, kayıp cihaz anahtarında kaydı koruma,
+  eski v1 veri/yedek, farklı PIN kasasına yedek ekleme, sayaç/kayıt çakışması, başarısız anahtar dönüşümü,
+  yanıtsız şifreleme zaman aşımı/yeniden deneme, güvensiz bağlantı/eksik Crypto ve geç depo sonuçları.
+- Chromium `/tmp/cal-bup-pos-browser.mjs`: gerçek IndexedDB/pano; PIN oluşturma, cari CRUD, ayrı uzun
+  parolalı yedek indirme/geri ekleme, parola/PIN değişimi, rota/iki sekme, 6 dakikada açık kalma,
+  30 dakika kilidi, seçili carinin geri gelmesi ve açık taklit POS alanlarının aynı kalması geçti.
+  Açık/koyu/dar görünüm incelendi, yatay taşma/JS hatası yok. Gerçek POS’a bağlanılmadı.
+- `/tmp/cal-bup-pos-hatalar.mjs`: engelli depodan yeniden kontrol ile toparlanma, kanal kurulum hatası,
+  pano/elle giriş, bfcache dönüşü, bozuk kaydı koruma geçti.
+- `/tmp/cal-bup-pos-kilit-form.mjs`: boş/kısa/farklı PIN için görünür hata, React olayı olmadan DOM
+  otomatik doldurma, başı sıfırlı dört rakam PIN ile oluşturma/yeniden açma geçti.
+- `/tmp/cal-bup-localwrite.mjs`: gerçek rapor dosyalarıyla gerçek IndexedDB + taklit dosya erişiminde
+  tek yazma, kalıcı yedek ve doğru geçmiş/yedek bağlantısı geçti; fiziksel dosyalar değiştirilmedi.
+- `/tmp/cal-bup-pos-iptal.mjs`: yanıt vermeyen şifrelemede ilerleme, durdurma ve yeniden oluşturma geçti.
+
+Windows’taki gerçek kullanımı ve POS sağlayıcısının kendi oturum/şifre süresi bu tarayıcı testleriyle
+kanıtlanmış sayılmaz. Otomatik POS oturumu/ödeme doğrulaması yoktur. Teknik sınırlar [SANAL_POS.md](SANAL_POS.md).
+
 # 3 Ekim 2026 — 1.2.0 Sanal POS cari yardımı
 
 Kullanıcı eklentisiz çalışmayı, cari adı/numarasını elle kaydetmeyi ve kart alanlarını gerektiğinde

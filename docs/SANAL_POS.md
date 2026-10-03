@@ -1,4 +1,4 @@
-# Sanal POS — 1.2.0
+# Sanal POS — 1.3.0
 
 Bu sürüm **cari ve giriş yardımını** sağlar. Kart okuma ve ödeme işlemi yapmaz. Kullanıcı cari adını
 ve vergi/TC numarasını elle kaydeder; cari arar, seçer, numarayı ve işlem sırasında türetilen POS
@@ -25,21 +25,38 @@ karşılaştırmalıdır. Kullanıcı onayı yalnızca beyanıdır, sağlayıcı
   AES-256-GCM, her yazıda rastgele 12 bayt IV ve 128 bit etiket. Zarf sürüm/KDF/salt/revizyon
   bilgileri ek doğrulanan veriye bağlanır. Anahtar dışa aktarılamaz.
 - `platform/posKasasi.ts`: oturum anahtarı ve şifreli zarf; IndexedDB `sanal-pos-kasa-v1` anahtarı.
-  Anahtar veya parola kalıcı depoya girmez. POS giriş şifresi kaydedilmez.
+  Oturum AES anahtarı veya PIN/parola kalıcı depoya girmez. POS giriş şifresi kaydedilmez.
+  Yeni yerel kasa v2 biçimindedir: rastgele, dışa aktarılamayan HMAC-SHA256 cihaz anahtarı IndexedDB’de
+  tutulur. PIN önce bu anahtarla HMAC işleminden geçirilir, sonuç PBKDF2’ye girer. Cihaz kimliği
+  şifreli zarfın AAD’sine dahil edilir. Cihaz anahtarı ve zarf tek atomik aktarımda kaydedilir.
+  Bu anahtar donanım/işletim sistemi kasası değildir; aynı tarayıcı profili ve origin kodu kullanabilir.
 - `arayuz/sayfalar/pos/`: parola kilidi, elle kayıt, cari arama/seçme, giriş yardımı ve bakım.
   Rapor kaydına eklenmez; ayrı rota `#/sanal-pos`.
-- Kasa parolası 14–128 karakterdir; baş/son boşlukları çıkarıldığında en az 14 karakter gerekir. Parola kurtarma servisi yoktur.
-  Kullanıcı uzun ve benzersiz bir parola seçmelidir. Parola unutulursa şifreli kayıt ve yedeği açılamaz.
+- Günlük yerel açılış için 4–12 ASCII rakamlık PIN veya 14–128 karakterlik parola kabul edilir.
+  Başlangıç sıfırları korunur. Yeni parolanın baş/son boşlukları reddedilir; eski v1 parola baytları
+  aynen korunur. Eski v1 kasa eski uzun parolasıyla açılır; parola değişikliği atomik olarak v2’ye taşır.
+  Eski cihaz anahtarı/parola deneme sayacı, yeni zarf ve anahtar yazılırken aynı aktarımda silinir.
+  Beş açılış denemesi/60 saniye sınırı atomik sayaçla tarayıcı deposunda tutulur; sayfa yenilemesi
+  sayacı sıfırlamaz. Başarılı açılış sayacı temizler. Depo değişikliği/zararlı aynı-origin kodu bu
+  uygulama sınırını aşabilir; kısa PIN uzun parolayla eşdeğer değildir. Parola kurtarma servisi yoktur.
 - Liste yalnızca bu tarayıcı profilindedir; başka bilgisayara kendiliğinden gitmez. Kasa oluşturulurken
   bile kalıcı kayıt doğrulanır. Depo okuma hatası veya bozuk zarf boş kasa sayılmaz.
-- Son gerçek etkileşimden 5 dakika sonra oturum kilitlenir; gizli sekmeden dönüşte süre tekrar
+- Son gerçek etkileşimden 30 dakika sonra oturum kilitlenir; gizli sekmeden dönüşte süre tekrar
   kontrol edilir. Bölümden çıkış, sayfa kapanışı ve bfcache dönüşü de kilitler. Anahtar/veri referansları
-  bırakılır, açık bileşenler kaldırılır. JS/React/işletim sistemi belleğinin kesin silinmesi garanti edilmez.
+  bırakılır, açık bileşenler kaldırılır. Aynı bölümde kilit/açılış boyunca yalnızca seçilen carinin
+  rastgele kimliği oturum belleğinde korunur; açınca cari yeniden seçilir, firma onayı yeniden gerekir.
+  CAL bup açık POS sekmesini kapatmaz veya alanlarını silmez. Sağlayıcının kendi oturum/banka
+  doğrulama süresini değiştiremez. JS/React/işletim sistemi belleğinin kesin silinmesi garanti edilmez.
 - Yazı atomik karşılaştır/değiştir ile yapılır. Çözülürken okunan şifreli zarfın tamamı beklenen değer
   olarak karşılaştırılır; başka sekme değiştiyse eski liste kaydedilemez. BroadcastChannel varsa
   değişiklikte diğer sekmelerin açık kasaları kilitlenir. Kanal yoksa yazma çakışma denetimi kalır.
 - Çift işleme eşzamanlı kilit; işlem sırasında kilitlenmeye nesil denetimi; geç gelen sonuç oturumu
   yeniden açamaz. Başarı, IndexedDB aktarımı tamamlandıktan sonra gösterilir.
+  Depo açılışı 10 saniye, aktarımı 30 saniye, kasa alt işlemleri 45 saniyede zaman aşımına uğrar.
+  Kullanıcı işlemi durdurabilir; geç sonuçlar oturumu açamaz. Daha önce başlamış aktarımın tamamlanmış
+  olabileceği durumda depo yeniden okunur. Zaman aşımı keyfi bir geri alma garantisi değildir.
+  Formlar yerel HTML doğrulamasına bağlı sessiz engel yerine açık hata verir; parola yöneticisinin
+  doldurduğu DOM değeri de doğrulanır. Şifreleme/depo adımı ekranda görünür, hata sonrası yeniden kontrol vardır.
 - Ad 2–120 karakter, numara 10/11 ASCII rakam ve metin; baştaki sıfırlar korunur. Kimlik UUID
   biçimindedir. Türkçe harf/boşluk normalleştirmesiyle aynı ad veya numara için ikinci kayıt reddedilir.
   Vergi/TC numarasının resmi doğruluğu veya kişiye aitliği doğrulanmaz; kullanıcı kontrolü gereklidir.
@@ -48,11 +65,16 @@ karşılaştırmalıdır. Kullanıcı onayı yalnızca beyanıdır, sağlayıcı
 
 ## Yedek ve Drive
 
-Kasa açıkken `.calpos` dosyası yalnızca şifreli zarfı indirir. Dosya adı tarih içerir, cari bilgisi içermez.
-Yeni bilgisayarda kullanıcı yeni kasa kurar; yedek parolasıyla yedekten cari ekler. Aynı ad/numara atlanır;
-çelişki varsa aktarımın tümü durur ve mevcut liste korunur. Yeni kasanın parolası yedeğin parolasıyla
-değiştirilmez. Parola değiştirme yeni salt ve anahtarla bütün listeyi atomik yeniden şifreler. Eski
-yedekler eski parolayla açılır. Sonrasında yeni yedek gerekir.
+Kasa açıkken kullanıcı **ayrı 14–128 karakterlik uzun yedek parolası** belirler. Liste yeni salt ve
+AES anahtarıyla taşınabilir v1 `.calpos` zarfına şifrelenir, çözülerek doğrulanır ve indirilir. Günlük
+PIN ve cihaz anahtarı yedeğe girmez. Yerel v2 zarf tek başına taşınabilir yedek olarak kabul edilmez.
+Dosya adı tarih içerir, cari bilgisi içermez. Uzun yedek parolası günlük açılışta istenmez.
+
+Yeni bilgisayarda kullanıcı yeni PIN kasası kurar; uzun yedek parolasıyla yedekten cari ekler. Aynı
+ad/numara atlanır; çelişki varsa aktarımın tümü durur ve mevcut liste korunur. Yeni kasanın PIN’i
+yedeğin parolasıyla değiştirilmez. Önceki sürüm yedekleri eski uzun kasa parolasıyla kullanılabilir.
+Günlük PIN/parola değişikliği mevcut yedeklerin parolasını değiştirmez. Tarayıcı site verileri veya
+cihaz anahtarı kaybolursa taşınabilir yedek gerekir; unutulan PIN/uzun parola için kurtarma yoktur.
 
 Drive eşitlemesi yalnızca mevcut rapor ayarı/geçmişi okur; POS anahtarı ve cariler dahil edilmez.
 Google OAuth/Drive davranışı değiştirilmez. POS bölümü Google kitaplığını veya harici servisi yüklemez.

@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { KullaniciHatasi } from '../../../cekirdek/hata';
+import { kasaAcilisBilgisiDogrula, yeniKasaParolasiDogrula } from '../../../cekirdek/posParola';
 
 interface Ozellikler {
   varMi: boolean;
@@ -10,6 +12,9 @@ export function KasaKilidi({ varMi, mesgul, ac }: Ozellikler) {
   const [parola, setParola] = useState('');
   const [tekrar, setTekrar] = useState('');
   const [hata, setHata] = useState('');
+  const [goster, setGoster] = useState(false);
+  const parolaAlani = useRef<HTMLInputElement>(null);
+  const tekrarAlani = useRef<HTMLInputElement>(null);
 
   return (
     <section className="kart pos-kilit" aria-labelledby="kasa-baslik">
@@ -21,16 +26,27 @@ export function KasaKilidi({ varMi, mesgul, ac }: Ozellikler) {
       </p>
       <form
         className="pos-form"
+        noValidate
         onSubmit={(e) => {
           e.preventDefault();
+          if (mesgul) return;
           setHata('');
-          if (!varMi && parola !== tekrar) {
-            setHata('İki kasa parolası aynı olmalı.');
+          // Parola yöneticisinin DOM'a doldurduğu değer de doğrulanır; React olayına bağlı değildir.
+          const alanlar = new FormData(e.currentTarget);
+          const p = String(alanlar.get('kasaParolasi') ?? '');
+          const t = String(alanlar.get('kasaTekrar') ?? '');
+          try {
+            if (varMi) kasaAcilisBilgisiDogrula(p);
+            else yeniKasaParolasiDogrula(p, t);
+          } catch (e) {
+            setHata(e instanceof KullaniciHatasi ? e.message : 'Parolanın yazımını kontrol edin.');
+            if (p && t !== p && !varMi) tekrarAlani.current?.focus();
+            else parolaAlani.current?.focus();
             return;
           }
-          const p = parola;
           setParola('');
           setTekrar('');
+          setGoster(false);
           void ac(p);
         }}
       >
@@ -38,15 +54,22 @@ export function KasaKilidi({ varMi, mesgul, ac }: Ozellikler) {
         <input
           className="girdi"
           id="kasa-parolasi"
-          type="password"
+          ref={parolaAlani}
+          name="kasaParolasi"
+          type={goster ? 'text' : 'password'}
           autoComplete={varMi ? 'current-password' : 'new-password'}
-          minLength={14}
+          minLength={4}
           maxLength={128}
           required
           value={parola}
           disabled={mesgul}
-          onChange={(e) => setParola(e.target.value)}
+          onChange={(e) => {
+            setParola(e.target.value);
+            setHata('');
+          }}
           aria-describedby="kasa-parola-notu"
+          aria-invalid={Boolean(hata)}
+          spellCheck={false}
         />
         {!varMi && (
           <>
@@ -54,21 +77,44 @@ export function KasaKilidi({ varMi, mesgul, ac }: Ozellikler) {
             <input
               className="girdi"
               id="kasa-parolasi-tekrar"
-              type="password"
+              ref={tekrarAlani}
+              name="kasaTekrar"
+              type={goster ? 'text' : 'password'}
               autoComplete="new-password"
-              minLength={14}
+              minLength={4}
               maxLength={128}
               required
               value={tekrar}
               disabled={mesgul}
-              onChange={(e) => setTekrar(e.target.value)}
+              onChange={(e) => {
+                setTekrar(e.target.value);
+                setHata('');
+              }}
+              aria-invalid={Boolean(hata)}
+              spellCheck={false}
             />
           </>
         )}
+        <label className="pos-onay">
+          <input
+            type="checkbox"
+            checked={goster}
+            disabled={mesgul}
+            onChange={(e) => setGoster(e.target.checked)}
+          />
+          Kasa parolasını göster
+        </label>
         <p id="kasa-parola-notu" className="ipucu">
-          Bu, POS giriş şifresi değildir. En az 14 karakterlik, size özel bir parola kullanın. Unutulan kasa
-          parolasını geri getiremeyiz.
+          Bu, POS giriş şifresi değildir. Bu bilgisayarda 4–12 rakamlık PIN veya en az 14 karakterlik uzun
+          parola kullanabilirsiniz. Önceki sürümde oluşturduğunuz kasa mevcut parolasıyla açılır.
         </p>
+        {!varMi && (
+          <p className="ipucu">
+            {/^\d*$/.test(parola)
+              ? `PIN uzunluğu: ${parola.length} / 4–12 rakam.`
+              : `Parola uzunluğu: ${parola.trim().length} / en az 14 karakter.`}
+          </p>
+        )}
         {hata && (
           <p className="alan-hatasi" role="alert">
             {hata}
@@ -79,8 +125,9 @@ export function KasaKilidi({ varMi, mesgul, ac }: Ozellikler) {
         </button>
       </form>
       <p className="ipucu">
-        Başka bölüme geçtiğinizde veya 5 dakika kullanmadığınızda kasa kilitlenir. Tarayıcı verileri
-        temizlenirse liste silinir; şifreli yedeğinizi indirin.
+        Başka bölüme geçtiğinizde veya 30 dakika kullanmadığınızda kasa kilitlenir. Kilit POS sekmesini
+        kapatmaz ve oradaki bilgileri silmez. Tarayıcı verileri temizlenirse liste silinir; ayrı uzun parola
+        ile taşınabilir yedeğinizi hazırlayın. Unutulan PIN veya parola kurtarılamaz.
       </p>
     </section>
   );

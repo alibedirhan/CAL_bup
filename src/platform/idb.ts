@@ -4,48 +4,130 @@
 // CAL bup adından önce kaydedilen geçmiş ve yedekleri korumak için ad değişmez.
 const VT_ADI = 'bup-rapor';
 const DEPO = 'kv';
+export const DEPO_ACILIS_SURESI = 10_000;
+export const DEPO_ISLEM_SURESI = 30_000;
+export const KAYDI_SIL = Symbol('kaydi-sil');
 
 let acilis: Promise<IDBDatabase> | null = null;
 
 function vt(): Promise<IDBDatabase> {
-  acilis ??= new Promise<IDBDatabase>((coz, reddet) => {
-    const istek = indexedDB.open(VT_ADI, 1);
-    istek.onupgradeneeded = () => istek.result.createObjectStore(DEPO);
+  if (acilis) return acilis;
+  const bekleyen = new Promise<IDBDatabase>((coz, reddet) => {
+    let bitti = false;
+    const sure = setTimeout(() => hata(new Error('Tarayıcı deposu zamanında açılamadı')), DEPO_ACILIS_SURESI);
+    const hata = (e: unknown) => {
+      if (bitti) return;
+      bitti = true;
+      clearTimeout(sure);
+      reddet(e);
+    };
+    let istek: IDBOpenDBRequest;
+    try {
+      istek = indexedDB.open(VT_ADI, 1);
+    } catch (e) {
+      hata(e);
+      return;
+    }
+    istek.onupgradeneeded = () => {
+      if (bitti) {
+        istek.transaction?.abort();
+        return;
+      }
+      try {
+        istek.result.createObjectStore(DEPO);
+      } catch (e) {
+        istek.transaction?.abort();
+        hata(e);
+      }
+    };
     istek.onsuccess = () => {
       const db = istek.result;
+      if (bitti) {
+        db.close();
+        return;
+      }
+      bitti = true;
+      clearTimeout(sure);
       db.onversionchange = () => {
         db.close();
-        acilis = null;
+        if (acilis === bekleyen) acilis = null;
       };
       coz(db);
     };
-    istek.onerror = () => {
-      acilis = null;
-      reddet(istek.error ?? new Error('Tarayıcı deposu açılamadı'));
-    };
-    istek.onblocked = () => {
-      acilis = null;
-      reddet(new Error('Tarayıcı deposu başka sekmede açık'));
-    };
-  }).catch((e: unknown) => {
-    acilis = null;
-    throw e;
+    istek.onerror = () => hata(istek.error ?? new Error('Tarayıcı deposu açılamadı'));
+    istek.onblocked = () =>
+      hata(new Error('Tarayıcı deposu başka sekmede açık; diğer CAL bup sekmelerini kapatın'));
   });
-  return acilis;
+  acilis = bekleyen;
+  void bekleyen.catch(() => {
+    if (acilis === bekleyen) acilis = null;
+  });
+  return bekleyen;
 }
 
-function islem<T>(kip: IDBTransactionMode, is: (d: IDBObjectStore) => IDBRequest<T>): Promise<T> {
+/** Aktarım hiç sonuçlanmazsa iptal edilir; geç gelen başarı kabul edilmez. */
+function aktar<T>(
+  kip: IDBTransactionMode,
+  is: (d: IDBObjectStore, a: IDBTransaction, devam: () => boolean) => () => T,
+): Promise<T> {
   return vt().then(
     (db) =>
       new Promise<T>((coz, reddet) => {
-        const aktarim = db.transaction(DEPO, kip);
-        const istek = is(aktarim.objectStore(DEPO));
-        aktarim.oncomplete = () => coz(istek.result);
-        aktarim.onabort = () => reddet(aktarim.error ?? new Error('Tarayıcı deposuna yazılamadı'));
-        aktarim.onerror = () => reddet(aktarim.error ?? new Error('Tarayıcı deposu hatası'));
-        istek.onerror = () => reddet(istek.error ?? new Error('Tarayıcı deposu hatası'));
+        let aktarim: IDBTransaction;
+        try {
+          aktarim = db.transaction(DEPO, kip);
+        } catch (e) {
+          db.close();
+          acilis = null;
+          reddet(e);
+          return;
+        }
+        let bitti = false;
+        const sure = setTimeout(
+          () => iptal(new Error('Tarayıcı depo işlemi zamanında tamamlanmadı')),
+          DEPO_ISLEM_SURESI,
+        );
+        const hata = (e: unknown) => {
+          if (bitti) return;
+          bitti = true;
+          clearTimeout(sure);
+          reddet(e);
+        };
+        const iptal = (e: unknown) => {
+          try {
+            aktarim.abort();
+          } catch {
+            /* aktarım zaten kapanmış olabilir */
+          }
+          hata(e);
+        };
+        try {
+          const sonuc = is(aktarim.objectStore(DEPO), aktarim, () => !bitti);
+          aktarim.oncomplete = () => {
+            if (bitti) return;
+            try {
+              const deger = sonuc();
+              bitti = true;
+              clearTimeout(sure);
+              coz(deger);
+            } catch (e) {
+              hata(e);
+            }
+          };
+          aktarim.onabort = () => hata(aktarim.error ?? new Error('Tarayıcı depo işlemi iptal edildi'));
+          aktarim.onerror = () => hata(aktarim.error ?? new Error('Tarayıcı deposu hatası'));
+        } catch (e) {
+          iptal(e);
+        }
       }),
   );
+}
+
+function islem<T>(kip: IDBTransactionMode, is: (d: IDBObjectStore) => IDBRequest<T>): Promise<T> {
+  return aktar(kip, (depo) => {
+    const istek = is(depo);
+    return () => istek.result;
+  });
 }
 
 /** Hassas kayıtlarda depo hatası "kayıt yok" sayılmamalı. */
@@ -84,24 +166,20 @@ export async function guncelle(
   degistir: (onceki: unknown, depo: IDBObjectStore) => unknown,
 ): Promise<boolean> {
   try {
-    await vt().then(
-      (db) =>
-        new Promise<void>((coz, reddet) => {
-          const aktarim = db.transaction(DEPO, 'readwrite');
-          const depo = aktarim.objectStore(DEPO);
-          const istek = depo.get(anahtar);
-          aktarim.oncomplete = () => coz();
-          aktarim.onabort = () => reddet(aktarim.error ?? new Error('Tarayıcı kaydı tamamlanmadı'));
-          aktarim.onerror = () => reddet(aktarim.error ?? new Error('Tarayıcı kaydı başarısız'));
-          istek.onsuccess = () => {
-            try {
-              depo.put(degistir(istek.result, depo), anahtar);
-            } catch {
-              aktarim.abort();
-            }
-          };
-        }),
-    );
+    await aktar('readwrite', (depo, aktarim, devam) => {
+      const istek = depo.get(anahtar);
+      istek.onsuccess = () => {
+        if (!devam()) return;
+        try {
+          const deger = degistir(istek.result, depo);
+          if (deger === KAYDI_SIL) depo.delete(anahtar);
+          else depo.put(deger, anahtar);
+        } catch {
+          aktarim.abort();
+        }
+      };
+      return () => undefined;
+    });
     return true;
   } catch {
     return false;
