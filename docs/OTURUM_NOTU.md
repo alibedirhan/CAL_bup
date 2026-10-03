@@ -1,3 +1,41 @@
+# 3 Ekim 2026 — 1.3.1 seçilen cariyle POS giriş isteği
+
+Kullanıcı nerede kaldığımızı sordu; eksik olarak cari kaydından sonra “POS’u aç” dediğinde doğrudan
+o carinin hesabının açılmasını tarif etti. Önceki düğme yalnızca boş giriş sayfasını açıyordu.
+Başlangıç temiz `main`, commit `6f64719`.
+
+- Cari kaydetme/düzenleme sonrası cari seçilir; yeniden listeden seçmek gerekmez.
+- “POS’u aç” seçilen numarayı vergi/TC no ve kullanıcı, türetilen şifreyi giriş şifresi olarak sabit
+  HTTPS giriş sayfasına POST eder. Giriş kabul edilirse hesap yeni sekmede açılır. Bu resmi API değildir;
+  gerçek cari oturumu açıldığı henüz doğrulanmadı, uygulama POS sonucunu okuyamaz.
+- Form gönderimi yalnızca tıklamayla yapılır, otomatik tekrar yoktur. Kasa PIN’i/cari adı/kart/ödeme
+  verisi gönderilmez. Sırlar URL/referrer/panoya eklenmez. Yeni sekmede opener yoktur, geçici form
+  alanları boşaltılıp kaldırılır. CSP yalnızca sağlayıcının HTTPS giriş adresine izin verir.
+- ASP.NET isteği boş `__VIEWSTATE` ile postback olarak tanır; sağlayıcının imzalı durum alanı
+  kopyalanmaz. Herkese açık giriş sayfası incelendi, gerçek tarayıcıda kimlik bilgileri boş form
+  gönderimi “Lütfen Tüm Bilgileri Doldurun” yanıtı verdi. Bu, giriş olayının çalıştığını gösterir;
+  gerçek cari hesabıyla giriş yapıldığı anlamına gelmez.
+- Firma kontrolü kullanıcıya aittir. Önceki cari oturumundan çıkma, elle bağlantı/kopyalama alternatifi,
+  30 dakikalık kasa kilidi ve PIN/yedek biçimi korunur. Kart/OCR veya ödeme geçmişi eklenmedi.
+- Gizlilik, iş kuralları, mimari ve Sanal POS belgeleri güncellendi. Yeni bağımlılık yok.
+
+Doğrulama:
+
+- `npm run kontrol`: **22 dosyada 286 test**, tip/lint/biçim/derleme başarılı; yerel Excel altın testleri dahil.
+- `/tmp/cal-bup-pos-otomatik.mjs`: gerçek Chromium/IndexedDB; iki yapay cariyle POST gövdesi, tek
+  gönderim, kayıt sonrası seçim, sıfırlı numara, URL/referrer/opener, geçici form temizliği,
+  kilit/açılış ve firma onayının sıfırlanması, elle GET, geniş/dar görünüm doğrulandı. Cari bilgisi
+  POST’ları taklit servise gider. Yönlendirme testi yalnızca sağlayıcının herkese açık CSS dosyasına
+  boş gövdeli GET yapar; giriş/ödeme yoktur.
+- `/tmp/cal-bup-pos-bos-form.mjs`: gerçek sağlayıcıya yalnızca boş giriş alanları; form olayı çalıştı,
+  cari/şifre kullanılmadı, hesap girişi veya ödeme yapılmadı.
+- Görüntüler `/tmp/cal-bup-pos-otomatik-1440.png`, `/tmp/cal-bup-pos-otomatik-390.png` incelendi;
+  yatay taşma veya JS sayfa hatası yok. `git diff --check` temiz.
+
+Sıradaki doğrulama: Kullanıcı Windows Chrome/Edge’de önceki POS oturumundan çıkıp kendi carisini
+seçerek “POS’u aç” der; açılan firma adı/numarasını kontrol eder. Giriş ekranında kalırsa sağlayıcı
+yanıtı araştırılır. Gerçek giriş tamamlandı veya otomatik firma/ödeme doğrulaması var diye anlatma.
+
 # 3 Ekim 2026 — 1.3.0 kısa PIN ve kasa oluşturma düzeltmesi
 
 Kullanıcı kasa oluşturamadığını bildirdi; kısa sayı parolası ve müşteri banka şifresini beklerken

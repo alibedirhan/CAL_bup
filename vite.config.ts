@@ -14,7 +14,7 @@ const GUVENLIK_POLITIKASI = [
   'frame-src https://accounts.google.com/gsi/',
   "object-src 'none'",
   "base-uri 'self'",
-  "form-action 'none'",
+  'form-action https://denizpay.bupilic.com.tr/login.aspx',
 ].join('; ');
 
 function guvenlikPolitikasi(): Plugin {

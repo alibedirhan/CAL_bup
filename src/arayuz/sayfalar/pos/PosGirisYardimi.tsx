@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
 import { numaraMaskesi, posGirisSifresi, type PosCari } from '../../../cekirdek/posCari';
-import { POS_GIRIS_ADRESI, posBilgisiniKopyala } from '../../../platform/posGiris';
+import { POS_GIRIS_ADRESI, posBilgisiniKopyala, posCariyleGirisYap } from '../../../platform/posGiris';
 import { Mesaj } from '../../bilesenler/Mesaj';
 
 interface Ozellikler {
@@ -38,26 +38,29 @@ export function PosGirisYardimi({ cari, izin, bildir }: Ozellikler) {
       <p className="rakam">{numaraMaskesi(cari.numara)}</p>
       <ol className="pos-adimlar">
         <li>POS’ta başka cari açıksa önce o oturumdan çıkın.</li>
-        <li>Bu carinin numarasını vergi no ve kullanıcı alanlarına, giriş şifresini şifre alanına yazın.</li>
+        <li>“POS’u aç” ile bu carinin giriş bilgilerini POS’a gönderin.</li>
         <li>Girişten sonra üstteki firma adı ve numarayı bu kayıtla karşılaştırın.</li>
       </ol>
       <div className="satir-dugmeleri">
-        <a
+        <button
           className="dugme birincil"
-          href={POS_GIRIS_ADRESI}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => {
-            if (!izin()) {
-              e.preventDefault();
-              return;
+          type="button"
+          onClick={() => {
+            if (!izin()) return;
+            try {
+              posCariyleGirisYap(cari.numara);
+              setAcildi(true);
+              setDogrulandi(false);
+              bildir(
+                'Seçtiğiniz carinin giriş bilgileri POS’a gönderildi. Açılan sekmede firma adını ve numarasını kontrol edin. Giriş ekranında kalırsa bilgileri elle yazın.',
+              );
+            } catch (e) {
+              bildir(e instanceof KullaniciHatasi ? e.message : 'POS giriş isteği açılamadı.', true);
             }
-            setAcildi(true);
-            setDogrulandi(false);
           }}
         >
           POS’u aç
-        </a>
+        </button>
         <button className="dugme" type="button" onClick={() => kopyala('numara')}>
           Numarayı kopyala
         </button>
@@ -65,6 +68,27 @@ export function PosGirisYardimi({ cari, izin, bildir }: Ozellikler) {
           Giriş şifresini kopyala
         </button>
       </div>
+      <p className="ipucu">
+        Bu düğme seçilen carinin numarasını ve giriş şifresini doğrudan POS’a gönderir. Giriş kabul edilirse
+        cari hesabı açılır; CAL bup sonucu okuyamaz. Açılan sekmeyi göremiyorsanız tarayıcının açılır pencere
+        iznini kontrol edin.
+      </p>
+      <a
+        className="dugme hayalet"
+        href={POS_GIRIS_ADRESI}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => {
+          if (!izin()) {
+            e.preventDefault();
+            return;
+          }
+          setAcildi(true);
+          setDogrulandi(false);
+        }}
+      >
+        Giriş sayfasını elle aç
+      </a>
       <button
         className="dugme hayalet"
         type="button"

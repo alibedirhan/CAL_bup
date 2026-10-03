@@ -62,6 +62,8 @@ yüklenmez.
   Testlerdeki sentetik veriler gerçek ürün adı ve miktarı içermez.
 - Derlenen sayfaya CSP eklenir (`vite.config.ts`): kendi kaynakları, Google kimlik kitaplığının
   `accounts.google.com/gsi/` uçları ve Drive REST için `www.googleapis.com` izinlidir. Joker alan adı yoktur.
+  Form gönderimine yalnızca POS sağlayıcısının HTTPS `/login.aspx` adresinde izin verilir; kullanıcı
+  “POS’u aç” dediğinde giriş bilgileri yeni sekmeye POST edilir, sonuç uygulamadan okunmaz.
 - Google kitaplığı yalnızca kullanıcı Drive bağlantısını hazırladığında yüklenir. Normal rapor
   akışında dış bağlantı yoktur. Analitik ve takip çerezi eklenmez.
 - Drive adaptörü `platform/drive.ts`, OAuth oturum belleği `driveKimlik.ts`, doğrulama/birleştirme

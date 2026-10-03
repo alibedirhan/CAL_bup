@@ -106,9 +106,17 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.3.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.3.1. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-03 seçilen cariyle giriş:** Kullanıcı “POS’u aç” ile doğrudan seçilen carinin hesabının
+açılmasını istedi. Düğme numara/kullanıcı/türetilen giriş şifresini sabit HTTPS giriş sayfasına yerel
+HTML formuyla POST eder; yanıt yeni sekmede açılır. Boş `__VIEWSTATE` postback tanımasını sağlar;
+imzalı sağlayıcı durum değeri kopyalanmaz. CSP yalnızca bu giriş adresine form gönderimine izin verir.
+Kaydedilen cari otomatik seçilir. Elle bağlantı/kopyalama alternatifi korunur. Giriş sonucu/oturum
+okunamaz; doğru firma kontrolü kullanıcıya aittir. İki yapay cariyle tarayıcı gönderimi taklit POS’ta
+doğrulandı, gerçek cariyle giriş ve ödeme yapılmadı. Gerçek giriş kullanıcıyla denenmelidir.
 
 **2026-10-03 PIN düzeltmesi:** Yeni kasalar cihaz anahtarlı v2 zarf kullanır, günlük açılış 4–12 rakam PIN
 veya uzun parola, boşta kilit 30 dakika. Taşınabilir v1 yedek ayrı uzun parola ile yeniden şifrelenir;

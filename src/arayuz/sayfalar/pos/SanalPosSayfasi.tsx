@@ -37,7 +37,9 @@ function AcikKasa({ oturum }: { oturum: Oturum }) {
     if (!izin()) return false;
     try {
       const yeni = cariKaydet(cariler, c);
-      return await calistir(() => kasa.kaydet(yeni), 'Cari kaydedildi.');
+      const tamam = await calistir(() => kasa.kaydet(yeni), 'Cari kaydedildi.');
+      if (tamam) setSecili(c.id);
+      return tamam;
     } catch (e) {
       setHata(e instanceof KullaniciHatasi ? e.message : 'Cari kaydedilemedi.');
       return false;

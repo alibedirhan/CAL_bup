@@ -117,13 +117,15 @@ tutmazsa Hata; tutuyor ama uyarı varsa Uyarı; yoksa Tamam.
   Aynı türde aynı içeriğin yeniden gönderilmesi mevcut kopyayı kullanır. Geçmiş son 500 kaydı tutar;
   rapor ayarları kullanıcının açık seçimiyle geri alınır. Ayrıntılar: [DRIVE.md](DRIVE.md).
 
-## Sanal POS cari yardımı (1.3.0)
+## Sanal POS cari yardımı (1.3.1)
 
 Cari adı ve vergi/TC numarası elle kaydedilir; aynı ad veya numaraya ikinci kayıt açılmaz.
 Numara metin olarak korunur, POS kullanıcı alanında da kullanılır. POS giriş şifresi mevcut
 sağlayıcı kuralına göre işlem anında hazırlanır; kaydedilmez. Cari listesi parola ile şifrelenir,
-rapor/Drive kaydına girmez. POS bağlantısı giriş sayfasını açar; doğru cari oturumunu otomatik
-açtığı veya doğruladığı iddia edilmez. Kullanıcı önceki oturumdan çıkar, giriş yapar ve firma
+rapor/Drive kaydına girmez. Kaydetme sonrası cari otomatik seçilir. “POS’u aç” seçilen carinin
+numara/kullanıcı/giriş şifresini doğrudan POS’a POST ile gönderir; kabul edilirse cari hesabı açılır.
+Gerçek hesapla henüz doğrulanmadı; CAL bup giriş sonucunu veya doğru cari oturumunu okuyamaz.
+Kullanıcı önceki oturumdan çıkar, girişten sonra firma
 adı/numarasını karşılaştırır. Kart ve ödeme alanları bu sürümde yoktur. Ayrıntı: [SANAL_POS.md](SANAL_POS.md).
 
 Günlük kasa açılışı bu tarayıcıya bağlı 4–12 rakamlık PIN veya uzun parola ile yapılır. Otomatik
