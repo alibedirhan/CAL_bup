@@ -1,4 +1,47 @@
-# 4 Ekim 2026 — 1.11.0 Kârlılık Analizi
+# 4 Ekim 2026 — satış özellik taraması ve devam kaydı
+
+**En son kullanıcı isteği:** Kârlılık, İskonto ve Müşteri Takipte masaüstünde
+bulunup taşınan web sayfasında olmayan bütün özellikleri derin analiz ederek
+raporla. Ardından gerekli kayıtları yap ve bilgisayarı kapat; kullanıcı döndüğünde
+aynı çalışma bağlamından devam etmek istiyor. Kapatma isteği bu oturum içindir;
+sonraki oturumlara otomatik kapatma yetkisi olarak taşınmaz.
+
+**Tamamlanan iş:** [Satış özellik farkları raporu](SATIS_OZELLIK_FARKLARI_RAPORU.md).
+50 başlık: 15 temel kârlılık, 21 Satış Şefi Raporu alt yeteneği, 3 iskonto,
+4 müşteri, 7 ortak işlev. Yedi platform başlığı ayrıca ele alındı. Hesap/çıktı
+eşdeğerliğinin bütün masaüstü özelliklerinin taşındığı anlamına gelmediği açık.
+Bu tur yalnız belge değişikliği yapıldı; uygulama sürümü **1.11.0** kaldı.
+
+**Dayanak ve kontrol:** Etkin masaüstü PySide6 çalışma ağacı kullanıldı; mevcut
+commit edilmemiş masaüstü ilerlemeleri korunuyor. Aktarılan 41 Python kaynak
+SHA-256'sı eşleşti. 6 web test dosyasında 433 test, üç modülde 32 Chromium
+senaryosu ve ilgili masaüstü zincirinde 121 test geçti. Qt/offscreen ve canlı
+1.11.0 web yeni/geçici depolar ve yalnız yapay dosyalarla ayrıca çalıştırıldı.
+Canlıda 60 geçmiş işleminin 50'sinin gösterilmesi, kârlılık sekme geçişinde
+arama/sıralama/dönem taslağı kaybı ve müşteri listelerinin ortak araması
+doğrulandı. Kaynak haritası ve tekrar adımları raporda kalıcı kayıttır;
+geçici ham günlükler `/tmp/` altındadır, yeniden açılışta bulunmaları gerekmez.
+
+**Dönüşte devam:** Önce bu kayıt, rapor ve AGENTS.md okunmalı. Kullanıcı eksikleri
+uygulamayı henüz istemedi; yapılan iş raporlama. Uygulama isterse önerilen ilk
+küme K01/K09/K11/K12/K15/M02 ve tablo sıralamalarıdır. Satış Şefi Raporu ayrı
+tam dikey dilim gerektirir; temel Dönem Analizi ile karıştırılmamalı. Önceki
+“sıradaki Yaşlandırma” notu tarihsel aktarım sırasıdır; yeni kullanıcının
+yönlendirmesi bu satış eksikleri raporuna göre ele alınmalı.
+
+**Son yerel kapı:** `npm run kontrol` — 41 dosya / 872 test, tip/lint/biçim/
+derleme PASS. Raporun 50 bulgu kimliği ve 64 yerel bağlantısı denetlendi.
+
+**Korunacak sınırlar:** BUP Yönetim'e yazma; gerçek config/Excel/PDF/eşleşme/
+dönem verilerini kullanma veya web deposuna kopyalama. Önceden bulunan
+`tasarim-ornekleri/` bu işe dahil değil. Gerçek Windows/Excel ve Satış Şefi
+içerik kabulünü yapıldı diye anlatma. Yeni bağımsız iş kuralı icat etme.
+Hesaplar ve mevcut tam/görünen çıktı kapsamı korunmalı. Rapor/bellek kayıtları
+yerel Git commit'inde saklanır; bu belge turu için web yayını yapılmaz.
+
+---
+
+## Önceki çalışma: 1.11.0 Kârlılık Analizi
 
 Başlangıç `main`, `a66de70`, 1.10.0. Kullanıcı projede kaldığı yerden
 Kârlılık modülüne devam etmeyi istedi. Etkin proje CAL bup; BUP Yönetim

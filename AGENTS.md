@@ -113,6 +113,17 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
 
+**2026-10-04 satış özellik taraması — güncel devam bağlamı:** Kullanıcı kârlılık,
+iskonto ve müşteri takibin masaüstünde olup webde olmayan bütün özelliklerini
+analiz edip raporlamayı istedi. [Özellik farkları raporu](docs/SATIS_OZELLIK_FARKLARI_RAPORU.md)
+50 başlıkta eksik/kısmi özellikleri, platform farklarını ve mevcut kapsamı ayırır.
+Hesap eşdeğerliği tam özellik aktarımı değildir. Satış Şefi Raporu bütünü,
+temel ekran ayrıntıları ve ortak geçmiş/bulgular/CAL bağlantısı eksiktir.
+Bu tur davranış/kural değişmedi; masaüstü salt okunur kaldı. Sonraki oturumda
+önce raporu ve oturum notunun en üstündeki devam kaydını oku; taramayı baştan
+yapma, eksikleri tamamlandı sayma ve kullanıcı yalnız rapor istediği için
+kendiliğinden uygulamaya geçme. Kullanıcı dönüşte çalışmaya devam etmek istiyor.
+
 **2026-10-04 Kârlılık (1.11.0):** Kullanıcı kaldığı yerden bu modülü istedi.
 İki Excel analizi, genel bakış, senaryo, onaylı eşleşme ve dönem karşılaştırması
 özgün Python kodlarıyla tarayıcı işçisinde çalışır; 9 okuyucu/analiz, 45 senaryo/
