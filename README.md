@@ -29,9 +29,18 @@ arayabilir ve sıralayabilirsiniz. Tam Excel/resim tüm eksik müşterileri,
 görünen Excel ise seçili listedeki arama ve sıralamanın tamamını içerir.
 Araç/plasiyer ayarları bu tarayıcıda tutulur; müşteri listeleri yalnız oturumda kalır.
 
+**İskonto Hesaplama** da hazırdır. En fazla üç PDF fiyat listesi seçin,
+kategori oranlarını girip **Önizleme oluştur** düğmesine basın. Excel, PDF
+veya ikisini birlikte indirebilirsiniz. Tam çıktı bütün ürünleri; görünen
+Excel arama, kategori ve sıralama seçiminizdeki bütün sayfaları içerir.
+Excel/PDF dosyaları bilgisayarınızda işlenir. İlk kullanımda ek dosya motoru
+yüklenir; müşteri ve fiyat listeleri sunucuya gönderilmez.
+
 Masaüstü BUP Yönetim'in kuralları yapay dosyalardan üretilmiş bağımsız Python
 başvurusuyla karşılaştırılır. Aktarım planı ve kapsam:
 [Satış modülleri](docs/SATIS_MODULLERI_PLANI.md).
+Özgün motor, karşılaştırma kanıtları ve kalan kabul sınırları:
+[Satış eşdeğerliği](docs/SATIS_ESDEGERLIK.md).
 
 ## Sanal POS
 

@@ -1,3 +1,61 @@
+# 4 Ekim 2026 — 1.10.0 eşdeğerlik ve İskonto
+
+Başlangıç `main`, `45754df`, 1.9.0. Kullanıcının son isteği, test verisi
+olmadığı için Müşteri Takip'in masaüstü iş mantığını daha kapsamlı doğrulamak
+ve ardından sıradaki modülü eklemekti. Çalışma
+`01a106ea-7db2-7b32-b51b-a1498b25c444` oturumunda başladı; sonraki oturum aynı
+değişikliklerden devam etti, tamamlanmış önceki aşamalar yeniden uygulanmadı.
+
+- Müşteri okuyucusu özgün openpyxl kodudur. Bilimsel sayı, bool,
+  tarih/saat/süre hücreleri korunur; 78 iki yön/harf senaryosu ve dört hata
+  masaüstü başvurusuyla eşleşir. Tam Python Unicode 15.0.0 dönüşüm tablosu
+  bütün skalerlerde doğrulanır; tarayıcının Unicode sürümüne bağlı değildir.
+- Satış → İskonto Hesaplama: üç PDF, altı kategori oranı, metin/tablo
+  önizleme, arama/kategori/sıralama/sayfalama, tam/görünen Excel, PDF ve
+  Excel+PDF ZIP vardır. Okuyucu/domain/facade/exporter özgün kodları
+  SHA-256 ile aynıdır. İşçiler iptal/rota/timeout/bitişte kapanır.
+- 11 yapay PDF, 39 facade/çıktı ve 3.264 yuvarlama sınırı eşleşir. Tam/görünen
+  Excel hücreleri ve PDF sayfa metinleri/adları eşleşir. 113,63 bekleyen
+  yanlış tarayıcı testi özgün `(112.5, 113.62)` hesabıyla düzeltildi;
+  hesap veya bağımsız altın başvuru değiştirilmedi.
+- Pyodide 314.0.7 ve özetli paketler kendi yayınımızdan yüklenir; yalnız
+  hazırlık/CI paket kaynağına erişir. Kod/font/wheel bütünlüğü denetlenir.
+  Bozuk paket sonrası hiçbir sonuç oluşmaz, yeni işçiyle yeniden denenir.
+  XLSX XML varlık bildirimi defusedxml ile, 251 sayfalı PDF özgün sınırla
+  reddedilir. Logger/Qt/config/şirket dosyaları aktarılmadı.
+- Açık/koyu/390 px görseller incelendi; tema testi gerçekten `data-theme`
+  değerini ve JS hata yokluğunu doğrular. Tasarım örnekleri yayıma katılmadı.
+  Kaynak BUP Yönetim'deki önceden bulunan değişiklikler korundu.
+
+**Son yerel doğrulama:** `npm run kontrol` — **39 dosyada 771 test**,
+tip/lint/biçim/derleme PASS. Tam Chromium regresyonu **121 PASS**;
+son Unicode/XML/tema değişiklikleriyle Satış'ın **22 senaryosu ayrıca PASS**.
+`npm run test:performans` — **8 PASS**. 24.000 ürünün özgün iskonto hesabı
+yaklaşık **2,2 saniye**, en uzun ana ekran beklemesi **29 ms**; 40.000 satır
+müşteri karşılaştırması yaklaşık **6,5 saniye**, en uzun bekleme **94 ms**.
+İlk motor hazırlığı bu Satış ölçümlerine dahildir; yerel ölçümdür,
+Windows/bellek veya her bilgisayarda hız garantisi değildir.
+
+Aktarılan Python layer/security auditleri sıfır bulgu; npm runtime auditinde
+açık yok. **Python auditinde iki pakette bilinen açıklar var**: cryptography
+47.0.0 ve Pillow 12.2.0; 32 bildirim/17 ayrı kimlik. Güncel uyumlu Pyodide
+hazır paketleri de bu sürümlerdir. Harici görüntü ve sertifika/PKCS7
+girişleri kapalıyken bütün PDF başvurularının çalışması ayrıca sınandı;
+bu paket açıklarının kapatıldığı anlamına gelmez. Ayrıntı ve güncelleme
+koşulu [eşdeğerlik kaydındadır](SATIS_ESDEGERLIK.md).
+
+POS regresyonları yalnız yapay veri ve dış ağa kapalı taklit ortamda
+çalıştı. Gerçek kart/fotoğraf, sağlayıcı girişi, SMS veya ödeme yapılmadı.
+İş yeri Windows/Excel/PDF kabulü, gerçek Google kurulumu ve örneksiz
+raporlar önceki kararla bekler. Kârlılık ve Yaşlandırma henüz aktarılmadı.
+Kapsam/karar/kalan sınırlar [planda](SATIS_MODULLERI_PLANI.md),
+[iş kurallarında](IS_KURALLARI.md) ve [mimaride](MIMARI.md).
+
+Sürüm **1.10.0**. Önceki commit/main/push/yayın yetkisi sürer. Yayın aynı
+commit'in Linux kontrol, Chromium/performans ve Windows yardımcı
+kapılarından sonra yapılır; Actions ve canlı sürüm/varlık özetleri
+yayın sonrası doğrulanır. Geçici kanıtlar `/tmp/cal-*` içindedir.
+
 # 4 Ekim 2026 — 1.9.0 Satış: Müşteri Takip
 
 Başlangıç `main`, `d01d84b`, 1.8.0. Kullanıcı Bup-Yönetim modüllerini CAL bup

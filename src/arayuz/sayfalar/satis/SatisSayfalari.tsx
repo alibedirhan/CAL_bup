@@ -2,6 +2,7 @@ import { lazy, Suspense, useState, type ComponentType } from 'react';
 import { satisModuluBul, type SatisModuluId } from '../../../satis/kayit';
 
 const EKRANLAR = {
+  iskonto: lazy(() => import('./iskonto/IskontoSayfasi')),
   'musteri-takip': lazy(() => import('./musteriTakip/MusteriTakipSayfasi')),
 } satisfies Record<SatisModuluId, ComponentType<{ aktif: boolean }>>;
 

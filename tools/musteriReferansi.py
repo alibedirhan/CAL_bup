@@ -4,12 +4,14 @@ Kullanım: BUP_Yonetim/.venv/bin/python tools/musteriReferansi.py KAYNAK_KLASOR 
 Gerçek veri/config okunmaz. Geçici Excel'ler TemporaryDirectory içinde kalır.
 """
 
+import base64
 import hashlib
 import json
 import random
 import sys
 import tempfile
 from pathlib import Path
+from datetime import datetime, time, timedelta
 
 
 def main():
@@ -53,6 +55,15 @@ def main():
         {"ad": "tek-haneli-arac", "eski": rows(["Yapay B"], "Araç 7 / Yapay"), "yeni": rows([]), "plasiyerler": {"07": "Yapay / Plasiyer"}},
         {"ad": "unicode-arac-siniri", "eski": rows(["Yapay"], "Yapayç06"), "yeni": rows([]), "plasiyerler": {"06": "Yapay"}},
     ]
+    specs.extend([
+        {"ad":"unicode-16-harf-farki", "eski":rows(["\u1c89Yapay", "\u1c8aYapay", "Straße", "SSYapay"]), "yeni":rows(["\u1c89Yapay", "STRASSE"]), "plasiyerler":{}},
+        {"ad":"bilimsel-sayilar", "eski":rows([1e-6, 0.0001, 1e16, 1e20, -1e-7, 3.141592653589793]), "yeni":rows(["1e-06", "0.0001", "1e+16", "1e+20"]), "plasiyerler":{}},
+        {"ad":"arac-arapca-rakam", "eski":rows(["Yapay"], "Araç ٠٦"), "yeni":rows([]), "plasiyerler":{"06":"Yapay"}},
+        {"ad":"arac-tam-genislik", "eski":rows(["Yapay"], "Vehicle\x85０７"), "yeni":rows([]), "plasiyerler":{"07":"Yapay"}},
+        {"ad":"arac-bom-bosluk-degil", "eski":rows(["Yapay"], "Araç\ufeff7"), "yeni":rows([]), "plasiyerler":{"07":"Yapay"}},
+        {"ad":"depo-unicode-satir-sonu", "eski":rows(["Yapay"], "Yapay\u2028Depo Araç 8"), "yeni":rows([]), "plasiyerler":{"08":"Yapay"}},
+    ])
+    specs.append({"ad":"tarih-saat-sure-hucreleri","eski":rows([datetime(2026,10,4,12,34,56,123000),time(12,34,56,123000),timedelta(days=1,seconds=3661)]),"yeni":rows([]),"plasiyerler":{}})
     rng = random.Random(1704)
     pool = ["Yapay Alfa", "yapay alfa", "İYAPAY", "ıyapay", "Yapay  A", "Yapay A", "ßYapay", "SSYapay", "", None, "  Yapay Kenar "]
     for index in range(24):
@@ -92,7 +103,7 @@ def main():
                 if result.added:
                     facade.export_visible(tuple(reversed(result.added)), "added", folder / "gorunen.xlsx", overwrite=True)
                     visible = cells(folder / "gorunen.xlsx")
-                cases.append({**spec, "harfDuyarli": sensitive, "okunanEski": list(CustomerListReader().read(old).customers), "okunanYeni": list(CustomerListReader().read(new).customers), "sonuc": {"eksikler": list(result.missing), "yeniler": list(result.added), "eskiSayisi": result.old_count, "yeniSayisi": result.new_count, "depo": result.depo_name, "mesaj": result.status_text, "dosyaAdi": result.default_output_name}, "tamExcel": cells(full), "gorunenYeniExcel": visible})
+                cases.append({**spec, "eskiBayt":base64.b64encode(old.read_bytes()).decode(), "yeniBayt":base64.b64encode(new.read_bytes()).decode(), "harfDuyarli": sensitive, "okunanEski": list(CustomerListReader().read(old).customers), "okunanYeni": list(CustomerListReader().read(new).customers), "sonuc": {"eksikler": list(result.missing), "yeniler": list(result.added), "eskiSayisi": result.old_count, "yeniSayisi": result.new_count, "depo": result.depo_name, "mesaj": result.status_text, "dosyaAdi": result.default_output_name}, "tamExcel": cells(full), "gorunenYeniExcel": visible})
         errors = []
         for name, values in [("baslik-yok", [["Yapay"]]), ("gec-baslik", rows(["Yapay"], header=16)), ("kucuk-harf-baslik", [["cari ünvan"], ["Yapay"]]), ("uzun-hucre", rows(["Y" * 513]))]:
             write_book(folder / "hata.xlsx", values)
@@ -104,7 +115,7 @@ def main():
                 raise AssertionError(name)
     files = ["domain/musteri_takip/comparison.py", "domain/musteri_takip/naming.py", "application/customer_tracking/facade.py", "infrastructure/excel/customer_list_reader.py", "infrastructure/export/customer_comparison_exporter.py", "infrastructure/export/visible_table_exporter.py"]
     output = {"kaynak": "BUP_Yonetim — yalnızca yapay veri", "kaynakSha256": {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in files}, "senaryolar": cases, "hatalar": errors}
-    Path(sys.argv[2]).write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    Path(sys.argv[2]).write_text(json.dumps(output, ensure_ascii=False, indent=2, default=str) + "\n", encoding="utf-8")
     if len(sys.argv) > 3:
         katlama = {chr(i): chr(i).casefold() for i in range(0x110000) if chr(i).casefold() != chr(i).lower()}
         Path(sys.argv[3]).write_text(json.dumps(katlama, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")

@@ -21,9 +21,10 @@ Kaynak BUP Yönetim'in aktif müşteri modülüyle yapay veride eşdeğerlik kor
    köşeli parantezden sonraki metinden çıkarılır. Araç/plasiyer eşleşmesi
    isteğe bağlıdır. Dosya önerisi karşılaştırma anındaki eşleşmedir; çıktı
    başlığı kaynak facade gibi dışa aktarma anındaki güncel eşleşmeden gelir.
-5. Formüller çalıştırılmaz; varsa hesaplanmış sonuç okunur. Hesaplanmamış
-   formül kaynak okuyucu gibi boş sayılır. Birleşik hücrenin yalnız sol üst
-   değeri alınır; ExcelJS'in tekrarladığı birleşim değeri tekrar sayılmaz.
+5. Özgün openpyxl okuyucusu hücre türlerini korur: sayı, mantıksal değer,
+   tarih, saat ve süre masaüstünün Python metin dönüşümüyle okunur.
+   Formüller çalıştırılmaz; varsa hesaplanmış sonuç okunur. Hesaplanmamış
+   formül boş sayılır. Birleşik hücrenin yalnız sol üst değeri alınır.
 6. Tam Excel `Sheet1` ve `# / Cari Ünvan` sütunlarıyla bütün eksik listesini
    kaynak sırasıyla verir. Depo başlığı varsa A1:B1 birleşir, tablo 3. satırda
    başlar; yoksa 1. satırda başlar. Arama/sekme/sıralama bu çıktıyı değiştirmez.
@@ -47,6 +48,54 @@ adla doğrulanır. Tekrarlanan anahtarda son satır geçerlidir. En fazla 100 ka
 bir önceki ayar aynı atomik kayıtta geri alma için korunur. OS ortam değişkeni
 ve masaüstündeki gerçek config tarayıcıya taşınmaz. Müşteri dosyaları ve
 sonuçları yenilemede unutulur; yerel ayarlar korunur.
+
+### 1.10.0 eşdeğerlik genişletmesi
+
+Harf dönüşümü masaüstünün Unicode 15.0.0 sözleşmesinden tam tablo olarak
+gelir; tarayıcının Unicode sürümü ve yerel ayarı sonucu değiştirmez.
+Araç eşlemesinde Python Unicode ondalık rakam/kelime sınırı kullanılır.
+78 yapay karşılaştırma, dört hata ve tüm Unicode kod noktalarının
+upper/casefold özetleri bağımsız masaüstü başvurusuyla karşılaştırılır.
+
+## İskonto Hesaplama — masaüstü sözleşmesi (1.10.0)
+
+1. En fazla üç PDF yüklenir. Özgün PDF okuyucusu normal/gramaj/dondurulmuş
+   türü ve altı kategoriyi kaynak uygulamanın metin, tablo, ürün kodu ve
+   sayfa kurallarıyla belirler. Kod, ad, fiyat ve kaynak sırası korunur;
+   yinelenen ürünlerin masaüstünde sayılması değiştirilmez.
+2. İskonto oranı kategori başına 0–100 arası sonlu sayıdır. KDV hariç fiyat
+   önce `(1 - oran / 100)` ile çarpılıp Python `round(..., 2)` ile
+   yuvarlanır. Sonra KDV yeniden %1 eklenip aynı yöntemle yuvarlanır.
+   JavaScript'in yuvarlaması kullanılmaz. Örnek: 125 TL, %10 iskonto →
+   112,50 TL; %1 KDV ile kaynak hesap **113,62 TL** verir.
+3. Önizleme istatistikleri ve metni özgün application facade'ından gelir.
+   Toplam iskonto kaynak KDV dahil fiyat ile iskontolu KDV dahil fiyat
+   farklarını toplar. Metin her kategorinin ilk on ürününü gösterir;
+   metindeki kategori toplamı ile genel toplamın kaynakta farklı
+   kullanılması aynen korunur, kendiliğinden düzeltilmez.
+4. Tam Excel özet ve PDF başına ürün sayfalarını; PDF kaynak dosya başına
+   Türkçe kategorili fiyat listesini üretir. Özgün Excel/PDF exporter'ları
+   kullanılır. Birden fazla PDF tek ZIP'tir; Excel + PDF kaynak atomik
+   çıktı işleminden sonra tek ZIP olarak indirilir. Excel metin formülleri
+   etkisizdir; kaynak dosyaların üzerine yazılmaz.
+5. Görünen Excel arama, kategori ve sıralama sonrası tüm sayfaları içerir.
+   Tam Excel/PDF filtreyle daralmaz. Metin görünümünde görünen Excel yoktur.
+   Boş, tekrar eden veya güncel sonuca ait olmayan satır seçimi reddedilir.
+6. Oran/dosya değişikliği önizlemeyi kaldırır. Başarısız/iptal işlem yarım
+   sonuç yayımlamaz. Rota çıkışı çalışan işçiyi kapatır; bitmiş oturum
+   korunur. Yenileme fiyat listelerini/sonuçları unutur. Tarih/saat
+   önizleme anında yerel olarak sabitlenir; çıktılar aynı zamanı kullanır.
+
+PDF başına 25 MB, 250 sayfa, sayfa başına 100 tablo, toplam 200.000
+ayrıştırılan satır; kategori başına 25.000 ve toplam 100.000 ürün;
+hücre metni 4.096 karakter sınırları vardır. İşçi 120 saniyede sonlanır;
+görünen çıktı 50.000 satır, indirilecek çıktı 100 MB sınırındadır.
+Bozuk PDF geçerli seçimin yanına eklenirse geçerli dosyalar yüklenir ve
+bozuk olanlar ayrı açıklanır. Boş fiyat listesi başarılı hesap değildir.
+Paket yüklenmesi başarısızsa eski/yarım motorla devam edilmez.
+
+Kanıt, platform farkları ve bağımlılık kabul sınırı:
+[Satış eşdeğerliği](SATIS_ESDEGERLIK.md).
 
 ## Kaynak sistem: LED
 

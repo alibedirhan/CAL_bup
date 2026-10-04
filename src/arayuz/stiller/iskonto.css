@@ -1,0 +1,90 @@
+.iskonto-oranlar {
+  display: grid;
+  gap: 12px;
+}
+.iskonto-oranlar label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92px;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+.iskonto-oranlar small {
+  display: block;
+  color: var(--soluk);
+  margin-top: 4px;
+}
+.iskonto-dosyalar {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.iskonto-dosyalar li {
+  padding: 12px;
+  background: var(--yuzey-2);
+  border: 1px solid var(--cizgi);
+  border-radius: var(--yaricap-k);
+  overflow-wrap: anywhere;
+}
+.iskonto-dosyalar span {
+  display: block;
+  color: var(--soluk);
+  margin-top: 4px;
+  font-size: 12px;
+}
+.iskonto-ozet {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.iskonto-ozet dd {
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+.iskonto-suzgec {
+  border: 1px solid var(--cizgi);
+  border-radius: var(--yaricap-k);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 12px;
+}
+.iskonto-suzgec legend {
+  color: var(--soluk);
+  font-size: 12px;
+  padding: 0 6px;
+}
+.iskonto-suzgec label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.iskonto-suzgec input {
+  accent-color: var(--vurgu);
+}
+.iskonto-metin {
+  overflow: auto;
+  max-height: 650px;
+  padding: 16px;
+  margin: 0;
+  font: 12px/1.5 var(--yazi-rakam);
+  background: var(--yuzey-2);
+  border: 1px solid var(--cizgi);
+  border-radius: var(--yaricap-k);
+}
+.iskonto-sonuc {
+  min-width: 0;
+}
+.iskonto-sonuc table {
+  min-width: 760px;
+}
+.iskonto-hizli {
+  align-items: center;
+  font-size: 12px;
+}
+@media (max-width: 520px) {
+  .iskonto-ozet {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

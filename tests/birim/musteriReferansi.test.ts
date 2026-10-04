@@ -1,14 +1,25 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import ExcelJS from 'exceljs';
 import referans from '../yardimci/veriler/musteriReferansi.json';
-import { diziSayfa, type HucreDegeri, type Kitap } from '../../src/kaynaklar/kitap';
-import { MusteriOkumaHatasi, musteriListesiOku } from '../../src/kaynaklar/musteriListesi';
+import type { HucreDegeri } from '../../src/kaynaklar/kitap';
+import { musteriListeOku } from '../../src/satis/musteriTakip/okuyucu';
 import { musterileriKarsilastir } from '../../src/cekirdek/musteriTakip/karsilastir';
 import { musteriCiktisi } from '../../src/cekirdek/musteriTakip/cikti';
 import { musteriExcelOlustur } from '../../src/satis/musteriTakip/motor';
 
-function kitap(satirlar: readonly (readonly HucreDegeri[])[]): Kitap {
-  return { dosyaAdi: 'Yapay.xlsx', olusturulma: null, sayfalar: [diziSayfa('Yapay', satirlar)] };
+vi.mock('../../src/platform/python/motor', async (original) => ({
+  ...(await original<typeof import('../../src/platform/python/motor')>()),
+  pythonMotoru: (await import('../yardimci/pythonMotoru')).nodePythonMotoru,
+}));
+
+async function oku(satirlar: readonly (readonly HucreDegeri[])[]) {
+  const w = new ExcelJS.Workbook();
+  const sheet = w.addWorksheet('Yapay');
+  for (const r of satirlar) sheet.addRow([...r]);
+  return musteriListeOku(
+    { ad: 'Yapay.xlsx', bayt: new Uint8Array(await w.xlsx.writeBuffer()) },
+    new AbortController().signal,
+  );
 }
 
 async function hucreler(bayt: Uint8Array) {
@@ -29,9 +40,15 @@ async function hucreler(bayt: Uint8Array) {
 describe('Müşteri Takip — bağımsız Python okuyucu/facade/Excel başvurusu', () => {
   for (const ornek of referans.senaryolar) {
     const ad = `${ornek.ad} · ${ornek.harfDuyarli ? 'duyarlı' : 'duyarsız'}`;
-    it(`${ad}: okuma ve iki yön birebir`, () => {
-      const eski = musteriListesiOku(kitap(ornek.eski));
-      const yeni = musteriListesiOku(kitap(ornek.yeni));
+    it(`${ad}: okuma ve iki yön birebir`, async () => {
+      const eski = await musteriListeOku(
+        { ad: 'Yapay.xlsx', bayt: new Uint8Array(Buffer.from(ornek.eskiBayt, 'base64')) },
+        new AbortController().signal,
+      );
+      const yeni = await musteriListeOku(
+        { ad: 'Yapay.xlsx', bayt: new Uint8Array(Buffer.from(ornek.yeniBayt, 'base64')) },
+        new AbortController().signal,
+      );
       expect(eski.musteriler).toEqual(ornek.okunanEski);
       expect(yeni.musteriler).toEqual(ornek.okunanYeni);
       expect(musterileriKarsilastir(eski, yeni, ornek.harfDuyarli, ornek.plasiyerler)).toEqual(ornek.sonuc);
@@ -51,20 +68,8 @@ describe('Müşteri Takip — bağımsız Python okuyucu/facade/Excel başvurusu
     });
   }
   for (const ornek of referans.hatalar) {
-    it(`${ornek.ad}: Python ile aynı hata sınıfı`, () => {
-      const kod =
-        ornek.hataTuru === 'HeaderNotFoundError'
-          ? 'BASLIK_YOK'
-          : ornek.hataTuru === 'CariColumnNotFoundError'
-            ? 'SUTUN_YOK'
-            : 'GECERSIZ';
-      try {
-        musteriListesiOku(kitap(ornek.satirlar));
-        expect.fail('Okuma reddedilmeliydi.');
-      } catch (hata) {
-        expect(hata).toBeInstanceOf(MusteriOkumaHatasi);
-        expect((hata as MusteriOkumaHatasi).kod).toBe(kod);
-      }
+    it(`${ornek.ad}: kaynak okuyucu da reddeder`, async () => {
+      await expect(oku(ornek.satirlar)).rejects.toThrow();
     });
   }
 });

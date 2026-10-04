@@ -1,6 +1,30 @@
-import katlama from './harfKatlama.json';
+import pythonMetin from './pythonMetin.json';
 // Python str.strip: JS trim U+0085'i bırakır, U+FEFF'i ise siler. İç metin değişmez.
 const BOSLUKLAR = new Set([0x85, 0xa0, 0x1680, 0x2028, 0x2029, 0x202f, 0x205f, 0x3000]);
+/** Python re \s ve str.strip aynı Unicode boşluk kümesini kullanır. */
+export const PYTHON_BOSLUK =
+  '[\\x09-\\x0d\\x1c-\\x20\\x85\\xa0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]';
+
+export function ondalikRakamlar(metin: string): string {
+  const rakamlar: Readonly<Record<string, string>> = pythonMetin.decimal;
+  return [...metin].map((h) => rakamlar[h] ?? h).join('');
+}
+
+export function kelimeKarakteri(h: string | undefined): boolean {
+  if (!h) return false;
+  const no = h.codePointAt(0) ?? -1;
+  let ilk = 0,
+    son = pythonMetin.wordRanges.length - 1;
+  while (ilk <= son) {
+    const orta = (ilk + son) >>> 1;
+    const aralik = pythonMetin.wordRanges[orta];
+    if (!aralik) return false;
+    if (no < (aralik[0] ?? 0)) son = orta - 1;
+    else if (no > (aralik[1] ?? 0)) ilk = orta + 1;
+    else return true;
+  }
+  return false;
+}
 
 function bosluk(no: number): boolean {
   return (
@@ -26,11 +50,12 @@ export function metniKisalt(metin: string, sinir: number): string {
 
 /** Kaynak Python upper davranışı; Türkçe yerel dönüşüm/aksan sadeleştirme yapılmaz. */
 export function musteriAnahtari(metin: string, harfDuyarli: boolean): string {
-  return harfDuyarli ? metin : metin.toUpperCase();
+  const eslesmeler: Readonly<Record<string, string>> = pythonMetin.upper;
+  return harfDuyarli ? metin : [...metin].map((h) => eslesmeler[h] ?? h).join('');
 }
 
-/** Python casefold'un lower'dan ayrıldığı Unicode karakterleri sabit başvurudur. */
+/** Tam Python casefold tablosu; tarayıcının Unicode sürümünden bağımsızdır. */
 export function harfKatla(metin: string): string {
-  const eslesmeler: Readonly<Record<string, string>> = katlama;
-  return [...metin].map((h) => eslesmeler[h] ?? h.toLowerCase()).join('');
+  const eslesmeler: Readonly<Record<string, string>> = pythonMetin.fold;
+  return [...metin].map((h) => eslesmeler[h] ?? h).join('');
 }

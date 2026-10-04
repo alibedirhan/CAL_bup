@@ -6,6 +6,11 @@ export interface SatisModulu {
 
 export const SATIS_MODULLERI = [
   {
+    id: 'iskonto',
+    ad: 'İskonto Hesaplama',
+    aciklama: 'PDF fiyat listelerine kategori iskontosu uygulayın; Excel ve PDF çıktısı hazırlayın.',
+  },
+  {
     id: 'musteri-takip',
     ad: 'Müşteri Takip',
     aciklama: 'Eski ve yeni müşteri listelerini karşılaştırın; eksik ve yeni müşterileri inceleyin.',

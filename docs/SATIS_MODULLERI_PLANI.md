@@ -91,3 +91,22 @@ Başvuruyu yenileme: yerel aktif BUP Yönetim'in Python ortamıyla
 `tools/musteriReferansi.py <kaynak-uygulama> <çıktı-json> [harf-katlama-json]`
 çalıştırılır. Eski başvuru sessizce değiştirilmez; kaynak/kural değişikliği
 ve beklenen çıktı farkları birlikte incelenir. CI masaüstü proje gerektirmez.
+
+## Kullanıcının sonraki isteği — 1.10.0
+
+İlk modül için gerçek test verisi olmadığından kullanıcı masaüstü iş mantığının
+aynı olduğundan emin olunmasını, ardından sıradaki modülün eklenmesini istedi.
+Bu istek ilk modül incelemesinden sonra İskonto'ya geçme sırasının yeni yetkisidir.
+Müşteri başvurusu 78 senaryoya genişletildi; hücre türleri için özgün openpyxl
+okuyucusu ve tarayıcıdan bağımsız tam Python Unicode tablosu kullanılır.
+
+İskonto'nun saf hesap, PDF okuyucu, facade ve tam/görünen Excel/PDF hattı
+yeniden yazılmak yerine aynı Python dosyalarıyla tarayıcı işçisine taşındı.
+11 yapay PDF, 39 facade/çıktı ve 3.264 yuvarlama sınırı özgün masaüstüyle
+karşılaştırılır. Yeni ekran CAL bup tema ve bileşenlerini kullanır.
+Kaynak uygulamanın kendi yol haritası ve dosyaları değiştirilmez.
+
+Güncel katman, üretici, test ve bağımlılık sınırları
+[Satış eşdeğerliği](SATIS_ESDEGERLIK.md) ve [mimaridedir](MIMARI.md).
+Sonraki modül Kârlılık Analizi'dir; mevcut davranış için ayrı bağımsız
+okuyucu/hesap/çıktı başvurusu oluşturulmadan uygulamaya geçilmez.

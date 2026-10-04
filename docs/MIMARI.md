@@ -1,6 +1,6 @@
 # CAL bup — Mimari
 
-Statik bir tek sayfa uygulaması (Vite + TypeScript + React). Sunucu yok: Excel dosyaları tarayıcıda
+Statik bir tek sayfa uygulaması (Vite + TypeScript + React). Sunucu yok: Excel/PDF dosyaları tarayıcıda
 okunur ve yazılır. GitHub Pages'te yayınlanır.
 
 ## Satış dikey dilimi (1.9.0)
@@ -12,8 +12,9 @@ ayrı parça olarak yüklenir; sonraki rota değişimlerinde oturumunu korur.
 
 - `cekirdek/musteriTakip`: saf karşılaştırma, Python metin davranışı,
   adlandırma, çıktı seçimi ve ayar doğrulama. React/tarayıcı/ExcelJS bağı yoktur.
-- `kaynaklar/musteriListesi`: yalnız `Kitap` portunu kullanır. Birleşimlerin
-  sol üst hücresi ve hesaplanmış formül sonucu masaüstüyle aynı okunur.
+- `satis/musteriTakip/okuyucu`: 1.10.0'da özgün openpyxl okuyucusunu Python
+  işçisinde çalıştırır. Sayı/tarih/saat hücreleri JS dönüşümünde kaybolmaz.
+  Eski `kaynaklar/musteriListesi` TypeScript okuyucusu kaldırılmıştır.
 - `satis/musteriTakip/servis`: enjekte edilen `MusteriMotoru` portuyla iki
   dosyayı sırayla okur; ikisi de başarılı olmadan sonuç dönmez. ESLint somut
   adaptör ve tarayıcı/arayüz bağımlılıklarını bu serviste yasaklar.
@@ -39,6 +40,40 @@ kayıtlı girdiler ve hücre sonuçlarıyla eşdeğerliği doğrular. Üretici v
 SHA-256'ları başvurunun yenilenmesini açık ve denetlenebilir tutar.
 
 Kapsam ve kabul: [Satış aktarım planı](SATIS_MODULLERI_PLANI.md).
+
+## Özgün Python motoru ve İskonto (1.10.0)
+
+`vendor/python/bup` yalnız gereken domain/application/infrastructure
+dosyalarını içerir. Okuyucu, iskonto hesabı, facade ve exporter dosyaları
+masaüstüyle byte düzeyinde aynı SHA-256'dadır. Qt/config/veri aktarılmaz.
+`core/runtime_support` tarayıcı ortam adaptörüdür: dış dosya yolları yerine
+sanal `/cal/exports`, sessiz logger ve kaynakla aynı saf metin/ad/tarih
+işlevleri. Bu üç işlevin özetleri ayrıca `kaynak.json` içinde kayıtlıdır.
+`kopru.py` composition katmanıdır; iş hesabını tekrar etmez, somut
+adaptörleri özgün facade'a enjekte eder. İşlem JSON verisidir; Python koduna
+girdi metni yerleştirilmez. İstek girdileri sanal dosyalardan sonra silinir.
+
+`cekirdek/iskonto` tür/girdi/sonuç doğrular, hesap yapmaz. Servis yalnız
+motor portunu kullanır. `workerMotoru` her yükleme/önizleme/çıktı için ayrı
+işçi kurar; bitiş/hata/iptal/rota/zaman aşımında kapatır. Özgün senkron
+Python hesap/ayrıştırıcı ana ekranı bloke etmez; iptal işçiyi sonlandırır.
+Girdi, oran ve tarih aynı oturumdan gelmeden çıktı oluşmaz.
+
+Pyodide **314.0.7**, Python **3.14.2** ve Python paketleri sürüm/özetle
+sabittir. Hazırlık yalnız geliştirici/CI aşamasında sabit URL'lerden paket
+indirir; üretim kendi `python/` dizininden yükler. PDF okuma için gerekli
+paketler; Excel/PDF çıktı için daha ağır paketler ayrı seçilir. Her işçinin
+sanal dosya sistemi işlem sonunda bırakılır. Metin/PAN/config konsola taşınmaz.
+İndirilen wheel/kaynak/fontların SHA-256'ları ve hazır paketlerin Pyodide
+kilit özetleri doğrulanır. CSP WASM çalıştırmaya izin verir; dış paket
+kaynakları için izin eklenmez.
+
+Bağımsız masaüstü başvurusu CI'da kaynak projeye erişmeden hem gerçek
+PDF ayrıştırıcısını hem hesap/facade ve Excel/PDF çıktılarını Pyodide ile
+karşılaştırır. Müşteri karşılaştırma metin tablosu masaüstünün **Unicode
+15.0.0** sürümüne sabittir; JS `upper/lower` sonucuna bağlı değildir.
+Üreticiler, platform farkları ve bağımlılık bulguları:
+[Satış eşdeğerliği](SATIS_ESDEGERLIK.md).
 
 ## Katmanlar ve bağımlılık yönü
 

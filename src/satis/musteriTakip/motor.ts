@@ -1,8 +1,7 @@
 import ExcelJS from 'exceljs';
 import { guvenliHucre } from '../../cekirdek/musteriTakip/cikti';
 import type { MusteriCiktisi } from '../../cekirdek/musteriTakip/turler';
-import { kitapAc } from '../../kaynaklar/excel';
-import { musteriListesiOku } from '../../kaynaklar/musteriListesi';
+import { musteriListeOku } from './okuyucu';
 import type { MusteriMotoru } from './portlar';
 
 const KENAR: Partial<ExcelJS.Border> = { style: 'thin' };
@@ -61,11 +60,6 @@ export async function musteriExcelOlustur(cikti: MusteriCiktisi, signal: AbortSi
 }
 
 export const musteriMotoru: MusteriMotoru = {
-  async listeOku(dosya, signal) {
-    signal.throwIfAborted();
-    const acik = await kitapAc(dosya.bayt, dosya.ad);
-    signal.throwIfAborted();
-    return musteriListesiOku(acik.kitap);
-  },
+  listeOku: musteriListeOku,
   excelOlustur: musteriExcelOlustur,
 };

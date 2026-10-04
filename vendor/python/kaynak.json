@@ -1,0 +1,30 @@
+{
+  "kaynak": "BUP_Yonetim aktif üretim kodu — gerçek veri/config içermez",
+  "dosyalar": {
+    "core/cancellation.py": "7cfcff75d014348bb5f05b3feabc7f839f9230fd5d029f348fb51e95b45d91dd",
+    "core/visible_export.py": "f3f7131c0b39334c85cfbf0fbb967d5cf4fbae3383fdfa5af518d593cbc04bc9",
+    "domain/iskonto/__init__.py": "6064f9189206795c212f8ab9341118ad02040d97796e8c6d6297a706e04130f2",
+    "domain/iskonto/errors.py": "1b46dbcf9da17e3dd57de7cc934adf4f721f5bd3c969a4b9dd3240a690deadca",
+    "domain/iskonto/calculations.py": "f57cdf57dbbfe96a4b9e263f42be9fb8c23604db519bdcf3ab3cd13446123c6c",
+    "application/visible_export.py": "97185061d0dbc26b59d634a89234b136ab3cc6437cbb81cfee3499442de87d2f",
+    "application/discount_calculator/dto.py": "51c319907c07ed88b183b5a395c5c6ff59462c19066366230ce73509e0fce3ba",
+    "application/discount_calculator/facade.py": "21d69dab9a287c16035dc05a9d85108b0854318c08a710ad059ae44a33f31039",
+    "application/discount_calculator/ports.py": "eee17647bb7ac578275ed8b5e5b27a51b2b185e231cec4dd4084cf98f6da9f58",
+    "infrastructure/pdf/bup_price_list_reader.py": "035914d136ccf188ce9fd6b6dbd3a110c8bca91e6a09e58ae3e8c8b478b07ddc",
+    "infrastructure/export/discount_exporter.py": "4e5e6fcf8131ee4ffdd9bbd0bab55feb8a531755df635ec4548374b62e819f23",
+    "infrastructure/export/discount_export_safety.py": "0b151ee292b9d599263713dbccbe74eb3e9d337414a2d2b49cd0874fec4c3d12",
+    "infrastructure/export/discount_pdf_writer.py": "1b6e2a0959841a9f9b27b045a9e652e53cf54cb1d310eb6e6072d2dfbfbdbde8",
+    "infrastructure/export/discount_bundle_publish.py": "b789b698dae4abb1a829175319a7a35bbb8fb17de77782ad3c0614e99cf99463",
+    "infrastructure/export/atomic_publish.py": "90f32d924da21e6c95496a0bcc4731e53bbee1c4f9d5f932cc3ef228d1240e24",
+    "infrastructure/export/visible_table_exporter.py": "32e3cfa9c22213c4fd4c97565a6cfc57b5761628fd67b5bfad71edbd8eda4074",
+    "infrastructure/filesystem/safe_paths.py": "2cc884c3ee0b79751ca77d777a87db07a584c79cc9c15ab609bb3610196c2def",
+    "domain/musteri_takip/models.py": "e88f6caec00b253e28c417b26680c9988690c7f156263269fdae74e739fe7c7f",
+    "domain/musteri_takip/naming.py": "bc8550cce69d4f08318189554b5083b637cc166d887b85871d34c9c7c209801f",
+    "infrastructure/excel/customer_list_reader.py": "c77d0ad349778d2a4492c3dd28a501e812971078a01e63de4a119f8b1f94160f",
+    "core/runtime_support.py işlevleri": {
+      "safe_turkish_text": "5787d56bee0b1d4895591c282790bea19f3a7f4b141d54ac54926f8be4ea1d46",
+      "get_clean_filename": "64967471ad11b92fc6c934fe5ded9d0c7b4d56a390870b5b64ced46c731892a1",
+      "get_date_display": "12920ad4f312773013e75343f42685ce45eb3412206c8e0e16d8259a62aa4f97"
+    }
+  }
+}

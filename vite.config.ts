@@ -2,6 +2,7 @@ import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { ocrVarliklari } from './tools/ocrVarliklari.ts';
+import { pythonVarliklari } from './tools/pythonVarliklari.ts';
 
 // Drive ve Google kimlik kitaplığı dışında dış bağlantıya izin verilmez.
 const GUVENLIK_POLITIKASI = [
@@ -34,7 +35,7 @@ function guvenlikPolitikasi(): Plugin {
 
 export default defineConfig({
   base: '/CAL_bup/',
-  plugins: [react(), guvenlikPolitikasi(), ocrVarliklari()],
+  plugins: [react(), guvenlikPolitikasi(), ocrVarliklari(), pythonVarliklari()],
   // Excel motoru (ExcelJS, ~940 KB) bilerek ayrı ve büyük bir parçadır; ilk dosya açılınca yüklenir.
   build: { chunkSizeWarningLimit: 1000 },
   test: {

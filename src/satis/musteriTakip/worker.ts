@@ -1,5 +1,5 @@
 import { KullaniciHatasi } from '../../cekirdek/hata';
-import { musteriMotoru } from './motor';
+import { musteriListeOku } from './okuyucu';
 import type { MotorIstegi, MotorYaniti } from './workerSozlesmesi';
 
 self.onmessage = async (olay: MessageEvent<MotorIstegi>) => {
@@ -9,8 +9,8 @@ self.onmessage = async (olay: MessageEvent<MotorIstegi>) => {
     const istek = olay.data;
     yanit =
       istek.tur === 'oku'
-        ? { tur: 'liste', liste: await musteriMotoru.listeOku(istek.dosya, signal) }
-        : { tur: 'excel', bayt: await musteriMotoru.excelOlustur(istek.cikti, signal) };
+        ? { tur: 'liste', liste: await musteriListeOku(istek.dosya, signal) }
+        : { tur: 'excel', bayt: await (await import('./motor')).musteriExcelOlustur(istek.cikti, signal) };
   } catch (hata) {
     yanit = {
       tur: 'hata',

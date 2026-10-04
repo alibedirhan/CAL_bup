@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import ExcelJS from 'exceljs';
+import JSZip from 'jszip';
 import { musteriMotoru } from '../../src/satis/musteriTakip/motor';
 import { musteriKarsilastirmasi } from '../../src/satis/musteriTakip/servis';
 import { musteriCiktisi } from '../../src/cekirdek/musteriTakip/cikti';
@@ -8,6 +9,11 @@ import { harfKatla } from '../../src/cekirdek/musteriTakip/metin';
 import { plasiyerKaydiniDogrula } from '../../src/cekirdek/musteriTakip/plasiyer';
 import type { MusteriMotoru } from '../../src/satis/musteriTakip/portlar';
 import type { MusteriListesi } from '../../src/cekirdek/musteriTakip/turler';
+
+vi.mock('../../src/platform/python/motor', async (original) => ({
+  ...(await original<typeof import('../../src/platform/python/motor')>()),
+  pythonMotoru: (await import('../yardimci/pythonMotoru')).nodePythonMotoru,
+}));
 
 const eski: MusteriListesi = { depo: null, baslikSatiri: 0, musteriler: ['Yapay Alfa', 'Yapay Beta'] };
 const yeni: MusteriListesi = { depo: null, baslikSatiri: 0, musteriler: ['Yapay Alfa', 'Yapay Gamma'] };
@@ -38,6 +44,21 @@ describe('Müşteri Takip sınırlar ve uygulama servisi', () => {
     await expect(musteriMotoru.listeOku({ ...dosya, ad: 'Yapay.xlsm' }, signal)).rejects.toThrow(
       'Yalnızca .xlsx',
     );
+  });
+  it('XLSX içindeki XML varlık bildirimi güvenli XML adaptörüyle reddedilir', async () => {
+    const w = new ExcelJS.Workbook();
+    const s = w.addWorksheet('Yapay');
+    s.addRow(['Cari Ünvan']);
+    s.addRow(['Yapay Alfa']);
+    const zip = await JSZip.loadAsync(await w.xlsx.writeBuffer());
+    const yol = 'xl/worksheets/sheet1.xml';
+    const xml = await zip.file(yol)?.async('string');
+    if (!xml) throw new Error('Yapay sayfa yok.');
+    zip.file(yol, xml.replace(/(<\?xml[^?]*\?>)/, '$1<!DOCTYPE worksheet [<!ENTITY yapay "Yapay varlık">]>'));
+    const bayt = await zip.generateAsync({ type: 'uint8array' });
+    await expect(
+      musteriMotoru.listeOku({ ad: 'Yapay.xlsx', bayt }, new AbortController().signal),
+    ).rejects.toThrow();
   });
   it('ikinci okuma başarısızsa tamamlanmış oturum dönmez', async () => {
     const oku = vi.fn().mockResolvedValueOnce(eski).mockRejectedValueOnce(new Error('yapay hata'));

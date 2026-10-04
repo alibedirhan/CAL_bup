@@ -53,7 +53,7 @@ src/
                 formul.ts (formül kaydırma), depoKontrol.ts (planı sayfaya yazma)
   raporlar/     kayit.ts (rapor listesi) + depoKontrol/ (hesapla, gunSecimi, tarihDenetimi,
                 islem, oturum = ekran durumu, motor/motorYukle = ExcelJS ayrı parça)
-  satis/        katalog + musteriTakip/ (portlar, servis, dinamik Excel işçisi)
+  satis/        katalog + musteriTakip/iskonto (portlar, servis, ayrı işçiler)
   platform/     tarayıcıya bağlı: dosya.ts (seç/kaydet), idb.ts, gecmis.ts (geçmiş + yedek),
                 ayarlar.ts, saklama.ts (localStorage)
   arayuz/       React: Uygulama.tsx, rota.ts, tema.ts, bilesenler/, sayfalar/, stiller/
@@ -109,9 +109,22 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.9.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.10.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-04 eşdeğerlik ve İskonto (1.10.0):** Kullanıcı gerçek test verisi yokken
+masaüstünün iş mantığının korunmasını ve ardından sıradaki modülü istedi.
+Müşteri okuma özgün openpyxl adaptöründedir; 78 karşılaştırma/dört hata,
+tam Unicode 15.0.0 harf tablosu ve sayı/tarih/saat/süre hücreleri doğrulanır.
+İskonto, değişmemiş PDF okuyucu/domain/facade/Excel/PDF exporter kodunu
+Pyodide 314.0.7 işçisinde çalıştırır. 11 yapay PDF/39 facade/3.264 yuvarlama
+başvurusu bağımsız kaynaktandır. Qt/config/şirket dosyaları aktarılmaz.
+Runtime varlıkları kendi yayınımızdadır; kaynak ve paket SHA-256'ları denetlenir.
+İptal/rota/timeout işçiyi kapatır. XML varlıkları defusedxml ile reddedilir.
+Tam/görünen kapsam, platform farkları ve **iki Python paketindeki açık audit
+bulguları** [eşdeğerlik kaydındadır](docs/SATIS_ESDEGERLIK.md); sıfır açık veya
+gerçek Windows kabulü iddia etme. Diğer satış modülleri ayrı iştir.
 
 **2026-10-04 Satış — Müşteri Takip (1.9.0):** Kullanıcı bir modülle başlamayı,
 CAL bup arayüzünü ve masaüstü iş davranışını korumayı istedi. İlk dilim

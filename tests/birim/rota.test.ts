@@ -14,6 +14,7 @@ describe('rotaCoz', () => {
     expect(rotaCoz('#/sanal-pos')).toEqual({ tur: 'sanal-pos' });
     expect(rotaCoz('#/rapor/envanter')).toEqual({ tur: 'rapor', id: 'envanter' });
     expect(rotaCoz('#/satis/musteri-takip')).toEqual({ tur: 'satis', id: 'musteri-takip' });
+    expect(rotaCoz('#/satis/iskonto')).toEqual({ tur: 'satis', id: 'iskonto' });
   });
 
   it('bilinmeyen adreste açılış sayfasına döner', () => {
