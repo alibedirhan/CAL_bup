@@ -96,11 +96,11 @@ export function FotoAdaylari({
         </label>
       )}
       {kanit?.some((k) => k.guven < 80) && (
-        <p className="alan-hatasi">Okuma güveni düşük. Rakamları fotoğrafla tek tek karşılaştırın.</p>
+        <p className="alan-hatasi">Okuma puanı düşük. Rakamları fotoğrafla tek tek karşılaştırın.</p>
       )}
       {kanit?.length ? (
         <p className="ipucu">
-          Okuma güveni:{' '}
+          Okuma puanı (doğruluk garantisi değildir):{' '}
           {kanit.map((k) => `${k.tur === 'numara' ? 'numara' : 'tarih'} %${Math.round(k.guven)}`).join(', ')}.
           Bu değer kart sahipliğini doğrulamaz.
         </p>

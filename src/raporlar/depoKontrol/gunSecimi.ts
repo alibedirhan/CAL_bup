@@ -22,10 +22,23 @@ export type GunSecimi =
 
 /** Kitaptaki gün sayfaları, sekme sırasıyla. */
 export function gunSayfalari(sayfaAdlari: readonly string[], bugun: Tarih): GunSayfasi[] {
-  return sayfaAdlari.flatMap((ad) => {
+  const gunler = sayfaAdlari.flatMap((ad) => {
     const tarih = gunSayfasiMi(ad) ? sayfaTarihiYilli(ad, bugun) : null;
     return tarih ? [{ ad, tarih }] : [];
   });
+  const gorulen = new Set<Tarih>();
+  for (const [i, g] of gunler.entries()) {
+    if (gorulen.has(g.tarih))
+      throw new KullaniciHatasi(
+        'Dosyada aynı günü gösteren birden fazla sayfa var. Gün sayfalarını kontrol edin; dosya değiştirilmedi.',
+      );
+    if (i > 0 && g.tarih < (gunler[i - 1]?.tarih ?? g.tarih))
+      throw new KullaniciHatasi(
+        'Gün sayfalarının sırası tarihlerle uyuşmuyor. Excel’de gün sekmelerini eskiden yeniye sıralayıp dosyayı yeniden açın.',
+      );
+    gorulen.add(g.tarih);
+  }
+  return gunler;
 }
 
 /** Son gün sayfasından sonraki iş günü. */
@@ -43,7 +56,11 @@ export function gunSec(gunler: readonly GunSayfasi[], tarih: Tarih): GunSecimi {
   const son = gunler.at(-1);
   if (!son) throw new KullaniciHatasi('Depo kontrol dosyasında GG.AA adlı bir gün sayfası bulunamadı.');
 
-  const i = gunler.findIndex((g) => sayfaTarihi(g.ad, yilOf(tarih)) === tarih);
+  if (gunler.some((g) => sayfaTarihi(g.ad, yilOf(tarih)) === tarih && g.tarih !== tarih))
+    throw new KullaniciHatasi(
+      'Aynı gün ve ay başka yılın sayfasında bulunuyor. Yıl bilgisi olmayan sayfanın üzerine yazılmadı; yeni yıl için ayrı bir depo kontrol dosyası kullanın.',
+    );
+  const i = gunler.findIndex((g) => g.tarih === tarih);
   const mevcut = gunler[i];
   if (mevcut) {
     const onceki = gunler[i - 1];

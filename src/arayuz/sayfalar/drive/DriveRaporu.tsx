@@ -8,13 +8,18 @@ import {
   driveYukle,
   type DriveDosyasi,
 } from '../../../platform/drive';
-import { driveHesabiDogrula, driveToken } from '../../../platform/driveKimlik';
+import { driveHesabiDogrula, driveAnlikKimlik } from '../../../platform/driveKimlik';
 import type { SecilenDosya } from '../../../platform/dosya';
-import type { KayitSonucu } from '../depoKontrol/islemler';
+import type { KayitSonucu } from '../../../raporlar/depoKontrol/dosyaIslemleri';
 import { Mesaj } from '../../bilesenler/Mesaj';
-import { useDrive } from './useDrive';
+import { useDrive, useDriveOturumu } from './useDrive';
 
-export function DriveRaporunuAc({
+type AcOzellikleri = { ac: (d: SecilenDosya, signal?: AbortSignal) => Promise<void>; mesgul: boolean };
+export function DriveRaporunuAc(ozellikler: AcOzellikleri) {
+  const no = useDriveOturumu();
+  return <DriveRaporuAc key={no} {...ozellikler} />;
+}
+function DriveRaporuAc({
   ac,
   mesgul,
 }: {
@@ -23,6 +28,7 @@ export function DriveRaporunuAc({
 }) {
   const bagli = useDrive();
   const [liste, setListe] = useState<DriveDosyasi[] | null>(null);
+  const [gorunen, setGorunen] = useState(20);
   const islem = useIslem('drive-ac');
   const calisiyor = islem.mesgul;
   const is = (eylem: (signal: AbortSignal) => Promise<void>) =>
@@ -39,6 +45,7 @@ export function DriveRaporunuAc({
               const l = await driveListele('rapor', signal);
               signal.throwIfAborted();
               setListe(l);
+              setGorunen(20);
             })
           }
         >
@@ -57,7 +64,7 @@ export function DriveRaporunuAc({
       )}
       {liste && liste.length > 0 && (
         <ul className="yedek-listesi">
-          {liste.slice(0, 20).map((d) => (
+          {liste.slice(0, gorunen).map((d) => (
             <li key={d.id} className="dosya-satiri">
               <div>
                 <b>{d.name}</b>
@@ -82,12 +89,21 @@ export function DriveRaporunuAc({
           ))}
         </ul>
       )}
+      {liste && liste.length > gorunen && (
+        <button className="dugme" disabled={calisiyor || mesgul} onClick={() => setGorunen((n) => n + 20)}>
+          Daha fazla rapor göster
+        </button>
+      )}
       <IslemBildirimi islem={islem} />
     </div>
   );
 }
 
-export function DriveRaporunuKaydet({ sonuc }: { sonuc: KayitSonucu }) {
+export function DriveRaporunuKaydet(ozellikler: { sonuc: KayitSonucu }) {
+  const no = useDriveOturumu();
+  return <DriveRaporuKaydet key={no} {...ozellikler} />;
+}
+function DriveRaporuKaydet({ sonuc }: { sonuc: KayitSonucu }) {
   const bagli = useDrive();
   const [led, setLed] = useState(false);
   const islem = useIslem('drive-kayit');
@@ -96,7 +112,7 @@ export function DriveRaporunuKaydet({ sonuc }: { sonuc: KayitSonucu }) {
   const gonder = () =>
     islem.calistir(
       async (signal) => {
-        const token = driveToken();
+        const token = driveAnlikKimlik();
         await driveYukle(`YEDEK ${sonuc.hedef.ad}`, sonuc.oncekiBayt, 'yedek', signal);
         signal.throwIfAborted();
         driveHesabiDogrula(token);

@@ -111,3 +111,13 @@ describe('depo kontrol oturumu', () => {
     expect(o.hedef).toBe(hedef);
   });
 });
+
+it('ayar değişince mevcut sayfa ve farklı dosya tarihi onayları yenilenir', () => {
+  let o = kaynaklarla(azalt(BOS_OTURUM, { tur: 'hedefYuklendi', hedef }));
+  o = azalt(o, { tur: 'tarihDegisti', girdi: '29.09' });
+  o = azalt(o, { tur: 'mevcutOnaylandi' });
+  o = azalt(o, { tur: 'tarihOnaylandi', kaynak: 'D01' });
+  o = azalt(o, { tur: 'ayarlarDegisti', pazarAtla: false });
+  expect(o.onaylananTarihler).toEqual([]);
+  expect(gor(o).mevcutOnayiGerekli).toBe(true);
+});

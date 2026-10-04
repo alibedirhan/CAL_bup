@@ -25,6 +25,7 @@ export function CariProfili({
   bildir: (m: string, h?: boolean) => void;
 }) {
   const [onayNo, setOnayNo] = useState<number | null>(null);
+  const [aktarimNo, setAktarimNo] = useState(0);
   const firmaOnay = onayNo === gizlilikNo;
   return (
     <div className="pos-profil-grid">
@@ -48,6 +49,7 @@ export function CariProfili({
         kartlar={kartlar}
         mesgul={mesgul}
         gizlilikNo={gizlilikNo}
+        aktarimNo={aktarimNo}
         firmaOnay={firmaOnay}
         kaydet={kartKaydet}
         kartDegisti={() => setOnayNo(null)}
@@ -67,7 +69,10 @@ export function CariProfili({
         gizlilikNo={gizlilikNo}
         firmaDogrulandi={firmaOnay}
         firmaKontrolu={(onay) => setOnayNo(onay ? gizlilikNo : null)}
-        girisBasladi={() => setOnayNo(null)}
+        girisBasladi={() => {
+          setOnayNo(null);
+          setAktarimNo((n) => n + 1);
+        }}
       />
     </div>
   );

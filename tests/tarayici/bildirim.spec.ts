@@ -28,7 +28,7 @@ test('kart doğrulama ve yinelenen kayıt hatası modal içinde, görünür ve o
   ).toBe(true);
 });
 
-test('depo yazısı engellenince hata kart penceresinde kalır ve başarı gösterilmez', async ({ page }) => {
+test('depo yazısı engellenince profil kapanır, hata görünür ve başarı gösterilmez', async ({ page }) => {
   await cariHazirla(page);
   await kartDoldur(page);
   await page.evaluate(() => {
@@ -37,8 +37,12 @@ test('depo yazısı engellenince hata kart penceresinde kalır ve başarı göst
     };
   });
   await page.getByRole('button', { name: 'Kartı kaydet', exact: true }).click();
-  await expect(page.locator('dialog [role=alert]')).toContainText('sonucu doğrulanamadı');
-  await expect(page.locator('dialog [role=alert]')).toBeInViewport();
+  await expect(page.getByRole('alert')).toContainText('sonucu doğrulanamadı');
+  await expect(page.getByRole('alert')).toBeInViewport();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'Profil durumunu yeniden kontrol et', exact: true }),
+  ).toBeVisible();
   await expect(page.locator('.bildirim').filter({ hasText: 'Kart bu carinin' })).toHaveCount(0);
   await page.keyboard.press('Escape');
   await page.reload();

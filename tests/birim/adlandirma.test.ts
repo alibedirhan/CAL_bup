@@ -65,8 +65,24 @@ describe('ad değişikliğinde tarayıcı kayıtları', () => {
   });
 
   it('geçmiş ve yedekler eski IndexedDB deposundan okunmaya devam eder', async () => {
-    const gecmis = [{ rapor: 'depo-kontrol', sayfa: '01.10' }];
-    const yedekler = [{ id: 'deneme', dosyaAdi: 'Sentetik depo kontrol.xlsx' }];
+    const gecmis = [
+      {
+        rapor: 'depo-kontrol',
+        sayfa: '01.10',
+        zaman: '2026-10-01T00:00:00Z',
+        dosya: 'Yapay.xlsx',
+        durum: 'Tamam',
+        ledStogu: 0,
+        depoSayimi: 0,
+        gelenMal: 0,
+        uyariSayisi: 0,
+        aciklama: '',
+        kayit: 'indirildi',
+      },
+    ];
+    const yedekler = [
+      { id: 'deneme', dosyaAdi: 'Sentetik depo kontrol.xlsx', zaman: '2026-10-01T00:00:00Z' },
+    ];
     const bayt = new Uint8Array([1, 2, 3]);
     const kayitlar = new Map<string, unknown>([
       ['gecmis', gecmis],

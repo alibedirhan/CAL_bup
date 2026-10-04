@@ -1,3 +1,29 @@
+# 4 Ekim 2026 — 1.7.0 genel tarama ve iyileştirmeler
+
+Kullanıcı Sanal POS dahil tüm alanların hata, mantık, mimari ve açıklamalar bakımından ayrıntılı
+taranmasını ve gerekli düzeltmelerin yapılmasını istedi. [Genel tarama raporu](GENEL_TARAMA_RAPORU.md)
+29 düzeltilmiş bulgu başlığı, kanıt eşlemeleri ve gerçek ortam kabul sınırlarını içerir.
+
+- POS: kart ekleme/düzenleme ve elle yeni giriş bekleyen aktarımı iptal eder. Kartı olan carinin
+  numarası değişmez. Depo kapanan kayıt arızasında eski kart/form ekranı kullanılmaz.
+- Depo kontrol: sıkı sayı/tarih, taşma/formül sonucu, yinelenen/ters günler, yıl çakışması, 256 sütunda
+  birim ve belirsiz dosya türü denetimi. Gerçek birleşik grup başlığı ve dip toplam uyumu korundu.
+  Ayar değişimi öneriyi/onayları yeniler; işlem sırasında gün/kaynak değişmez; kayıtta liste adları da denetlenir.
+- Geçmiş/yedek: bozuk değer yeni yazıyla ezilmez. Drive: OAuth iptal kilidi, aynı belirteçle yeniden
+  bağlantı, liste sınırı/metaveri, 20 sonrası erişim ve eski hesabın ekran verileri düzeltildi.
+- Dosya iş akışı rapor katmanında; saf Drive/ayar/geçmiş kuralları çekirdekte; lint sınırları genişletildi.
+  README/gizlilik/kurulum/OCR ve üzerine yazma/sıfırlama metinleri güncellendi.
+- Son yerel kontrol: **31 test dosyasında 397 test**, gerçek Excel/ikiz karşılaştırmaları atlamadan
+  başarılı; **88 Chromium senaryosu** başarılı. Tip/lint/biçim/derleme geçti. Bağımlılık taraması
+  320 bağımlılık envanterinde 0 bilinen açık gösterdi. Açık/koyu/390 px sentetik POS ekranları
+  `/tmp/` içinde incelendi; yatay taşma denetimi geçti. Üretim dosyaları 400 satır sınırını aşmıyor.
+- Kullanıcının paylaştığı Brave/Linux paneli cari eşleşmesi ve kart/tarih doldurmayı gösterdi.
+  Gerçek ödeme/SMS, tüm sağlayıcı ekranları veya Windows/Google kabulü doğrulanmış sayılmaz.
+  Asistan testleri yalnızca yapay kart ve dış ağa kapalı taklit POS’tadır; gerçek şirket dosyaları Git dışındadır.
+- Sürüm 1.7.0. Yardımcı mesaj protokolü 2 olarak kaldı; 1.6.1 yardımcıyla sürüm eşitliği şartı yoktur.
+  Site sürümü ve kurulu yardımcı sürümü farklı görünebilir. Kurulu tarayıcı eklentisi kendiliğinden
+  yeni ZIP’e yükselmiş sayılmaz. Main yayın yetkisi önceki oturumdan sürüyor.
+
 # 4 Ekim 2026 — 1.6.1 bağlantı taraması / Windows kolay kurulum
 
 Kullanıcı doğru GitHub Pages adresini kullanıyor fakat yardımcının henüz kurulmadığını bildirdi.

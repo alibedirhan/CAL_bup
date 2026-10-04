@@ -1,3 +1,4 @@
+import { KullaniciHatasi } from './hata';
 export interface GecmisKaydi {
   /** ISO zaman damgası */
   zaman: string;
@@ -36,6 +37,47 @@ export function gecmisGecerli(v: unknown): v is GecmisKaydi {
     [k.ledStogu, k.depoSayimi, k.gelenMal].every((v) => typeof v === 'number' && Number.isFinite(v)) &&
     Number.isInteger(k.uyariSayisi) &&
     k.uyariSayisi >= 0 &&
-    k.uyariSayisi <= 100000
+    k.uyariSayisi <= 100000 &&
+    (k.yedekId === undefined || (metin(k.yedekId, 255) && k.yedekId.length > 0))
   );
+}
+
+export function gecmisListesiniDogrula(v: unknown, en = 500): GecmisKaydi[] {
+  if (v === undefined) return [];
+  if (!Array.isArray(v) || v.length > en || !v.every(gecmisGecerli))
+    throw new KullaniciHatasi('Geçmiş kaydının biçimi geçersiz. Mevcut kayıtlar silinmedi.');
+  return v;
+}
+
+export function yedekListesiniDogrula(v: unknown): Omit<Yedek, 'bayt'>[] {
+  if (v === undefined) return [];
+  if (
+    !Array.isArray(v) ||
+    v.length > 10 ||
+    !v.every((y: unknown) => {
+      const k = y as Omit<Yedek, 'bayt'> | null;
+      return (
+        !!k &&
+        metin(k.id, 255) &&
+        k.id.length > 0 &&
+        metin(k.dosyaAdi) &&
+        k.dosyaAdi.length > 0 &&
+        metin(k.zaman, 40) &&
+        Number.isFinite(Date.parse(k.zaman))
+      );
+    }) ||
+    new Set(v.map((y: Omit<Yedek, 'bayt'>) => y.id)).size !== v.length
+  )
+    throw new KullaniciHatasi('Yedek listesinin biçimi geçersiz. Mevcut kayıtlar silinmedi.');
+  return v as Omit<Yedek, 'bayt'>[];
+}
+
+/** Yerel yedek bağlantısı korunur; farklı saat dilimlerindeki aynı kayıt tekilleştirilir. */
+export function gecmisBirlestir(a: readonly GecmisKaydi[], b: readonly GecmisKaydi[]): GecmisKaydi[] {
+  const anahtar = (k: GecmisKaydi) =>
+    JSON.stringify([Date.parse(k.zaman), k.rapor, k.dosya, k.sayfa, k.kayit]);
+  const kayitlar = new Map<string, GecmisKaydi>();
+  for (const k of [...gecmisListesiniDogrula(b, 5000), ...gecmisListesiniDogrula(a)])
+    kayitlar.set(anahtar(k), k);
+  return [...kayitlar.values()].sort((a, b) => Date.parse(b.zaman) - Date.parse(a.zaman)).slice(0, 500);
 }

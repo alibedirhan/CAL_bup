@@ -4,7 +4,13 @@ import { KullaniciHatasi } from '../cekirdek/hata';
 import * as idb from './idb';
 
 export type { GecmisKaydi, Yedek } from '../cekirdek/gecmis';
-import { gecmisGecerli, type GecmisKaydi, type Yedek } from '../cekirdek/gecmis';
+import {
+  gecmisGecerli,
+  gecmisListesiniDogrula,
+  yedekListesiniDogrula,
+  type GecmisKaydi,
+  type Yedek,
+} from '../cekirdek/gecmis';
 
 const GECMIS = 'gecmis';
 const YEDEK_LISTESI = 'yedekler';
@@ -12,44 +18,29 @@ const EN_FAZLA_KAYIT = 500;
 export const EN_FAZLA_YEDEK = 10;
 
 export async function gecmisListesi(kesin = false): Promise<GecmisKaydi[]> {
-  const k = (await (kesin ? idb.okuKesin : idb.oku)<GecmisKaydi[]>(GECMIS)) ?? [];
-  if (kesin && (!Array.isArray(k) || k.length > 500 || !k.every(gecmisGecerli)))
-    throw new KullaniciHatasi('Geçmiş kaydının biçimi geçersiz. Mevcut kayıtlar silinmedi.');
-  return k;
+  const k = await (kesin ? idb.okuKesin : idb.oku)<unknown>(GECMIS);
+  return gecmisListesiniDogrula(k);
 }
 
 export async function gecmiseEkle(k: GecmisKaydi): Promise<boolean> {
-  return idb.guncelle(GECMIS, (onceki) =>
-    [k, ...(Array.isArray(onceki) ? onceki : [])].slice(0, EN_FAZLA_KAYIT),
-  );
+  if (!gecmisGecerli(k)) return false;
+  return idb.guncelle(GECMIS, (onceki) => [k, ...gecmisListesiniDogrula(onceki)].slice(0, EN_FAZLA_KAYIT));
 }
 
 /** Yedekler en yeniden eskiye; baytlar ayrı anahtarda durur, liste hafif kalır. */
 export async function yedekListesi(kesin = false): Promise<Omit<Yedek, 'bayt'>[]> {
-  const k = (await (kesin ? idb.okuKesin : idb.oku)<Omit<Yedek, 'bayt'>[]>(YEDEK_LISTESI)) ?? [];
-  if (
-    kesin &&
-    (!Array.isArray(k) ||
-      k.length > EN_FAZLA_YEDEK ||
-      !k.every(
-        (y) =>
-          y &&
-          typeof y.id === 'string' &&
-          y.id.length < 256 &&
-          typeof y.dosyaAdi === 'string' &&
-          y.dosyaAdi.length <= 512 &&
-          Number.isFinite(Date.parse(y.zaman)),
-      ))
-  )
-    throw new KullaniciHatasi('Yedek listesinin biçimi geçersiz. Mevcut kayıtlar silinmedi.');
-  return k;
+  const k = await (kesin ? idb.okuKesin : idb.oku)<unknown>(YEDEK_LISTESI);
+  return yedekListesiniDogrula(k);
 }
 
 export async function yedekAl(dosyaAdi: string, bayt: Uint8Array): Promise<string | null> {
   const id = crypto.randomUUID();
   const kaydedildi = await idb.guncelle(YEDEK_LISTESI, (onceki, depo) => {
-    const eski = Array.isArray(onceki) ? (onceki as Omit<Yedek, 'bayt'>[]) : [];
-    const liste = [{ id, zaman: new Date().toISOString(), dosyaAdi }, ...eski];
+    const eski = yedekListesiniDogrula(onceki);
+    const yeni = { id, zaman: new Date().toISOString(), dosyaAdi };
+    yedekListesiniDogrula([yeni]);
+    if (!bayt.byteLength) throw new KullaniciHatasi('Yedek içeriği boş.');
+    const liste = [yeni, ...eski];
     depo.put(bayt, `yedek:${id}`);
     for (const y of liste.slice(EN_FAZLA_YEDEK)) depo.delete(`yedek:${y.id}`);
     return liste.slice(0, EN_FAZLA_YEDEK);

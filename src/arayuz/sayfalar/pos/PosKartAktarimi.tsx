@@ -1,5 +1,5 @@
 import type { PosCari } from '../../../cekirdek/posCari';
-import type { PosKart } from '../../../cekirdek/posKart';
+import { kartSuresiGecti, type PosKart } from '../../../cekirdek/posKart';
 import { usePosAktarimi } from './usePosAktarimi';
 import { FormHatasi } from '../../bilesenler/FormHatasi';
 export function PosKartAktarimi({ cari, kart, mesgul }: { cari: PosCari; kart: PosKart; mesgul: boolean }) {
@@ -15,7 +15,7 @@ export function PosKartAktarimi({ cari, kart, mesgul }: { cari: PosCari; kart: P
         <button
           type="button"
           className="dugme birincil"
-          disabled={mesgul || bekliyor}
+          disabled={mesgul || bekliyor || kartSuresiGecti(kart)}
           onClick={() => void baslat()}
         >
           Seçili kartla POS’u aç
@@ -37,7 +37,7 @@ export function PosKartAktarimi({ cari, kart, mesgul }: { cari: PosCari; kart: P
       <FormHatasi id="pos-aktarim-hatasi" hata={hata} />
       {durum && <p role="status">{durum}</p>}
       <details open={Boolean(hata)}>
-        <summary>Edge yardımcısını bir kez kur</summary>
+        <summary>POS yardımcısını bir kez kur</summary>
         <p>
           <a
             href={import.meta.env.BASE_URL + 'POS-Yardimcisi-Windows-Kurulum.cmd'}
@@ -52,8 +52,8 @@ export function PosKartAktarimi({ cari, kart, mesgul }: { cari: PosCari; kart: P
           sizin vermeniz gerekir. Linux veya elle kurulum için aşağıdaki ZIP adımlarını kullanın.
         </p>
         <p className="ipucu">
-          ZIP’i indirmek yeterli değildir. Yardımcı programı kullandığınız aynı Chrome/Edge tarayıcısında
-          yüklü ve etkin olmalıdır.
+          ZIP’i indirmek yeterli değildir. Yardımcı programı kullandığınız aynı Chrome/Edge/Brave
+          tarayıcısında yüklü ve etkin olmalıdır.
         </p>
         <a href="https://alibedirhan.github.io/CAL_bup/" target="_blank" rel="noopener noreferrer">
           Yayımlanmış programı aç
@@ -66,8 +66,9 @@ export function PosKartAktarimi({ cari, kart, mesgul }: { cari: PosCari; kart: P
             ve ZIP’i bir klasöre çıkarın.
           </li>
           <li>
-            Edge’de <b>edge://extensions</b>, Chrome’da <b>chrome://extensions</b> açın; geliştirici modunu
-            açıp “Paketlenmemiş öğe yükle” ile klasörü seçin.
+            Edge’de <b>edge://extensions</b>, Chrome’da <b>chrome://extensions</b>, Brave’de{' '}
+            <b>brave://extensions</b> açın; geliştirici modunu açıp “Paketlenmemiş öğe yükle” ile klasörü
+            seçin.
           </li>
           <li>
             POS ödeme ekranında kart bilgisi girmeden, yardımcının panelinden boş numara/tarih alanlarını ve

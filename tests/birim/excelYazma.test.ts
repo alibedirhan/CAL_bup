@@ -154,3 +154,15 @@ describe('dosya açma', () => {
     expect(() => hedefiIncele(acik, AYAR, BUGUN)).toThrow(/depo kontrol dosyası değil/);
   });
 });
+
+it('ürün sayısı aynı kalsa da önizlemeden sonra değişen listeye eski planı yazmaz', async () => {
+  const hedef = await kitapAc(await depoKontrolBaytlari(), 'Yapay.xlsx');
+  const bilgi = hedefiIncele(hedef, AYAR, BUGUN);
+  const secim = gunSec(bilgi.gunler, bilgi.oneri);
+  const plan = planla(hedef, secim, kaynaklar(), AYAR);
+  const s = hedef.excel.getWorksheet(secim.onceki.ad);
+  if (!s) throw new Error('Yapay gün sayfası eksik');
+  s.getCell('A4').value = 'Yapay değiştirilmiş ürün';
+  expect(() => uygula(hedef, secim, plan, AYAR)).toThrow(/listesi değişmiş/);
+  expect(hedef.excel.getWorksheet(secim.ad)).toBeUndefined();
+});

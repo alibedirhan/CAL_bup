@@ -28,6 +28,7 @@ let token: { deger: string; bitis: number } | null = null;
 let yukleme: Promise<void> | null = null;
 let baglaniyor = false;
 let nesil = 0;
+let bekleyeniBitir: (() => void) | undefined;
 let zamanlayici: ReturnType<typeof setTimeout> | undefined;
 const dinleyiciler = new Set<() => void>();
 function bildir() {
@@ -74,12 +75,25 @@ export function driveToken(): string {
   }
   return token.deger;
 }
-export function driveHesabiDogrula(baslangic: string): void {
-  if (baslangic !== driveToken()) throw new KullaniciHatasi('Drive hesabı değişti. İşlemi yeniden başlatın.');
+export interface DriveOturumKimligi {
+  deger: string;
+  no: number;
+}
+export function driveOturumNo(): number {
+  return nesil;
+}
+export function driveAnlikKimlik(): DriveOturumKimligi {
+  return { deger: driveToken(), no: nesil };
+}
+export function driveHesabiDogrula(baslangic: string | DriveOturumKimligi): void {
+  const t = driveToken();
+  if (typeof baslangic === 'string' ? baslangic !== t : baslangic.deger !== t || baslangic.no !== nesil)
+    throw new KullaniciHatasi('Drive hesabı değişti. İşlemi yeniden başlatın.');
 }
 export function driveAyir(): void {
   nesil++;
   token = null;
+  bekleyeniBitir?.();
   clearTimeout(zamanlayici);
   bildir();
 }
@@ -175,6 +189,7 @@ export function driveBaglan(signal?: AbortSignal): Promise<void> {
       clearTimeout(sure);
       signal?.removeEventListener('abort', iptal);
       baglaniyor = false;
+      bekleyeniBitir = undefined;
       if (hata) reddet(hata);
       else coz();
       bildir();
@@ -183,6 +198,7 @@ export function driveBaglan(signal?: AbortSignal): Promise<void> {
       driveAyir();
       bitir(new IslemHatasi('iptal', 'IPTAL', 'Drive bağlantısı iptal edildi.'));
     };
+    bekleyeniBitir = () => bitir(new IslemHatasi('iptal', 'IPTAL', 'Drive bağlantısı iptal edildi.'));
     signal?.addEventListener('abort', iptal, { once: true });
     try {
       const istemci = g.accounts.oauth2.initTokenClient({

@@ -128,27 +128,30 @@ describe('Drive REST ve dosyalar', () => {
       redirect: 'error',
     });
   });
-  it('hesap değişince bekleyen işlemleri yeni hesaba göndermez', async () => {
-    await baglan();
-    let yanitla: (r: Response) => void = () => {};
-    const f = vi.fn(
-      () =>
-        new Promise<Response>((coz) => {
-          yanitla = coz;
-        }),
-    );
-    vi.stubGlobal('fetch', f);
-    const ilk = driveListele('rapor');
-    const ikinci = driveYukle('Sentetik.xlsx', new Uint8Array([1]), 'rapor');
-    const bitis = Promise.allSettled([ilk, ikinci]);
-    await vi.waitFor(() => expect(f).toHaveBeenCalledTimes(1));
-    driveAyir();
-    googleKur({ access_token: 'ikinci-hesap', expires_in: 3600, scope: DRIVE_KAPSAMI });
-    await driveBaglan();
-    yanitla(json({ files: [KLASOR] }));
-    expect((await bitis).every((r) => r.status === 'rejected')).toBe(true);
-    expect(f).toHaveBeenCalledTimes(1);
-  });
+  it.each(['ikinci-hesap', 'sentetik-token'])(
+    'bağlantı yenilenince eski işlemler sürmez: %s',
+    async (yeniToken) => {
+      await baglan();
+      let yanitla: (r: Response) => void = () => {};
+      const f = vi.fn(
+        () =>
+          new Promise<Response>((coz) => {
+            yanitla = coz;
+          }),
+      );
+      vi.stubGlobal('fetch', f);
+      const ilk = driveListele('rapor');
+      const ikinci = driveYukle('Sentetik.xlsx', new Uint8Array([1]), 'rapor');
+      const bitis = Promise.allSettled([ilk, ikinci]);
+      await vi.waitFor(() => expect(f).toHaveBeenCalledTimes(1));
+      driveAyir();
+      googleKur({ access_token: yeniToken, expires_in: 3600, scope: DRIVE_KAPSAMI });
+      await driveBaglan();
+      yanitla(json({ files: [KLASOR] }));
+      expect((await bitis).every((r) => r.status === 'rejected')).toBe(true);
+      expect(f).toHaveBeenCalledTimes(1);
+    },
+  );
 
   it('aynı içerik yeniden gönderilirse dosyayı çoğaltmaz', async () => {
     await baglan();
@@ -242,3 +245,43 @@ describe('Drive ayar ve geçmiş doğrulaması', () => {
     expect(sonuc[1]?.yedekId).toBe('yerel');
   });
 });
+
+it('ayrılan OAuth isteği yeni bağlantıyı bir dakika engellemez', async () => {
+  vi.stubGlobal('localStorage', { getItem: () => 'deneme.apps.googleusercontent.com' });
+  vi.stubGlobal('google', {
+    accounts: { oauth2: { initTokenClient: () => ({ requestAccessToken: () => {} }) } },
+  });
+  const ilk = driveBaglan().catch((e: unknown) => e);
+  driveAyir();
+  googleKur({ access_token: 'yeni', expires_in: 3600, scope: DRIVE_KAPSAMI });
+  try {
+    await expect(driveBaglan()).resolves.toBeUndefined();
+  } finally {
+    driveAyir();
+    await ilk;
+  }
+});
+it('Drive aynı sayfa anahtarını tekrarlarsa listeleme durur', async () => {
+  await baglan();
+  let n = 0;
+  const f = vi.fn(async () => {
+    n++;
+    if (n === 1) return json({ files: [KLASOR] });
+    if (n > 4) throw new Error('Yapay sonsuz döngü kesildi');
+    return json({ files: [], nextPageToken: 'tekrar' });
+  });
+  vi.stubGlobal('fetch', f);
+  await expect(driveListele('rapor')).rejects.toThrow(/sayfa|listesi/);
+  expect(f.mock.calls.length).toBeLessThanOrEqual(3);
+});
+
+it.each([{ size: '-1' }, { size: 'bozuk' }, { appProperties: { ...DOSYA.appProperties, ozet: 'kısa' } }])(
+  'bozuk Drive metaverisinde dosya okunmaz: %j',
+  async (degisiklik) => {
+    await baglan();
+    const f = vi.fn();
+    vi.stubGlobal('fetch', f);
+    await expect(driveIndir({ ...DOSYA, ...degisiklik })).rejects.toThrow(/dosya bilgisi/);
+    expect(f).not.toHaveBeenCalled();
+  },
+);

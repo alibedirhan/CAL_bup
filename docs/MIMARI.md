@@ -7,7 +7,7 @@ okunur ve yazılır. GitHub Pages'te yayınlanır.
 
 ```
 arayuz/      ekranlar, bileşenler, tema            → raporlar, platform
-raporlar/    rapor kaydı + her raporun hesabı (saf plan) → cekirdek, kaynaklar, hedef
+raporlar/    saf rapor planı + dosya iş akışı → cekirdek, kaynaklar, hedef, platform
 kaynaklar/   LED okuyucuları ve dosya tanıma → KaynakVeri → cekirdek
              (yalnızca excel.ts ExcelJS'e bağlıdır: dosyayı Kitap biçimine çevirir)
 hedef/       depo kontrol kitabına yazma            → cekirdek, ExcelJS
@@ -29,7 +29,7 @@ platform/    tarayıcıya bağlı işler: saklama, dosya seçme/kaydetme, Drive
 ```
 useDepoKontrol (React)  ──  oturum.ts: azalt(eylem) + turet(durum) → ekranda görünen her şey
         │                    (saf; tests/birim/oturum.test.ts)
-        └─ islemler.ts  ──  motorYukle() → motor.ts (ExcelJS'e dokunan her şey, ayrı paket parçası)
+        └─ raporlar/depoKontrol/dosyaIslemleri.ts  ──  motorYukle() → motor.ts (ExcelJS'e dokunan her şey, ayrı paket parçası)
                             platform/: dosya seçme/kaydetme, IndexedDB (yedek, geçmiş, son dosya)
 ```
 
@@ -79,11 +79,12 @@ yüklenmez.
 - Google kitaplığı yalnızca kullanıcı Drive bağlantısını hazırladığında yüklenir. Normal rapor
   akışında dış bağlantı yoktur. Analitik ve takip çerezi eklenmez.
 - Drive adaptörü `platform/drive.ts`, OAuth oturum belleği `driveKimlik.ts`, doğrulama/birleştirme
-  `driveEsitleme.ts` içindedir. Arayüz `arayuz/sayfalar/drive/` altında. ExcelJS ayrı parça kalır.
+  `cekirdek/driveOturumu.ts`, `cekirdek/gecmis.ts` ve `cekirdek/ayarBirlestir.ts` içindedir;
+  `driveEsitleme.ts` bu kuralları I/O iş akışında çağırır. Arayüz `arayuz/sayfalar/drive/` altında. ExcelJS ayrı parça kalır.
 - IndexedDB yazıları istek başarısında değil aktarım tamamlanınca başarılı sayılır. Geçmiş
   ekleme/birleştirme ve yedek verisi/liste/eski yedek silme tek aktarımda yapılır.
 - Drive erişim belirteci kalıcı kaydedilmez; rapor ve ayar kopyaları değişmez dosyalardır. İstekler başlatıldıkları
-  erişim belirtecine bağlanır; hesap değişirse kuyruktaki/çok adımlı işlem durur. Ayrıntı: [DRIVE.md](DRIVE.md).
+  erişim belirteci ve bağlantı nesline bağlanır; hesap değişirse kuyruktaki/çok adımlı işlem durur. Ayrıntı: [DRIVE.md](DRIVE.md).
 
 ## Doğrulama
 
@@ -162,3 +163,17 @@ döndürür; `usePosAktarimi` iptal, monotonic süre ve görünür sonucu yönet
 Arka plan `teslim` durumunu sonuç onayından ayırır, saat geri alma/kayıp iş/başka sekmenin bekleyen işi
 kontrollerini uygular. `tools/windowsPosKurulumu` sürüm/hash bağlı okunabilir CMD üretir; derleme
 güncel ZIP SHA-256 özetini gömer. Tarayıcı kurulum onayı kullanıcıdadır. [Tarama](POS_YARDIMCISI_TARAMA_RAPORU.md).
+
+## 1.7.0 katman ve durum denetimi
+
+Dosya/yedek/geçmiş koordinasyonu React ekranında değil rapor uygulama katmanında yürür.
+Saf ayar/geçmiş/Drive oturum doğrulaması çekirdektedir. Platform geriye uyumlu dışa aktarımları
+korur; çekirdek platforma bağlanmaz. ESLint çekirdekte tarayıcı globallerini; platform/rapor/
+okuyucu/yazıcı katmanlarında React ve arayüz bağımlılığını; arayüzde statik Excel motorunu sınırlar.
+
+`Kitap/Sayfa` portu birleşim kaynağını ve hesaplanmamış formülü isteğe bağlı yapısal bilgi olarak
+sunar; okuyucu ExcelJS türünü bilmez. Böylece birleşik grup başlığı ile hatalı ürün miktarı ayrılır.
+Geçmiş/yedek listesi okuma ve atomik yazı içinde aynı saf doğrulayıcıdan geçer; bozuk değer boş
+listeye dönüştürülmez. Drive bağlantı nesli rapor bileşenlerinin eski liste/başarısını da geçersiz kılar.
+Ayar değişikliği rapor onaylarını sıfırlar; etkin dosya işlemi sırasında bağlam değişikliği engellenir.
+İnceleme/kanıt ve gerçek ortam sınırları: [genel tarama raporu](GENEL_TARAMA_RAPORU.md).

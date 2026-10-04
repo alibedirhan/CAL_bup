@@ -1,3 +1,7 @@
+import { readFileSync } from 'node:fs';
+const SURUM: string = JSON.parse(
+  readFileSync(new URL('../../package.json', import.meta.url), 'utf8'),
+).version;
 import { test, expect, type Worker, type BrowserContext } from '@playwright/test';
 import { eklentiOrtami, yapayKartliCari, kartliPosAc, APP, POS } from './eklentiYardimci';
 function arkaPlan(c: BrowserContext): Worker {
@@ -19,7 +23,9 @@ test('bağlantı kontrolü kart göndermez, POS açmaz ve yardımcı sürümün�
   try {
     await yapayKartliCari(e.p);
     await e.p.getByRole('button', { name: 'Yardımcı bağlantısını kontrol et', exact: true }).click();
-    await expect(e.p.getByRole('status').filter({ hasText: 'POS yardımcısı bağlı (1.6.1)' })).toBeVisible();
+    await expect(
+      e.p.getByRole('status').filter({ hasText: `POS yardımcısı bağlı (${SURUM})` }),
+    ).toBeVisible();
     expect(e.c.pages()).toHaveLength(2); // başlangıç boş sekmesi ve uygulama
     expect(await kuyruktaPan(arkaPlan(e.c))).toBe(false);
     expect(e.sayac).toEqual({ giris: 0, sms: 0, odeme: 0, dis: 0 });

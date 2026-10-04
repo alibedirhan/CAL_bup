@@ -8,7 +8,7 @@ import { girilenTarih, type Tarih } from '../../cekirdek/tarih';
 import type { AcikKitap } from '../../kaynaklar/excel';
 import type { Kitap } from '../../kaynaklar/kitap';
 import { d01Oku, sayimOku, subeAlisOku } from '../../kaynaklar/led';
-import { gunSec, type GunSecimi } from './gunSecimi';
+import { gunSec, tarihOnerisi, type GunSecimi } from './gunSecimi';
 import type { DepoKontrolPlani } from './hesapla';
 import type { HedefBilgisi } from './islem';
 import { tarihleriDenetle, type TarihDenetimi } from './tarihDenetimi';
@@ -54,6 +54,7 @@ export const BOS_OTURUM: Oturum = {
 };
 
 export type Eylem =
+  | { tur: 'ayarlarDegisti'; pazarAtla: boolean }
   | { tur: 'hedefYuklendi'; hedef: HedefDosya }
   | { tur: 'hedefKaldirildi' }
   | { tur: 'tarihDegisti'; girdi: string }
@@ -69,6 +70,18 @@ export type Eylem =
 
 export function azalt(o: Oturum, e: Eylem): Oturum {
   switch (e.tur) {
+    case 'ayarlarDegisti':
+      return {
+        ...o,
+        mevcutOnayi: false,
+        onaylananTarihler: [],
+        hedef: o.hedef
+          ? {
+              ...o.hedef,
+              bilgi: { ...o.hedef.bilgi, oneri: tarihOnerisi(o.hedef.bilgi.gunler, e.pazarAtla) },
+            }
+          : null,
+      };
     case 'hedefYuklendi':
       return { ...o, hedef: e.hedef, tarihGirdisi: '', mevcutOnayi: false, onaylananTarihler: [] };
     case 'hedefKaldirildi':
@@ -141,7 +154,7 @@ type Planlayici = (
 function mesaj(e: unknown): string {
   return e instanceof KullaniciHatasi
     ? e.message
-    : `Beklenmeyen hata: ${e instanceof Error ? e.message : String(e)}`;
+    : 'Rapor hazırlanamadı. Dosya düzenini ve ayarları kontrol edin.';
 }
 
 /** Ekranın gösterdiği her şey. `planla` motor yüklenmeden önce verilmeyebilir. */
@@ -180,7 +193,7 @@ export function turet(o: Oturum, ayarlar: Ayarlar, bugun: Tarih, planla?: Planla
   if (!o.hedef) return g;
   g.adim = 2;
 
-  const oneri = o.hedef.bilgi.oneri;
+  const oneri = tarihOnerisi(o.hedef.bilgi.gunler, ayarlar.pazarAtla);
   g.tarih = o.tarihGirdisi.trim() ? girilenTarih(o.tarihGirdisi, oneri) : oneri;
   if (!g.tarih) {
     g.tarihHatasi = 'Tarih anlaşılamadı. Örnek: 30.09';

@@ -1,7 +1,7 @@
 import { useIslem } from '../../bilesenler/useIslem';
 // Günlük depo kontrol ekranının durumu ve eylemleri.
 
-import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { Ayarlar } from '../../../cekirdek/ayarlar';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
 import { tarihtenCevir } from '../../../cekirdek/tarih';
@@ -16,7 +16,12 @@ import {
 } from '../../../platform/dosya';
 import { motorYukle, type Motor } from '../../../raporlar/depoKontrol/motorYukle';
 import { azalt, BOS_OTURUM, turet, type KaynakTuru } from '../../../raporlar/depoKontrol/oturum';
-import { dosyalariTani, hedefAc, kaydet, type KayitSonucu } from './islemler';
+import {
+  dosyalariTani,
+  hedefAc,
+  kaydet,
+  type KayitSonucu,
+} from '../../../raporlar/depoKontrol/dosyaIslemleri';
 
 export type Mesgul = null | 'aciliyor' | 'okunuyor' | 'kaydediliyor';
 
@@ -28,6 +33,16 @@ export function useDepoKontrol(ayarlar: Ayarlar) {
   const [hata, setHata] = useState<string | null>(null);
   const [sonuc, setSonuc] = useState<KayitSonucu | null>(null);
   const [hatirlanan, setHatirlanan] = useState<FileSystemFileHandle | null>(null);
+  const etkin = useRef(false);
+  const oncekiAyar = useRef(ayarlar);
+  const durdur = islem.durdur;
+  useEffect(() => {
+    if (oncekiAyar.current === ayarlar) return;
+    oncekiAyar.current = ayarlar;
+    durdur();
+    gonder({ tur: 'ayarlarDegisti', pazarAtla: ayarlar.pazarAtla });
+    setSonuc(null);
+  }, [ayarlar, durdur]);
   const bugun = useMemo(() => tarihtenCevir(new Date()), []);
 
   useEffect(() => {
@@ -46,7 +61,8 @@ export function useDepoKontrol(ayarlar: Ayarlar) {
   );
 
   const calistir = async (tur: Exclude<Mesgul, null>, is: (signal: AbortSignal) => Promise<void>) => {
-    if (islem.mesgul) return false;
+    if (etkin.current) return false;
+    etkin.current = true;
     setMesgul(tur);
     setHata(null);
     const s = await islem.calistir(
@@ -60,6 +76,7 @@ export function useDepoKontrol(ayarlar: Ayarlar) {
       tur === 'kaydediliyor' ? 'Rapor hazır. Sonuç bölümünü kontrol edin.' : '',
       tur === 'kaydediliyor',
     );
+    etkin.current = false;
     if (!islem.uygulanabilir(s)) return false;
     setMesgul(null);
     if (s.durum !== 'tamam') setHata(s.mesaj);
@@ -68,7 +85,7 @@ export function useDepoKontrol(ayarlar: Ayarlar) {
 
   const hedefYukle = useCallback(
     async (d: SecilenDosya, signal?: AbortSignal) => {
-      const hedef = await hedefAc(d, ayarlar, bugun);
+      const hedef = await hedefAc(d, ayarlar, bugun, signal);
       signal?.throwIfAborted();
       gonder({ tur: 'hedefYuklendi', hedef });
       setSonuc(null);
@@ -113,7 +130,7 @@ export function useDepoKontrol(ayarlar: Ayarlar) {
         ? kaynak.map((dosya) => ({ dosya }))
         : await birakilanDosyalar(kaynak);
       if (dosyalar.length === 0) return;
-      const s = await dosyalariTani(dosyalar, ayarlar);
+      const s = await dosyalariTani(dosyalar, ayarlar, signal);
       signal.throwIfAborted();
       if (s.hedef) await hedefYukle(s.hedef, signal);
       gonder({ tur: 'kaynaklarEklendi', kaynaklar: s.kaynaklar, reddedilenler: s.reddedilenler });
@@ -136,6 +153,11 @@ export function useDepoKontrol(ayarlar: Ayarlar) {
     });
   };
 
+  const degistir = (e: Parameters<typeof azalt>[1]) => {
+    if (etkin.current) return;
+    setSonuc(null);
+    gonder(e);
+  };
   return {
     oturum,
     gorunum,
@@ -159,11 +181,11 @@ export function useDepoKontrol(ayarlar: Ayarlar) {
     hatirlananiAc,
     hatirlananiUnut,
     dosyalarGeldi,
-    hedefKaldir: () => gonder({ tur: 'hedefKaldirildi' }),
-    tarihDegistir: (girdi: string) => gonder({ tur: 'tarihDegisti', girdi }),
-    mevcutOnayla: () => gonder({ tur: 'mevcutOnaylandi' }),
-    tarihOnayla: (kaynak: string) => gonder({ tur: 'tarihOnaylandi', kaynak }),
-    kaynakKaldir: (kaynak: KaynakTuru) => gonder({ tur: 'kaynakKaldirildi', kaynak }),
+    hedefKaldir: () => degistir({ tur: 'hedefKaldirildi' }),
+    tarihDegistir: (girdi: string) => degistir({ tur: 'tarihDegisti', girdi }),
+    mevcutOnayla: () => degistir({ tur: 'mevcutOnaylandi' }),
+    tarihOnayla: (kaynak: string) => degistir({ tur: 'tarihOnaylandi', kaynak }),
+    kaynakKaldir: (kaynak: KaynakTuru) => degistir({ tur: 'kaynakKaldirildi', kaynak }),
     kaydetIste,
   };
 }

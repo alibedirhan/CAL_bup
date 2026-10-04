@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { IslemSonucu } from '../../cekirdek/islemSonucu';
 import { IslemOturumu } from '../../platform/islemOturumu';
 export function useIslem(kapsam: string) {
@@ -29,13 +29,15 @@ export function useIslem(kapsam: string) {
     }
     return s;
   };
+  const durdur = useCallback(() => oturum.durdur(), [oturum]);
+  const kapat = useCallback(() => oturum.kapat(), [oturum]);
   return {
     mesgul,
     sonuc,
     calistir,
     uygulanabilir: (s: IslemSonucu<unknown>) =>
       bagli.current && s.islemId === oturum.islemId && s.kod !== 'MESGUL',
-    durdur: () => oturum.durdur(),
-    kapat: () => oturum.kapat(),
+    durdur,
+    kapat,
   };
 }

@@ -12,13 +12,22 @@ const BASVURU = /(^|[^A-Za-z0-9_.!$])(\$?)([A-Z]{1,3})(\$?)(\d+)(?![A-Za-z0-9_(]
  * aralığın içindeyse aralık genişler, tıpkı Excel'deki gibi.
  */
 export function formulKaydir(formul: string, satir: number, adet = 1): string {
-  return formul.replace(/"[^"]*"|'[^']*'|[^"']+/g, (parca) => {
-    if (parca.startsWith('"') || parca.startsWith("'")) return parca;
-    return parca.replace(BASVURU, (tum, once: string, d1: string, sutun: string, d2: string, no: string) => {
-      const n = Number(no);
-      return n >= satir ? `${once}${d1}${sutun}${d2}${n + adet}` : tum;
-    });
-  });
+  // Başka sayfanın ARALIĞI bütünüyle korunur; ikinci uçta ! bulunması gerekmez.
+  const korunan =
+    /("(?:[^"]|"")*"|(?:'(?:[^']|'')*'|[\p{L}_][\p{L}\p{N}_.]*)!\$?[A-Z]{1,3}\$?\d+(?::\$?[A-Z]{1,3}\$?\d+)?|'(?:[^']|'')*'|\[[^\]]*\])/gu;
+  return formul
+    .split(korunan)
+    .map((parca, i) => {
+      if (i % 2) return parca;
+      return parca.replace(
+        BASVURU,
+        (tum, once: string, d1: string, sutun: string, d2: string, no: string) => {
+          const n = Number(no);
+          return n >= satir ? `${once}${d1}${sutun}${d2}${n + adet}` : tum;
+        },
+      );
+    })
+    .join('');
 }
 
 /** "E4:F211 G22:G23" gibi aralık listeleri (koşullu biçim) için aynı kaydırma. */

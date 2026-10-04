@@ -108,9 +108,19 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.6.1. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.7.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-04 genel tarama (1.7.0):** Kullanıcı Sanal POS ve bütün alanlarda ayrıntılı tarama,
+gerekli düzeltmeler ve rapor istedi. [Genel rapor](docs/GENEL_TARAMA_RAPORU.md) 29 düzeltilmiş
+bulgu başlığı ve gerçek ortam kabul sınırlarını ayırır. Dosya iş akışı artık
+`raporlar/depoKontrol/dosyaIslemleri.ts`; saf Drive/ayar/geçmiş kuralları çekirdekte.
+LED miktarı sıkı doğrulanır; gerçek birleşik grup başlığı ve dip toplam davranışı korunur.
+Kart düzenleme/elle yeni giriş aktarımı iptal eder; kapalı profil eski kartları işlemde tutmaz.
+Bozuk geçmiş/yedek yazıyla ezilmez; ayar değişince onaylar sıfırlanır; Drive bağlantı nesli denetlenir.
+Kullanıcının Brave/Linux ekranı cari eşleşmesi ve kart/tarih doldurma mesajını gösterdi;
+ödeme/SMS veya bütün gerçek sağlayıcı durumları doğrulanmış sayılmaz. Müşteri kartıyla test yasağı sürer.
 
 **2026-10-04 bağlantı/Windows kurulumu (1.6.1):** Kullanıcı doğru GitHub Pages adresini kullanıyor,
 yardımcıyı henüz kurmamış. Hata sonrası kalan “kontrol ediliyor” düzeltildi; protokol doğrulama,

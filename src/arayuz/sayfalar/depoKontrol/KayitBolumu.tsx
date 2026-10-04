@@ -19,7 +19,7 @@ export function KayitCubugu({ dk }: { dk: DepoKontrol }) {
     <div className="kayit-cubugu">
       <p>
         {dosyaya
-          ? `Yeni sayfa ${hedef.ad} dosyasına yazılacak. Önce dosyanın yedeği alınır.`
+          ? `${dk.gorunum.secim?.tur === 'mevcut' ? 'Mevcut sayfa yeniden doldurularak' : 'Yeni sayfa'} ${hedef.ad} dosyasına yazılacak. Önce dosyanın yedeği alınır.`
           : 'Güncellenmiş dosya indirilecek. Eski dosyanın yerine koyabilirsiniz.'}
       </p>
       <div className="satir-dugmeleri">

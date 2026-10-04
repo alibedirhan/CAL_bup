@@ -59,11 +59,13 @@ function SayiGirdisi({
   deger,
   degisti,
   en = 0,
+  tamSayi = false,
 }: {
   id: string;
   deger: number;
   degisti: (n: number) => void;
   en?: number;
+  tamSayi?: boolean;
 }) {
   return (
     <AyarGirdisi
@@ -74,9 +76,15 @@ function SayiGirdisi({
       sayi
       denetle={(v) => {
         const n = Number(v.replace(',', '.'));
-        if (!v.trim() || !Number.isFinite(n) || n < en || n > (en === 0 ? 1000 : 100000))
+        if (
+          !v.trim() ||
+          !Number.isFinite(n) ||
+          n < en ||
+          n > (en === 0 ? 1000 : 100000) ||
+          (tamSayi && !Number.isInteger(n))
+        )
           throw new Error(
-            `Değer ${en}–${en === 0 ? 1000 : 100000} arasında bir sayı olmalı. Önceki ayar korundu.`,
+            `Değer ${en}–${en === 0 ? 1000 : 100000} arasında ${tamSayi ? 'bir tam sayı' : 'bir sayı'} olmalı. Önceki ayar korundu.`,
           );
         degisti(n);
       }}
@@ -243,7 +251,8 @@ export function AyarlarSayfasi({ tema, temaDegisti, ayarlar: a, ayarDegisti }: O
               id="ilk-satir"
               deger={a.hedefIlkSatir}
               en={4}
-              degisti={(n) => degis({ hedefIlkSatir: Math.round(n) })}
+              tamSayi
+              degisti={(n) => degis({ hedefIlkSatir: n })}
             />
           </Alan>
           <Alan
@@ -314,7 +323,7 @@ export function AyarlarSayfasi({ tema, temaDegisti, ayarlar: a, ayarDegisti }: O
         </div>
         <div className="satir-dugmeleri">
           <button type="button" className="dugme" onClick={() => ayarDegisti(VARSAYILAN_AYARLAR)}>
-            Bütün ayarları varsayılana döndür
+            Rapor ayarlarını varsayılana döndür
           </button>
         </div>
       </details>

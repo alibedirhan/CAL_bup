@@ -69,12 +69,13 @@ export function sayfaAdi(t: Tarih): string {
 
 /** "30.09.2026" ya da "1.10.26" → Tarih; geçersizse null. */
 export function ggAaYyyy(s: string): Tarih | null {
+  if (!/^\s*\d{1,2}\s*\.\s*\d{1,2}\s*\.\s*(?:\d{2}|\d{4})\s*$/.test(s)) return null;
   const p = s.trim().split('.');
   if (p.length < 3) return null;
   const sayi = (x: string) => (/^\s*\d+\s*$/.test(x) ? Number(x) : Number.NaN);
   const g = sayi(p[0] ?? '');
   const a = sayi(p[1] ?? '');
-  let y = sayi((p[2] ?? '').slice(0, 4));
+  let y = sayi(p[2] ?? '');
   if (Number.isNaN(g) || Number.isNaN(a) || Number.isNaN(y)) return null;
   if (y < 100) y += 2000;
   return olustur(y, a, g);

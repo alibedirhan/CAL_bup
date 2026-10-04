@@ -63,7 +63,7 @@ export function sayimOku(kitap: Kitap, ayarlar: Ayarlar, bugun: Tarih): KaynakVe
   }
   const baslik = ayarlar.sayim.ilkVeriSatiri - 1;
   let birimSutunu = 0;
-  for (let c = 1; baslik >= 1 && c <= 32; c++)
+  for (let c = 1; baslik >= 1 && c <= 256; c++)
     if (adNormal(sayfa.hucre(baslik, c)).toLocaleUpperCase('tr') === 'BİRİM') {
       birimSutunu = c;
       break;

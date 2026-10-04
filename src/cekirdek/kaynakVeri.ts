@@ -3,6 +3,7 @@
 // (eski aracın clsKaynakVeri sınıfı).
 
 import { adAnahtari } from './metin';
+import { KullaniciHatasi } from './hata';
 import type { Tarih } from './tarih';
 
 export class KaynakVeri {
@@ -21,7 +22,10 @@ export class KaynakVeri {
   ekle(ad: string, miktar: number): void {
     if (!ad) return;
     const k = adAnahtari(ad);
-    this.miktarlar.set(k, (this.miktarlar.get(k) ?? 0) + miktar);
+    const toplam = (this.miktarlar.get(k) ?? 0) + miktar;
+    if (!Number.isFinite(miktar) || !Number.isFinite(toplam))
+      throw new KullaniciHatasi('Kaynak miktarları desteklenen sayı sınırını aşıyor.');
+    this.miktarlar.set(k, toplam);
     if (!this.adlar.has(k)) this.adlar.set(k, ad);
     this.satirSayisi++;
   }
@@ -37,6 +41,8 @@ export class KaynakVeri {
   toplam(): number {
     let t = 0;
     for (const v of this.miktarlar.values()) t += v;
+    if (!Number.isFinite(t))
+      throw new KullaniciHatasi('Kaynak miktarlarının toplamı desteklenen sayı sınırını aşıyor.');
     return t;
   }
 

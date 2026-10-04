@@ -112,7 +112,8 @@ tutmazsa Hata; tutuyor ama uyarı varsa Uyarı; yoksa Tamam.
 - Üzerine yazmada kalıcı yedek zorunludur. Tarayıcı yedeği saklayamazsa üzerine yazılmaz;
   indirme seçeneği kullanılabilir. Zaman damgası ve yazmadan hemen önce içerik kontrol edilir.
 - Geçmiş CSV’sindeki formülle başlayabilecek metinler tek tırnakla korunur. Sayı çevirisinde
-  taşan metin değerleri, geçersiz sayı davranışıyla aynı şekilde 0 olur; hesap kuralları değişmez.
+  tarihsel serbest dönüştürücü uyumluluk için korunur. 1.7.0’dan itibaren dış LED miktarlarında
+  geçersiz/taşmış değer sıfıra dönüştürülmez; satır açıklamasıyla okuma durur.
 - Drive isteğe bağlıdır. Dosya/önceki yedek ayrı kopya, LED dosyaları ayrıca seçilirse gönderilir.
   Aynı türde aynı içeriğin yeniden gönderilmesi mevcut kopyayı kullanır. Geçmiş son 500 kaydı tutar;
   rapor ayarları kullanıcının açık seçimiyle geri alınır. Ayrıntılar: [DRIVE.md](DRIVE.md).
@@ -190,3 +191,28 @@ Başka uygulama sekmesinin bekleyen aktarımı varken yeni aktarım açılmaz; �
 POS sekmesi ve sağlayıcının ortak oturumu tamamen kontrol ediliyor sayılmaz.
 Windows hazırlayıcı yalnızca hash/sürümü doğrulanmış kendi paketini hazırlar; tarayıcı yükleme onayı
 kullanıcıdadır. Ayrıntı: [tarama raporu](POS_YARDIMCISI_TARAMA_RAPORU.md).
+
+## Genel tarama kuralları (1.7.0)
+
+- LED miktarı gerçek sonlu sayı veya geçerli Türkçe sayı metni olmalıdır. Boş hücre 0’dır;
+  birim/hata yazısı, mantıksal değer ve kısmi sayı kabul edilmez. Ürün toplamı ve hesap taşması durdurur.
+- Kod/ad/miktar aynı birleşik hücredeki LED grup başlığı ise eski sıfır katkısı korunur.
+  Ürün miktarı formülünün hesaplanmış sonucu yoksa Excel’de hesaplatıp kaydetmek gerekir.
+  Sonucu olmayan dip toplamda mevcut satır toplamı kuralı sürer.
+- Sayım Birim kontrolü A–IV (256 sütun) boyunca yapılır. Aynı dosyada birden fazla rapor türü
+  tanınırsa otomatik tür seçilmez. Bir bırakma grubu en fazla 10 dosya ve toplam 100 MB’dır.
+- Gün sayfaları benzersiz ve sekme sırasında kronolojik olmalıdır. Girilen tarihin tamamı doğrulanır.
+  Bilinen başka yıldaki aynı gün/ay sayfasının üzerine yazılmaz; yıl bilgisi olmayan kitap sınırı sürer.
+- Rapor ayarı değişince öneri yenilenir; eski tarih ve üzerine yazma onayları kaldırılır. Dosya işlemi
+  sırasında tarih/kaynak/onay değişmez. Kayıtta planın ürün adları/sırası da yeniden doğrulanır.
+- Bozuk geçmiş/yedek listesi boş sayılmaz; okuma ve yeni ekleme/birleştirme durur, eski kayıt korunur.
+  Geçmiş sıralama/tekilleştirmesi ISO metnine değil gerçek zamana göre yapılır.
+- Cari numarası, bağlı kart varken değiştirilemez. Farklı kişi yeni cariyle eklenir; yanlış numara
+  düzeltilirken önce bağlı kartlar kaldırılır. Cari adı değişikliği mümkündür.
+- Kart ekleme/düzenleme ve elle yeni POS girişi eski bekleyen kart aktarımını iptal eder.
+  Profil yazısı başarısız olup depo kapanırsa kart ekranı kapanır; yeniden kontrol gerekir.
+- Drive bağlantısı ayrılınca bekleyen OAuth hemen sonlanır. İstekler belirteç ve bağlantı neslini
+  birlikte doğrular; yeni bağlantıda eski iş sürmez. Listelemede 100 sayfa ve tekrarlı anahtar sınırı
+  vardır; ilk 20 kayıttan sonrası “Daha fazla göster” ile açılır.
+
+Kanıtlar ve kalan gerçek ortam kabulü: [genel tarama raporu](GENEL_TARAMA_RAPORU.md).

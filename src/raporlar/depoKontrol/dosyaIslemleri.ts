@@ -1,9 +1,9 @@
 // Ekranın dosya ve kayıt işlemleri: dosyaları açıp tanıma, kaydetme, yedek, geçmiş.
 
-import type { Ayarlar } from '../../../cekirdek/ayarlar';
-import { KullaniciHatasi } from '../../../cekirdek/hata';
-import type { Tarih } from '../../../cekirdek/tarih';
-import { dosyaTuru } from '../../../kaynaklar/tani';
+import type { Ayarlar } from '../../cekirdek/ayarlar';
+import { KullaniciHatasi } from '../../cekirdek/hata';
+import type { Tarih } from '../../cekirdek/tarih';
+import { dosyaTuru } from '../../kaynaklar/tani';
 import {
   dosyaOku,
   dosyayaYaz,
@@ -11,17 +11,26 @@ import {
   indir,
   yazmaIzni,
   type SecilenDosya,
-} from '../../../platform/dosya';
-import { gecmiseEkle, yedekAl } from '../../../platform/gecmis';
-import type { GunSecimi } from '../../../raporlar/depoKontrol/gunSecimi';
-import type { DepoKontrolPlani } from '../../../raporlar/depoKontrol/hesapla';
-import { motorYukle } from '../../../raporlar/depoKontrol/motorYukle';
-import type { HedefDosya, KaynakTuru, Oturum, YuklenenKaynak } from '../../../raporlar/depoKontrol/oturum';
+} from '../../platform/dosya';
+import { gecmiseEkle, yedekAl } from '../../platform/gecmis';
+import type { GunSecimi } from './gunSecimi';
+import type { DepoKontrolPlani } from './hesapla';
+import { motorYukle } from './motorYukle';
+import type { HedefDosya, KaynakTuru, Oturum, YuklenenKaynak } from './oturum';
 
-export async function hedefAc(d: SecilenDosya, ayarlar: Ayarlar, bugun: Tarih): Promise<HedefDosya> {
+export async function hedefAc(
+  d: SecilenDosya,
+  ayarlar: Ayarlar,
+  bugun: Tarih,
+  signal?: AbortSignal,
+): Promise<HedefDosya> {
+  signal?.throwIfAborted();
   const motor = await motorYukle();
+  signal?.throwIfAborted();
   const acik = await motor.kitapAc(d.bayt, d.ad);
+  signal?.throwIfAborted();
   const bilgi = motor.hedefiIncele(acik, ayarlar, bugun);
+  signal?.throwIfAborted();
   if (d.tanitici) await hedefiHatirla(d.tanitici);
   return { ...d, acik, bilgi };
 }
@@ -36,16 +45,23 @@ export interface BirakmaSonucu {
 export async function dosyalariTani(
   dosyalar: { dosya: File; tanitici?: FileSystemFileHandle }[],
   ayarlar: Ayarlar,
+  signal?: AbortSignal,
 ): Promise<BirakmaSonucu> {
   const motor = await motorYukle();
+  signal?.throwIfAborted();
+  if (dosyalar.length > 10 || dosyalar.reduce((n, d) => n + d.dosya.size, 0) > 100 * 1024 * 1024)
+    throw new KullaniciHatasi('Bir seferde en fazla 10 dosya ve toplam 100 MB seçin.');
   const sonuc: BirakmaSonucu = { hedef: null, kaynaklar: {}, reddedilenler: [] };
   for (const { dosya, tanitici } of dosyalar) {
+    signal?.throwIfAborted();
     try {
       if (!/\.xlsx$/i.test(dosya.name)) {
         throw new KullaniciHatasi('Excel dosyası (.xlsx) değil.');
       }
       const okunan = await dosyaOku(dosya, tanitici);
+      signal?.throwIfAborted();
       const { kitap } = await motor.kitapAc(okunan.bayt, okunan.ad);
+      signal?.throwIfAborted();
       const tur = dosyaTuru(kitap, ayarlar);
       if ((tur === 'depoKontrol' && sonuc.hedef) || (tur && tur !== 'depoKontrol' && sonuc.kaynaklar[tur]))
         throw new KullaniciHatasi(
@@ -55,6 +71,7 @@ export async function dosyalariTani(
       else if (tur) sonuc.kaynaklar[tur] = { dosyaAdi: dosya.name, kitap, bayt: okunan.bayt };
       else throw new KullaniciHatasi('LED raporu ya da depo kontrol dosyası olarak tanınmadı.');
     } catch (e) {
+      signal?.throwIfAborted();
       sonuc.reddedilenler.push({
         dosyaAdi: dosya.name,
         mesaj: e instanceof KullaniciHatasi ? e.message.replace(`${dosya.name} `, '') : 'Dosya okunamadı.',
@@ -76,7 +93,7 @@ export interface KayitSonucu {
 
 /**
  * Planı dosyaya uygular. Önizlemedeki kitaba dokunulmaz: dosya baştan açılır, plan yeniden
- * hesaplanır (aynı sonucu verir) ve yazılır. Dosyaya yazmadan önce yedek alınır.
+ * önizlemedeki plan uygulanır ve yazılır. Dosyaya yazmadan önce yedek alınır.
  */
 export async function kaydet(
   hedef: HedefDosya,
@@ -109,7 +126,7 @@ export async function kaydet(
   const bayt = await motor.kitapYaz(taze.excel);
 
   // Oluşan dosya tekrar açılabilir olmalı; bu kontrol indirme/yazmadan önce yapılır.
-  const yeniHedef = await hedefAc({ ad: hedef.ad, bayt, sonDegisiklik: Date.now() }, ayarlar, bugun);
+  const yeniHedef = await hedefAc({ ad: hedef.ad, bayt, sonDegisiklik: Date.now() }, ayarlar, bugun, signal);
   signal?.throwIfAborted();
   let yenidenAcUyarisi: string | null = null;
   let yedekId: string | null = null;

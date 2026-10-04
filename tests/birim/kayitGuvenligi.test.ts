@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { VARSAYILAN_AYARLAR as AYAR } from '../../src/cekirdek/ayarlar';
 import { tarih } from '../../src/cekirdek/tarih';
-import { kaydet, dosyalariTani } from '../../src/arayuz/sayfalar/depoKontrol/islemler';
+import { kaydet, dosyalariTani } from '../../src/raporlar/depoKontrol/dosyaIslemleri';
 import type { HedefDosya } from '../../src/raporlar/depoKontrol/oturum';
 import type { DepoKontrolPlani } from '../../src/raporlar/depoKontrol/hesapla';
 import type { GunSecimi } from '../../src/raporlar/depoKontrol/gunSecimi';
@@ -96,4 +96,32 @@ describe('dosya üzerine kayıt koruması', () => {
     expect(s.kaynaklar.d01?.dosyaAdi).toBe('ilk.xlsx');
     expect(s.reddedilenler[0]?.mesaj).toMatch(/Aynı türden/);
   });
+});
+
+it('dosya grubu boyut ve adet sınırı açma başlamadan denetlenir', async () => {
+  await expect(
+    dosyalariTani(
+      Array.from({ length: 11 }, () => ({ dosya: new File(['a'], 'Yapay.xlsx') })),
+      AYAR,
+    ),
+  ).rejects.toThrow(/10 dosya/);
+  const f = new File(['a'], 'Yapay.xlsx');
+  Object.defineProperty(f, 'size', { value: 101 * 1024 * 1024 });
+  await expect(dosyalariTani([{ dosya: f }], AYAR)).rejects.toThrow(/100 MB/);
+  expect(taklit.ac).not.toHaveBeenCalled();
+});
+it('dosya açılması sırasında iptal kalan dosyaların okunmasını önler', async () => {
+  const iptal = new AbortController();
+  taklit.ac.mockImplementationOnce(async () => {
+    iptal.abort();
+    return { kitap: d01Kitap() };
+  });
+  await expect(
+    dosyalariTani(
+      [{ dosya: new File(['a'], 'ilk.xlsx') }, { dosya: new File(['b'], 'ikinci.xlsx') }],
+      AYAR,
+      iptal.signal,
+    ),
+  ).rejects.toThrow();
+  expect(taklit.ac).toHaveBeenCalledTimes(1);
 });

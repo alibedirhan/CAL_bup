@@ -14,6 +14,7 @@ export function CariKartlari({
   mesgul,
   firmaOnay,
   gizlilikNo,
+  aktarimNo,
   kaydet,
   sil,
   kartDegisti,
@@ -23,6 +24,7 @@ export function CariKartlari({
   mesgul: boolean;
   firmaOnay: boolean;
   gizlilikNo: number;
+  aktarimNo: number;
   kaydet: (k: PosKart) => Promise<IslemSonucu>;
   sil: (k: PosKart) => void;
   kartDegisti: () => void;
@@ -55,6 +57,8 @@ export function CariKartlari({
           disabled={blok || kartlar.length >= 10}
           onClick={() => {
             setGosterNo(null);
+            setSeciliId(null);
+            kartDegisti();
             setForm({ kart: null, no: gizlilikNo });
           }}
         >
@@ -102,6 +106,8 @@ export function CariKartlari({
                     aria-label={`${k.ad} kartını düzenle`}
                     onClick={() => {
                       setGosterNo(null);
+                      setSeciliId(null);
+                      kartDegisti();
                       setForm({ kart: k, no: gizlilikNo });
                     }}
                   >
@@ -125,7 +131,7 @@ export function CariKartlari({
       {secili && (
         <div className="pos-secili-kart">
           <h3>Seçilen kart: {secili.ad}</h3>
-          <PosKartAktarimi key={secili.id} cari={cari} kart={secili} mesgul={blok} />
+          <PosKartAktarimi key={`${secili.id}-${aktarimNo}`} cari={cari} kart={secili} mesgul={blok} />
           <dl className="bilgi-satirlari">
             <div>
               <dt>Kart sahibi</dt>

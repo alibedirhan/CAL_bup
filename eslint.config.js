@@ -19,6 +19,16 @@ export default tseslint.config(
   {
     files: ['src/cekirdek/**'],
     rules: {
+      'no-restricted-globals': [
+        'error',
+        'window',
+        'document',
+        'navigator',
+        'localStorage',
+        'sessionStorage',
+        'indexedDB',
+        'chrome',
+      ],
       'no-restricted-imports': [
         'error',
         {
@@ -34,6 +44,40 @@ export default tseslint.config(
                 '**/eklenti/**',
               ],
               message: 'Çekirdek başka katmana bağlanamaz.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/platform/**', 'src/raporlar/**', 'src/kaynaklar/**', 'src/hedef/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['react', 'react-dom', '**/arayuz/**'],
+              message: 'İşlem ve adaptör katmanları arayüze bağlanamaz.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/arayuz/**'],
+    rules: {
+      'no-restricted-imports': 'off',
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['exceljs', '**/kaynaklar/excel', '**/hedef/**', '**/motor', '**/depoKontrol/islem'],
+              allowTypeImports: true,
+              message: 'Excel motoru yalnızca dinamik motorYukle ile yüklenir.',
             },
           ],
         },

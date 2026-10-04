@@ -57,6 +57,19 @@ export function sayfaGorunumu(ws: ExcelJS.Worksheet): Sayfa {
     ad: ws.name,
     sonSatir: ws.rowCount,
     hucre: (r, c) => hucreDegeri(ws.getCell(r, c).value),
+    birlesimAnahtari: (r, c) => {
+      const h = ws.getCell(r, c);
+      return h.isMerged ? h.master.address : null;
+    },
+    hesaplanmamisFormul: (r, c) => {
+      const v = ws.getCell(r, c).value;
+      return (
+        !!v &&
+        typeof v === 'object' &&
+        ('formula' in v || 'sharedFormula' in v) &&
+        (v.result === undefined || v.result === null)
+      );
+    },
   };
 }
 

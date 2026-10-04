@@ -45,10 +45,18 @@ export function KaynakBolumu({ dk }: { dk: DepoKontrol }) {
 
       <div
         className="birakma-alani"
-        onClick={() => girdi.current?.click()}
-        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && girdi.current?.click()}
+        onClick={() => {
+          if (!dk.mesgul) girdi.current?.click();
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (!dk.mesgul) girdi.current?.click();
+          }
+        }}
+        aria-disabled={dk.mesgul !== null}
         role="button"
-        tabIndex={0}
+        tabIndex={dk.mesgul ? -1 : 0}
       >
         <Simge ad="kutu" boyut={22} />
         <span>
@@ -82,6 +90,7 @@ export function KaynakBolumu({ dk }: { dk: DepoKontrol }) {
                     <button
                       type="button"
                       className="dugme kucuk"
+                      disabled={dk.mesgul !== null}
                       onClick={() => dk.tarihOnayla(bekliyor.kaynak)}
                     >
                       Evet, devam et
@@ -99,6 +108,7 @@ export function KaynakBolumu({ dk }: { dk: DepoKontrol }) {
                   <button
                     type="button"
                     className="dugme hayalet simge-dugme"
+                    disabled={dk.mesgul !== null}
                     onClick={() => dk.kaynakKaldir(tur)}
                     aria-label={`${DOSYA_TURU_ADLARI[tur]} dosyasını kaldır`}
                     title="Kaldır"

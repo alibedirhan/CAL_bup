@@ -9,7 +9,7 @@
   <body>
     <main>
       <h1>CAL bup — Dosyalar ve gizlilik</h1>
-      <p>Güncelleme: 3 Ekim 2026</p>
+      <p>Güncelleme: 4 Ekim 2026</p>
       <h2>Excel dosyaları</h2>
       <p>
         LED dosyaları ve depo kontrol dosyası bilgisayarınızdaki tarayıcıda okunur ve yazılır. CAL bup’ın bu
@@ -53,8 +53,16 @@
         “POS’u aç” seçtiğiniz carinin vergi/TC numarasını, kullanıcı numarasını ve giriş şifresini doğrudan
         Bupiliç POS’unun HTTPS giriş sayfasına gönderir. Kart/telefon/cari adı gönderilmez; bilgiler adrese
         eklenmez. Yanıt yeni sekmede açılır. CAL bup giriş sonucunu veya doğru carinin açıldığını okuyamaz.
-        “Giriş sayfasını elle aç” yalnızca sayfayı açar, giriş bilgilerini göndermez. Otomatik kart doldurma
-        veya SMS başlatma entegrasyonu yoktur; tutar ve banka doğrulaması POS/banka ekranında tamamlanır.
+        “Giriş sayfasını elle aç” yalnızca sayfayı açar, giriş bilgilerini göndermez.
+      </p>
+      <p>
+        “Seçili kartla POS’u aç” kurulu POS yardımcısına seçilen cari numarası ile kart numarası ve son
+        kullanma tarihini aktarır. Yardımcı bunları tarayıcının geçici oturum alanında en fazla iki dakika
+        bekletir; bağlı POS sekmesinde görünen cari numarası eşleşirse önceden tanıtılmış boş numara/tarih
+        alanlarını bir kez doldurur. Tamamlanan, iptal edilen veya süresi dolan aktarımın geçici kart verisi
+        temizlenir. Yardımcı yalnızca CAL bup ve tanımlı Bupiliç POS adresinde çalışır. CVV, tutar, SMS ve
+        ödeme işlemi göndermez; tutar ve banka doğrulaması POS/banka ekranında kullanıcı tarafından
+        tamamlanır.
       </p>
       <p>
         Şifreleme açık tarayıcı oturumunu kötü amaçlı yazılımlara veya aynı tarayıcıya erişen kişilere karşı

@@ -2,7 +2,7 @@ import { IslemHatasi } from '../cekirdek/islemSonucu';
 // Google Drive REST adaptörü: sadece CAL bup tarafından oluşturulan dosyalar.
 import { EN_BUYUK_DOSYA, XLSX_MIME } from '../cekirdek/dosya';
 import { KullaniciHatasi } from '../cekirdek/hata';
-import { driveAyir, driveToken, driveHesabiDogrula } from './driveKimlik';
+import { driveAyir, driveAnlikKimlik, type DriveOturumKimligi, driveHesabiDogrula } from './driveKimlik';
 
 const API = 'https://www.googleapis.com/drive/v3/files';
 const YUKLEME = 'https://www.googleapis.com/upload/drive/v3/files';
@@ -27,7 +27,12 @@ function dosya(v: unknown): DriveDosyasi {
     !d ||
     typeof d.id !== 'string' ||
     typeof d.name !== 'string' ||
+    !d.name.trim() ||
     d.name.length > 512 ||
+    (d.size !== undefined &&
+      (typeof d.size !== 'string' || !/^\d{1,16}$/.test(d.size) || !Number.isSafeInteger(Number(d.size)))) ||
+    (d.appProperties?.ozet !== undefined &&
+      (typeof d.appProperties.ozet !== 'string' || !/^[a-f0-9]{64}$/.test(d.appProperties.ozet))) ||
     typeof d.mimeType !== 'string' ||
     typeof d.createdTime !== 'string' ||
     !Number.isFinite(Date.parse(d.createdTime)) ||
@@ -43,7 +48,7 @@ function dosya(v: unknown): DriveDosyasi {
 async function istek(
   url: string,
   secenek: RequestInit = {},
-  t = driveToken(),
+  t = driveAnlikKimlik(),
   signal?: AbortSignal,
 ): Promise<Response> {
   signal?.throwIfAborted();
@@ -52,7 +57,7 @@ async function istek(
   try {
     r = await fetch(url, {
       ...secenek,
-      headers: { ...secenek.headers, Authorization: `Bearer ${t}` },
+      headers: { ...secenek.headers, Authorization: `Bearer ${t.deger}` },
       signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(30000)]) : AbortSignal.timeout(30000),
       redirect: 'error',
     });
@@ -90,9 +95,10 @@ async function istek(
   return r;
 }
 
-async function liste(q: string, token: string, signal?: AbortSignal): Promise<DriveDosyasi[]> {
+async function liste(q: string, token: DriveOturumKimligi, signal?: AbortSignal): Promise<DriveDosyasi[]> {
   const sonuc: DriveDosyasi[] = [];
   let sayfa = '';
+  const gorulen = new Set<string>();
   do {
     const p = new URLSearchParams({
       q: `trashed = false and appProperties has { key='calbup' and value='v1' } and (${q})`,
@@ -111,6 +117,11 @@ async function liste(q: string, token: string, signal?: AbortSignal): Promise<Dr
       throw new KullaniciHatasi('Drive dosya listesi okunamadı.');
     sonuc.push(...veri.files.map(dosya));
     sayfa = typeof veri.nextPageToken === 'string' ? veri.nextPageToken : '';
+    if (sayfa && (gorulen.has(sayfa) || gorulen.size >= 100))
+      throw new KullaniciHatasi(
+        'Drive dosya listesi tamamlanamadı: sayfa anahtarı tekrarlı veya sayfa sınırı aşıldı. Listeyi yeniden açın.',
+      );
+    if (sayfa) gorulen.add(sayfa);
     if (sonuc.length >= 10000 && sayfa)
       throw new KullaniciHatasi(
         'CAL bup klasöründe çok fazla dosya var. Eski kayıtları Drive’dan arşivleyin.',
@@ -119,7 +130,7 @@ async function liste(q: string, token: string, signal?: AbortSignal): Promise<Dr
   return sonuc;
 }
 
-async function klasorAl(token: string, signal?: AbortSignal): Promise<DriveDosyasi> {
+async function klasorAl(token: DriveOturumKimligi, signal?: AbortSignal): Promise<DriveDosyasi> {
   const klasorler = await liste(
     `mimeType = '${KLASOR}' and appProperties has { key='tur' and value='klasor' }`,
     token,
@@ -152,10 +163,10 @@ async function klasorAl(token: string, signal?: AbortSignal): Promise<DriveDosya
 
 // Aynı sekmede klasör oluşturma / yükleme yarışı olmaz. Başarısız işlem kuyruğu durdurmaz.
 let kuyruk: Promise<unknown> = Promise.resolve();
-function sirala<T>(is: (token: string) => Promise<T>, signal?: AbortSignal): Promise<T> {
-  let token: string;
+function sirala<T>(is: (token: DriveOturumKimligi) => Promise<T>, signal?: AbortSignal): Promise<T> {
+  let token: DriveOturumKimligi;
   try {
-    token = driveToken();
+    token = driveAnlikKimlik();
   } catch (e) {
     return Promise.reject(e);
   }
@@ -252,7 +263,7 @@ export async function driveIndir(
   signal?: AbortSignal,
 ): Promise<Uint8Array> {
   dosya(d);
-  const token = driveToken();
+  const token = driveAnlikKimlik();
   if (d.size && Number(d.size) > en) throw new KullaniciHatasi('Drive dosyası çok büyük.');
   const r = await istek(`${API}/${kimlik(d.id)}?alt=media`, {}, token, signal);
   if (Number(r.headers.get('Content-Length')) > en) {
@@ -272,7 +283,7 @@ export async function driveIndir(
       if (boyut > en) throw new KullaniciHatasi('Drive dosyası çok büyük.');
       parcalar.push(value);
     }
-    if (token !== driveToken()) throw new KullaniciHatasi('Drive hesabı değişti. İşlemi yeniden başlatın.');
+    driveHesabiDogrula(token);
     const bayt = new Uint8Array(boyut);
     let p = 0;
     for (const parca of parcalar) {

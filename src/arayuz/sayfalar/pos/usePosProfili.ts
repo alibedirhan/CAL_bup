@@ -144,7 +144,15 @@ export function usePosProfili() {
           setHata(
             e instanceof KullaniciHatasi ? e.message : 'İşlem tamamlanamadı. Güncel kayıtları kontrol edin.',
           );
-        if (!depo.acik && !yerel) setVeri(null);
+        if (!depo.acik) {
+          setVeri(null);
+          setGizlilikNo((s) => s + 1);
+          setHata(
+            e instanceof KullaniciHatasi
+              ? e.message
+              : 'Profil kapandı. Güncel kayıtları yeniden kontrol edin.',
+          );
+        }
       }
       return hataSonucu(e, { kapsam: 'pos', islemId }, !depo.acik);
     } finally {

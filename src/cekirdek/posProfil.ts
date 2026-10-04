@@ -53,6 +53,11 @@ export function posProfilDogrula(deger: unknown): PosProfilVerisi {
   return { surum: 2, cariler, kartlar };
 }
 export function profilCariKaydet(veri: PosProfilVerisi, cari: PosCari): PosProfilVerisi {
+  const eski = veri.cariler.find((c) => c.id === cari.id);
+  if (eski && eski.numara !== cari.numara.trim() && veri.kartlar.some((k) => k.cariId === cari.id))
+    throw new KullaniciHatasi(
+      'Bu cariye bağlı kartlar var; vergi/TC numarası değiştirilemez. Farklı kişi için yeni cari oluşturun. Yanlış numarayı düzeltmek için önce bağlı kartları kaldırın.',
+    );
   return posProfilDogrula({ ...veri, cariler: cariKaydet(veri.cariler, cari) });
 }
 export function profilCariSil(veri: PosProfilVerisi, cariId: string): PosProfilVerisi {

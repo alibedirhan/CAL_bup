@@ -1,3 +1,4 @@
+import { KullaniciHatasi } from './hata';
 // Sayı çevirme ve karşılaştırma. Eski aracın SayiCevir / SayiMetni / EsitMi
 // işlevlerinin karşılığı; davranışları Python ikiziyle aynıdır.
 
@@ -17,6 +18,22 @@ export function sayiCevir(v: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+/** LED girişinde hatalı/taşmış değer sıfır sayılmaz. Boş hücrenin eski sıfır davranışı korunur. */
+export function miktarDogrula(v: unknown): number {
+  if (v === null || v === undefined || (typeof v === 'string' && !v.trim())) return 0;
+  let n: number;
+  if (typeof v === 'number') n = v;
+  else if (typeof v === 'string') {
+    const s = v.replace(/[\u00a0 ]/g, '');
+    if (!/^[+-]?(?:(?:\d+|\d{1,3}(?:\.\d{3})+)(?:,\d*)?|,\d+)$/.test(s))
+      throw new KullaniciHatasi('Miktar hücresinde geçerli bir sayı bulunamadı. LED dosyasını kontrol edin.');
+    n = Number(s.replace(/\./g, '').replace(',', '.'));
+  } else n = NaN;
+  if (!Number.isFinite(n))
+    throw new KullaniciHatasi('Miktar desteklenen sayı sınırını aşıyor veya geçersiz.');
+  return n;
+}
+
 /**
  * 3 haneye yuvarlar; Python round(x, 3) ile birebir aynı sonucu verir.
  * toFixed sayının ikili gösterimdeki gerçek değerine göre yuvarlar (0,0075 aslında
@@ -24,6 +41,8 @@ export function sayiCevir(v: unknown): number {
  * gösterilemediğinden eşitlik durumu hiç oluşmaz.
  */
 export function yuvarla3(x: number): number {
+  if (!Number.isFinite(x))
+    throw new KullaniciHatasi('Hesaplanan miktar desteklenen sayı sınırını aşıyor. Dosyayı kontrol edin.');
   return Number(x.toFixed(3)) + 0; // + 0: -0 yerine 0
 }
 

@@ -70,6 +70,7 @@ export function HedefBolumu({ dk }: { dk: DepoKontrol }) {
                   type="button"
                   className="dugme hayalet kucuk"
                   onClick={dk.hatirlananiUnut}
+                  disabled={dk.mesgul !== null}
                   title="Bu dosyayı unut"
                 >
                   Unut
@@ -98,6 +99,7 @@ export function HedefBolumu({ dk }: { dk: DepoKontrol }) {
           <div className="tarih-satiri">
             <input
               id="gun-girdisi"
+              disabled={dk.mesgul !== null}
               className="girdi rakam"
               inputMode="numeric"
               autoComplete="off"
@@ -123,10 +125,15 @@ export function HedefBolumu({ dk }: { dk: DepoKontrol }) {
           {g.mevcutOnayiGerekli && g.secim && (
             <div className="onay">
               <p>
-                <b>'{g.secim.ad}' sayfası zaten var.</b> Kaynak dosyalardan yeniden doldurulsun mu? B ve D
-                sütunlarıyla G2 hücresinin üzerine yazılır.
+                <b>'{g.secim.ad}' sayfası zaten var.</b> Kaynak dosyalardan yeniden doldurulsun mu? Miktarlar,
+                tarihler ve formüller yeniden yazılır; eksik ürünler listeye eklenebilir.
               </p>
-              <button type="button" className="dugme kucuk" onClick={dk.mevcutOnayla}>
+              <button
+                type="button"
+                className="dugme kucuk"
+                disabled={dk.mesgul !== null}
+                onClick={dk.mevcutOnayla}
+              >
                 Evet, yeniden doldur
               </button>
             </div>

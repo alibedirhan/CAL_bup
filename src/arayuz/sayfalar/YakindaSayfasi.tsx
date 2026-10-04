@@ -5,7 +5,7 @@ import { Simge } from '../bilesenler/Simge';
 export function YakindaSayfasi({ rapor }: { rapor: RaporTanimi }) {
   return (
     <>
-      <SayfaBasligi ust="Rapor · yakında" baslik={rapor.ad}>
+      <SayfaBasligi ust="Rapor · hazır değil" baslik={rapor.ad}>
         {rapor.aciklama}
       </SayfaBasligi>
       <div className="bos">

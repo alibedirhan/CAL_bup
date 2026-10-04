@@ -2,6 +2,7 @@
 
 import type { Ayarlar } from '../cekirdek/ayarlar';
 import { adNormal } from '../cekirdek/metin';
+import { OkumaHatasi } from './kitap';
 import { gunSayfasiMi } from '../cekirdek/tarih';
 import type { Kitap } from './kitap';
 import { d01Mi, sayimMi, subeAlisMi } from './led';
@@ -24,9 +25,14 @@ export function depoKontrolMu(kitap: Kitap, ayarlar: Ayarlar): boolean {
 }
 
 export function dosyaTuru(kitap: Kitap, ayarlar: Ayarlar): DosyaTuru | null {
-  if (d01Mi(kitap, ayarlar)) return 'd01';
-  if (subeAlisMi(kitap, ayarlar)) return 'subeAlis';
-  if (sayimMi(kitap, ayarlar)) return 'sayim';
-  if (depoKontrolMu(kitap, ayarlar)) return 'depoKontrol';
-  return null;
+  const turler: DosyaTuru[] = [];
+  if (d01Mi(kitap, ayarlar)) turler.push('d01');
+  if (subeAlisMi(kitap, ayarlar)) turler.push('subeAlis');
+  if (sayimMi(kitap, ayarlar)) turler.push('sayim');
+  if (depoKontrolMu(kitap, ayarlar)) turler.push('depoKontrol');
+  if (turler.length > 1)
+    throw new OkumaHatasi(
+      'Dosya birden fazla rapor türüne uyuyor. LED raporlarını ayrı dosyalar halinde seçin.',
+    );
+  return turler[0] ?? null;
 }

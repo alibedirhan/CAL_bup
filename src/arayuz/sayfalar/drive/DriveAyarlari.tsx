@@ -22,7 +22,7 @@ import {
   istemciKimligi,
 } from '../../../platform/driveKimlik';
 import { Mesaj } from '../../bilesenler/Mesaj';
-import { useDrive } from './useDrive';
+import { useDrive, useDriveOturumu } from './useDrive';
 
 export function DriveAyarlari({
   ayarlar,
@@ -32,14 +32,24 @@ export function DriveAyarlari({
   ayarDegisti: (a: Ayarlar) => IslemSonucu;
 }) {
   const bagli = useDrive();
+  const oturumNo = useDriveOturumu();
   const [kimlik, setKimlik] = useState(istemciKimligi);
   const [hazir, setHazir] = useState(driveHazir);
   const islem = useIslem('drive-ayar');
   const mesgul = islem.mesgul;
   const [mesaj, setMesaj] = useState('');
   const [liste, setListe] = useState<DriveDosyasi[]>([]);
+  const [gorunen, setGorunen] = useState(20);
   const [secim, setSecim] = useState<DriveOturumu | null>(null);
   const [izinOnayi, setIzinOnayi] = useState(false);
+  const [oncekiOturum, setOncekiOturum] = useState(oturumNo);
+  if (oncekiOturum !== oturumNo) {
+    setOncekiOturum(oturumNo);
+    setListe([]);
+    setSecim(null);
+    setIzinOnayi(false);
+    setGorunen(20);
+  }
   const is = async (eylem: (signal: AbortSignal) => Promise<void>, yazma = false) => {
     setMesaj('');
     return islem.calistir(eylem, '', yazma);
@@ -166,6 +176,7 @@ export function DriveAyarlari({
                   const l = await driveListele('oturum', signal);
                   signal.throwIfAborted();
                   setListe(l);
+                  setGorunen(20);
                   setMesaj('Drive kayıtları aşağıda listelendi.');
                 })
               }
@@ -222,7 +233,7 @@ export function DriveAyarlari({
           )}
           {liste.length > 0 && (
             <ul className="yedek-listesi">
-              {liste.slice(0, 20).map((d) => (
+              {liste.slice(0, gorunen).map((d) => (
                 <li key={d.id} className="dosya-satiri">
                   <div>
                     <b>Ayarlar ve geçmiş</b>
@@ -246,6 +257,11 @@ export function DriveAyarlari({
                 </li>
               ))}
             </ul>
+          )}
+          {liste.length > gorunen && (
+            <button className="dugme" disabled={mesgul} onClick={() => setGorunen((n) => n + 20)}>
+              Daha fazla kayıt göster
+            </button>
           )}
           {secim && (
             <Mesaj ton="bilgi" baslik="Seçilen Drive kaydı">

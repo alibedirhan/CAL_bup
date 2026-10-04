@@ -11,6 +11,10 @@ export interface Sayfa {
   sonSatir: number;
   /** Satır ve sütun 1'den başlar. Formüllü hücrede hesaplanmış değer, yoksa null. */
   hucre(satir: number, sutun: number): HucreDegeri;
+  /** Birleşik hücrenin ortak kaynak adresi; okuyucu Excel kütüphanesini bilmez. */
+  birlesimAnahtari?(satir: number, sutun: number): string | null;
+  /** Formül var ama hesaplanmış sonuç yoksa boş miktar sayılmaz. */
+  hesaplanmamisFormul?(satir: number, sutun: number): boolean;
 }
 
 export interface Kitap {

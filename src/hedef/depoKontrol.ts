@@ -8,7 +8,7 @@
 import type ExcelJS from 'exceljs';
 import type { Ayarlar } from '../cekirdek/ayarlar';
 import { KullaniciHatasi } from '../cekirdek/hata';
-import { adNormal } from '../cekirdek/metin';
+import { adAnahtari, adNormal } from '../cekirdek/metin';
 import { yuvarla3 } from '../cekirdek/sayi';
 import { tarihDegistir, type Tarih } from '../cekirdek/tarih';
 import type { DepoKontrolPlani } from '../raporlar/depoKontrol/hesapla';
@@ -88,7 +88,7 @@ export function planiYaz(g: YazmaGirdisi): ExcelJS.Worksheet {
 
   let ws: ExcelJS.Worksheet;
   if (g.tur === 'yeni') {
-    ws = sayfaKopyala(wb, onceki, g.ad);
+    ws = onceki;
   } else {
     const mevcut = wb.getWorksheet(g.ad);
     if (!mevcut) throw new KullaniciHatasi(`'${g.ad}' sayfası bulunamadı.`);
@@ -99,9 +99,12 @@ export function planiYaz(g: YazmaGirdisi): ExcelJS.Worksheet {
   // Liste, planın hesaplandığı listeyle aynı olmalı (dosya arada değişmemiş olmalı)
   const liste = listeOku(ws, ayarlar);
   const beklenenUzunluk = plan.satirlar.length - plan.eklenenler.length;
-  if (liste.length !== beklenenUzunluk) {
+  const beklenenAdlar = plan.satirlar.filter((s) => !s.eklendi).map((s) => adAnahtari(s.ad));
+  if (liste.length !== beklenenUzunluk || liste.some((ad, i) => adAnahtari(ad) !== beklenenAdlar[i])) {
     throw new KullaniciHatasi(`'${ws.name}' sayfasının listesi değişmiş; işlemi baştan başlatın.`);
   }
+
+  if (g.tur === 'yeni') ws = sayfaKopyala(wb, onceki, g.ad);
 
   // 1. Eksik ürün satırları (plan sırasıyla; her satır numarası eklendiği andaki yerdir)
   for (const e of plan.eklenenler) satirEkle(ws, e.satir, e.satir === ilk);
