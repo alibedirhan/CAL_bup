@@ -132,3 +132,11 @@ proxy ile sınırlandırılır. Güncel teknik kabul ve ilk düzeneğin yönlend
 - [PCI fotoğraf kapsamı](https://www.pcisecuritystandards.org/faqs/1070/).
 - [PCI şifreleme kapsamı](https://www.pcisecuritystandards.org/faqs/1086/).
 - [DenizBank entegrasyon](https://www.denizbank.com/isim-icin/kurumsal-ve-ticari-bankacilik/uye-isyeri-ve-pos-islemleri/pos-urunleri/sanal).
+
+## 1.6.1 bağlantı/Windows kurulum düzeltmesi
+
+Kart göndermeyen bağlantı kontrolü ve hata sonrası temizlenen bekleme durumu eklendi.
+Windows kolay kurulum dosyası kendi ZIP'ini hash/sürüm ile doğrular ve klasöre hazırlar; aynı
+tarayıcıda “Paketlenmemiş öğe yükle” onayı gerekir. Giriş/TTL/kayıp teslim/saat geri alma ve
+eşzamanlı bekleyen iş sınırları güçlendirildi. Windows/gerçek POS kabulü yapılmış sayılmaz.
+[Detaylı tarama raporu](POS_YARDIMCISI_TARAMA_RAPORU.md).

@@ -179,3 +179,14 @@ aynı görüntü/yön üzerinde sınırlı ek şerit okuması vardır; rakam tah
 [POS_YARDIMCISI.md](POS_YARDIMCISI.md).
 Uzun OCR adayı geçerli kısa PAN + 3/4 ek rakam olabiliyorsa CVV birleşmesi belirsizliğinde reddedilir;
 kısa PAN veya kod çıkarılmaz. Gerçek uzun kartın elle kaydı normal 12–19/Luhn kuralını kullanır.
+
+## Yardımcı bağlantısı ve hata sonucu (1.6.1)
+
+Bağlantı kontrolü kart göndermez veya POS açmaz. Protokol doğrulanmadan kart aktarılmaz.
+Yardımcı olmayan/eski/izin kapsamı dışındaki adreste açık hata görünür; “kontrol ediliyor” kalmaz.
+Giriş başarısızlığı, kaybolmuş/süresi dolmuş iş ve saat geri alma bekleyen kartı durdurur.
+Teslim edilen kartın onayı 5 saniyede gelmezse sonuç belirsizdir; otomatik tekrar yapılmaz.
+Başka uygulama sekmesinin bekleyen aktarımı varken yeni aktarım açılmaz; önceki doldurulmuş
+POS sekmesi ve sağlayıcının ortak oturumu tamamen kontrol ediliyor sayılmaz.
+Windows hazırlayıcı yalnızca hash/sürümü doğrulanmış kendi paketini hazırlar; tarayıcı yükleme onayı
+kullanıcıdadır. Ayrıntı: [tarama raporu](POS_YARDIMCISI_TARAMA_RAPORU.md).

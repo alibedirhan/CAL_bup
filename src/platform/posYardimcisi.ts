@@ -1,9 +1,7 @@
 import { KullaniciHatasi } from '../cekirdek/hata';
 import type { PosAktarimi } from '../cekirdek/posAktarimi';
-export interface YardimciSonucu {
-  durum: string;
-  mesaj: string;
-}
+import { programAdresi } from '../cekirdek/posAktarimi';
+import { yardimciYanitiniDogrula, type YardimciSonucu } from '../cekirdek/posBaglantisi';
 /** Sırlar URL, pano veya kalıcı ayara konmaz. Eklenti köprüsüne tek işlem mesajı. */
 export function yardimciyaSor(
   is: 'durum' | 'baslat' | 'iptal',
@@ -12,6 +10,14 @@ export function yardimciyaSor(
   signal?: AbortSignal,
 ): Promise<YardimciSonucu> {
   return new Promise((coz, reddet) => {
+    if (!programAdresi(location.href)) {
+      reddet(
+        new KullaniciHatasi(
+          'POS yardımcısı yalnızca yayımlanmış CAL bup adresinde çalışır. Bu yerel veya farklı adreste eklenti bağlantısı kurulmaz.',
+        ),
+      );
+      return;
+    }
     const id = crypto.randomUUID();
     let zaman: ReturnType<typeof setTimeout> | undefined = undefined;
     const temizle = () => {
@@ -31,10 +37,12 @@ export function yardimciyaSor(
         e.data.id !== id
       )
         return;
-      const s = e.data.sonuc as YardimciSonucu | null;
-      if (!s || typeof s.durum !== 'string' || (s.mesaj !== undefined && typeof s.mesaj !== 'string')) return;
       temizle();
-      coz({ durum: s.durum, mesaj: s.mesaj ?? '' });
+      try {
+        coz(yardimciYanitiniDogrula(e.data.sonuc));
+      } catch (e) {
+        reddet(e);
+      }
     };
     if (signal?.aborted) {
       iptal();
@@ -46,7 +54,7 @@ export function yardimciyaSor(
       temizle();
       reddet(
         new KullaniciHatasi(
-          'POS yardımcısı bağlı değil veya yanıt vermedi. Kurulumdan sonra sayfayı yenileyin.',
+          'POS yardımcısı bağlı değil veya yanıt vermedi. ZIP’i indirmek tek başına kurulum değildir. Aynı Chrome/Edge tarayıcısında yardımcıyı etkinleştirip program sekmesini yenileyin.',
         ),
       );
     }, 5_000);

@@ -9,6 +9,7 @@ interface Depo {
 export interface EklentiApi {
   runtime: {
     id: string;
+    getManifest(): { version: string };
     sendMessage(m: unknown): Promise<unknown>;
     onMessage: { addListener(f: Dinleyici): void };
   };

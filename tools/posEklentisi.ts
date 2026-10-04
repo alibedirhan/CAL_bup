@@ -2,6 +2,8 @@ import { build } from 'vite';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import JSZip from 'jszip';
+import { createHash } from 'node:crypto';
+import { windowsPosKurulumu } from './windowsPosKurulumu.ts';
 const kok = resolve(import.meta.dirname, '..');
 const cikti = resolve(kok, 'dist/pos-yardimcisi');
 const paket = JSON.parse(await readFile(resolve(kok, 'package.json'), 'utf8')) as { version: string };
@@ -56,7 +58,9 @@ await writeFile(resolve(cikti, 'KURULUM.txt'), aciklama);
 const zip = new JSZip();
 for (const ad of ['manifest.json', 'arkaPlan.js', 'kopru.js', 'pos.js', 'KURULUM.txt'])
   zip.file(ad, await readFile(resolve(cikti, ad)));
+const zipVerisi = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
+await writeFile(resolve(kok, 'dist/pos-yardimcisi.zip'), zipVerisi);
 await writeFile(
-  resolve(kok, 'dist/pos-yardimcisi.zip'),
-  await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' }),
+  resolve(kok, 'dist/POS-Yardimcisi-Windows-Kurulum.cmd'),
+  windowsPosKurulumu(paket.version, createHash('sha256').update(zipVerisi).digest('hex')),
 );

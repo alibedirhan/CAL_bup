@@ -1,3 +1,27 @@
+# 4 Ekim 2026 — 1.6.1 bağlantı taraması / Windows kolay kurulum
+
+Kullanıcı doğru GitHub Pages adresini kullanıyor fakat yardımcının henüz kurulmadığını bildirdi.
+1.6.0 hata sonrası “kontrol ediliyor” mesajını bırakıyordu. Bu hata ve eski yardımcıyla doğrulanmamış
+başlatma iki eski sürüm regresyonuyla yeniden üretildi, düzeltildi. [Tarama raporu](POS_YARDIMCISI_TARAMA_RAPORU.md).
+
+- Protokol/sürüm/durum sözleşmesi, kart göndermeyen bağlantı kontrolü ve adres kapsamı hatası.
+- Giriş DOM/sonuç hatası, kaybolmuş iş/TTL, saat geri alma ve 5 saniyelik belirsiz teslim sonucu;
+  otomatik tekrar yok. Başka sekmedeki bekleyen iş yeni aktarımı engeller.
+- Panel eski kaydı yeni seçim talimatına uygulamaz; kurulum silme arızası görünürdür.
+- Görsel kontrolde kart paragrafının hata rengini ezdiği bulundu; açık/koyu belirgin hata kutusu
+  ve kalıcı görünüm denetimi eklendi. Dar görünümde yatay taşma yok.
+- Windows CMD kendi ZIP'ini SHA-256/sürüm ile doğrular, sabit yerel klasöre çıkarır, tarayıcının
+  eklenti sayfasını açar. Kullanıcı bir kez yükleme onayı verir; politika/registry değişmez.
+  PowerShell sözdizimi resmi parser'la çalıştırmadan kontrol edildi; Windows fiili kurulum denenmedi.
+  Yayın kapısı Windows-2022/PowerShell'de yalıtılmış dosya hazırlama testi de çalıştırır; indirme,
+  tarayıcı ve pano taklittir. Gerçek iş bilgisayarı kurulum kabulü yerine geçmez.
+- Yerel kontrol: 29 dosyada 349 birim testi, 78 Chromium senaryosu, tip/lint/biçim/derleme başarılı.
+  Bağımlılık taraması bilinen açık 0; mevcut OCR, profil/cari ve POS güvenlik regresyonları geçti.
+  Ağdan yalıtılmış taklit POS, yalnızca yapay kart; müşteri kartı/fotoğrafı ve gerçek SMS/ödeme kullanılmadı.
+- Gerçek sağlayıcı boş alan tanıtımı ve Windows/Edge kabulü kullanıcıda kalır. Tüm sağlayıcı sekmelerinin
+  ortak oturumu garanti edilmez; protokol kontrolü kriptografik eklenti kimlik doğrulaması değildir.
+  Ayrıntılar raporda. Main yayın yetkisi önceki oturumdan sürüyor.
+
 # 4 Ekim 2026 — 1.6.0 kart aktarımı ve numara okuma
 
 Kullanıcı tek operatör için seçili cari/kartla POS açılışı ve numara/tarih doldurmayı istedi;

@@ -115,9 +115,14 @@
   color: var(--soluk);
 }
 
-.alan-hatasi {
+.alan-hatasi,
+.kart .alan-hatasi {
   font-size: 13px;
   color: var(--hata);
+  background: var(--hata-yumusak);
+  border-left: 3px solid var(--hata);
+  border-radius: var(--yaricap-k);
+  padding: 12px;
 }
 
 /* ---- Açma/kapama anahtarı ---- */

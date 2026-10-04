@@ -33,15 +33,18 @@ function giris(r: Yanit) {
   b.name = 'btngiris';
   b.value = 'Giriş Yap';
   form.append(b);
-  HTMLFormElement.prototype.submit.call(form);
-  r.numara = '';
-  r.sifre = '';
+  try {
+    HTMLFormElement.prototype.submit.call(form);
+  } finally {
+    r.numara = '';
+    r.sifre = '';
+  }
 }
 if (window.top === window && posSayfasi(location.href)) {
   const panel = yardimciPaneli();
   let kapali = false;
   let alanlar: PosAlanlari | undefined;
-  const son = Date.now() + 125_000;
+  const son = performance.now() + 125_000;
   window.addEventListener(
     'pagehide',
     () => {
@@ -50,7 +53,8 @@ if (window.top === window && posSayfasi(location.href)) {
     { once: true },
   );
   const dene = async () => {
-    if (kapali || Date.now() > son) return;
+    if (kapali || performance.now() > son) return;
+    let dolduruldu = false;
     try {
       if (panel.seciliyor()) {
         setTimeout(() => void dene(), 1000);
@@ -70,19 +74,31 @@ if (window.top === window && posSayfasi(location.href)) {
       if (kapali) return;
       if (r.alanlar) alanlar = r.alanlar;
       if (r.durum === 'giris') {
-        giris(r);
+        try {
+          giris(r);
+        } catch {
+          await eklenti.runtime.sendMessage({ is: 'girisHatasi' });
+          panel.bildir('POS giriş alanları değişmiş. Kart aktarılmadı; giriş sayfasını kontrol edin.');
+        }
         return;
       }
       if (r.durum === 'doldur' && r.kart && r.alanlar) {
         let tamam = false;
+        let onayDurumu = '';
         try {
           kartiDoldur(r.alanlar, r.kart);
-          tamam = true;
+          tamam = dolduruldu = true;
         } finally {
           r.kart.numara = '';
           r.kart.cariNumarasi = '';
-          await eklenti.runtime.sendMessage({ is: 'sonuc', islemId: r.id, durum: tamam ? 'tamam' : 'hata' });
+          const onay = (await eklenti.runtime.sendMessage({
+            is: 'sonuc',
+            islemId: r.id,
+            durum: tamam ? 'tamam' : 'hata',
+          })) as Yanit;
+          onayDurumu = onay.durum;
         }
+        if (onayDurumu !== 'tamam') throw new Error('Teslim sonucu doğrulanamadı.');
         panel.bildir('Cari eşleşti; kart numarası ve son kullanma dolduruldu. CVV ve tutarı kendiniz girin.');
         return;
       }
@@ -93,7 +109,12 @@ if (window.top === window && posSayfasi(location.href)) {
       if (r.durum === 'kurulum')
         panel.bildir('Bu ödeme ekranı henüz tanıtılmadı. Boş alanları aşağıdaki düğmeyle bir kez tanıtın.');
     } catch {
-      panel.bildir('POS alanları doğrulanamadı. Kart aktarılmadı; alanları ve cari bilgisini kontrol edin.');
+      panel.bildir(
+        dolduruldu
+          ? 'Alanlar dolduruldu ancak aktarım sonucu doğrulanamadı. POS alanlarını kontrol edin; otomatik tekrar yapılmadı.'
+          : 'POS alanları doğrulanamadı. Kart aktarılmadı; alanları ve cari bilgisini kontrol edin.',
+      );
+      return;
     }
     setTimeout(() => void dene(), 1000);
   };

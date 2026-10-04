@@ -149,14 +149,14 @@ test('başka kart bilgisi bulunan alan ezilmez; yanlış web sayfasından köpr�
 });
 test('eklenti yokken işlem başlamaz ve kurulum hatası görünür', async ({ page }) => {
   await page.goto('/CAL_bup/#/sanal-pos');
-  // Yardımcı olmadan mesajın zaman aşımı kendi formunda görünür.
+  // Yerel adres eklentinin dar izin kapsamının dışındadır.
   const { cariHazirla, kartDoldur } = await import('./yardimci');
   await cariHazirla(page);
   await kartDoldur(page);
   await page.getByRole('button', { name: 'Kartı kaydet', exact: true }).click();
   await page.locator('.pos-odeme-karti').click();
   await page.getByRole('button', { name: 'Seçili kartla POS’u aç', exact: true }).click();
-  await expect(page.locator('#pos-aktarim-hatasi')).toContainText('bağlı değil', { timeout: 8000 });
+  await expect(page.locator('#pos-aktarim-hatasi')).toContainText('yayımlanmış CAL bup adresinde');
   expect(page.context().pages()).toHaveLength(1);
 });
 
@@ -277,7 +277,7 @@ test('süresi dolmuş geçici kart kuyruktan silinir ve sonraki kurulumda doldur
         }),
       )
       .toBe(false);
-    await e.p.getByRole('button', { name: 'Aktarımı durdur', exact: true }).click();
+    await expect(e.p.locator('#pos-aktarim-hatasi')).toContainText('süresi doldu');
     await alanlariTanit(pos);
     await expect(pos.locator('#kart')).toHaveValue('');
     expect(e.sayac.sms + e.sayac.odeme + e.sayac.dis).toBe(0);

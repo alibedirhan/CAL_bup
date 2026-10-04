@@ -154,3 +154,11 @@ OCR görüntü/motor/aday adaptörleri `platform/ocr/` içinde; `useKartFotograf
 `FotoAdaylari` açık kontrolle PAN/tarih çiftini uygular, profil kurallarını atlamaz. Tesseract.js 7.0.0
 worker protokolü sabitlenmiştir; yükseltme arıza/iptal/matris testlerini geçmelidir. Ödeme hesabı ve rapor
 saf planı değişmedi. Ayrıntı ve ölçüm sınırları: [kapanış raporu](OCR_VE_BILDIRIM_UYGULAMA_SONUCU.md).
+
+## Yardımcı bağlantı sözleşmesi (1.6.1)
+
+`cekirdek/posBaglantisi` saf protokol/sürüm/durum doğrulamasıdır. Platform portu doğrulanmış yanıt
+döndürür; `usePosAktarimi` iptal, monotonic süre ve görünür sonucu yönetir. Bileşen yalnızca sunumdur.
+Arka plan `teslim` durumunu sonuç onayından ayırır, saat geri alma/kayıp iş/başka sekmenin bekleyen işi
+kontrollerini uygular. `tools/windowsPosKurulumu` sürüm/hash bağlı okunabilir CMD üretir; derleme
+güncel ZIP SHA-256 özetini gömer. Tarayıcı kurulum onayı kullanıcıdadır. [Tarama](POS_YARDIMCISI_TARAMA_RAPORU.md).

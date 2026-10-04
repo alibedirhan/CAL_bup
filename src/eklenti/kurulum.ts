@@ -24,6 +24,7 @@ export function yardimciPaneli() {
     durum.textContent = s;
   };
   let temizle = () => {};
+  let nesil = 0;
   const dugme = (ad: string, is: () => void) => {
     const b = document.createElement('button');
     b.type = 'button';
@@ -33,11 +34,13 @@ export function yardimciPaneli() {
     return b;
   };
   const iptal = dugme('Alan seçimini iptal et', () => {
+    nesil++;
     temizle();
     bildir('Alan seçimi iptal edildi.');
   });
   iptal.hidden = true;
   const baslat = (ayri: boolean) => {
+    const buNesil = ++nesil;
     temizle();
     const roller: AlanRolu[] = ayri ? ['firma', 'numara', 'ay', 'yil'] : ['firma', 'numara', 'tarih'];
     const adlar = {
@@ -58,6 +61,7 @@ export function yardimciPaneli() {
       event.preventDefault();
       event.stopImmediatePropagation();
       if (event instanceof KeyboardEvent && event.key === 'Escape') {
+        nesil++;
         temizle();
         bildir('Alan seçimi iptal edildi.');
         return;
@@ -85,6 +89,7 @@ export function yardimciPaneli() {
         void eklenti.runtime
           .sendMessage({ is: 'kurulum', veri: a })
           .then((r) => {
+            if (buNesil !== nesil) return;
             const s = r as { durum: string };
             bildir(
               s.durum === 'hazir'
@@ -92,7 +97,9 @@ export function yardimciPaneli() {
                 : 'Kurulum kaydedilemedi. Yeniden deneyin.',
             );
           })
-          .catch(() => bildir('Kurulum kaydedilemedi.'));
+          .catch(() => {
+            if (buNesil === nesil) bildir('Kurulum kaydedilemedi.');
+          });
       } catch (e) {
         bildir(
           (e instanceof Error ? e.message : 'Alan seçilemedi.') +
@@ -115,13 +122,27 @@ export function yardimciPaneli() {
   dugme('Numara, ayrı ay ve yılı tanıt', () => baslat(true));
   dugme('Bu sayfanın kurulumunu sil', () => {
     temizle();
-    void eklenti.runtime.sendMessage({ is: 'kurulumuSil' }).then(() => bildir('Alan seçimi silindi.'));
+    const buNesil = ++nesil;
+    void eklenti.runtime
+      .sendMessage({ is: 'kurulumuSil' })
+      .then((r) => {
+        if (buNesil !== nesil) return;
+        bildir(
+          (r as { durum: string }).durum === 'hazir'
+            ? 'Alan seçimi silindi.'
+            : 'Alan seçimi silinemedi. Yeniden deneyin.',
+        );
+      })
+      .catch(() => {
+        if (buNesil === nesil) bildir('Alan seçimi silinemedi. Yeniden deneyin.');
+      });
   });
   const gorunum = document.createElement('button');
   gorunum.type = 'button';
   gorunum.textContent = 'Paneli küçült';
   gorunum.setAttribute('aria-expanded', 'true');
   gorunum.addEventListener('click', () => {
+    nesil++;
     temizle();
     const gizli = !eylemler.hidden;
     eylemler.hidden = durum.hidden = gizli;
@@ -129,6 +150,13 @@ export function yardimciPaneli() {
     gorunum.setAttribute('aria-expanded', String(!gizli));
   });
   panel.append(gorunum);
-  window.addEventListener('pagehide', () => temizle(), { once: true });
+  window.addEventListener(
+    'pagehide',
+    () => {
+      nesil++;
+      temizle();
+    },
+    { once: true },
+  );
   return { bildir, seciliyor: () => !iptal.hidden };
 }

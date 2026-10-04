@@ -24,3 +24,17 @@ test('yayınlanan MV3 paketi yalnızca gerekli sitelere ve depolama/süre yetkis
   for (const [ad, f] of Object.entries(z.files))
     expect(await f.async('nodebuffer')).toEqual(await readFile('dist/pos-yardimcisi/' + ad));
 });
+test('Windows kurulum dosyası tam bu yayının ZIP özetini ve sürümünü denetler', async () => {
+  const { createHash } = await import('node:crypto');
+  const cmd = await readFile('dist/POS-Yardimcisi-Windows-Kurulum.cmd', 'utf8');
+  const zip = await readFile('dist/pos-yardimcisi.zip');
+  const hash = createHash('sha256').update(zip).digest('hex');
+  const m = JSON.parse(await readFile('dist/pos-yardimcisi/manifest.json', 'utf8'));
+  expect(cmd).toContain(hash);
+  expect(cmd).toContain('?v=' + m.version);
+  expect(cmd).toContain("$manifest.version -ne '" + m.version + "'");
+  expect(cmd).toContain('Get-FileHash');
+  expect(cmd).toContain('ReparsePoint');
+  expect(cmd).not.toMatch(/ExecutionPolicy|EncodedCommand|--load-extension|reg.exe|HKLM/i);
+  expect(cmd.split('\r\n').every((l) => l.length < 8191)).toBe(true);
+});

@@ -1,4 +1,4 @@
-# 1.6.0 — kart incelemesi ve POS yardımcısı
+# 1.6.1 — kart incelemesi ve POS yardımcısı
 
 ## Kullanıcının istediği akış
 
@@ -14,12 +14,14 @@ ve alanları tahmin edilmez; kullanıcı boş alanları bir kez açıkça tanıt
 ## Kurulum
 
 1. Sanal POS'ta bir kart seçin, “Edge yardımcısını bir kez kur” bölümünü açın.
-2. ZIP'i indirin ve kalıcı bir klasöre çıkarın. Edge'de `edge://extensions` açın; geliştirici modu,
+2. Windows kolay kurulum dosyası ZIP'i doğrulayıp `%LOCALAPPDATA%\CALbup\POSYardimcisi` klasörüne
+   hazırlar ve tarayıcının eklenti sayfasını açar; son yükleme onayı kullanıcıdadır. Elle alternatif: ZIP'i indirin ve kalıcı bir klasöre çıkarın. Edge'de `edge://extensions` açın; geliştirici modu,
    “Paketlenmemiş öğe yükle” ile `manifest.json` bulunan klasörü yükleyin.
 3. Gerçek kart yazmadan POS ödeme ekranını açın. Yardımcı panelinde tek tarih veya ayrı ay/yıl akışını seçin.
    Görünen vergi/TC numarasını, boş kart numarası alanını ve boş tarih alanını/alanlarını sırayla tıklayın.
    Seçim sırasında ödeme düğmelerinin tıklamaları engellenir. Escape veya iptal seçimi sonlandırır.
-4. CAL bup'ı yenileyin, cari ve kartı seçin; “Seçili kartla POS’u aç” düğmesini kullanın.
+4. CAL bup'ı **aynı tarayıcıda** yenileyin; “Yardımcı bağlantısını kontrol et” ile kart göndermeden
+   bağlantıyı doğrulayın. CAL bup'ta cari ve kartı seçin; “Seçili kartla POS’u aç” düğmesini kullanın.
    Dolan bilgileri kontrol edin; CVV ve tutarı kendiniz girin.
 
 Alan tanıtımı yalnızca seçici, HTML etiketi ve alan türünü saklar; kart/firma değerini saklamaz.
@@ -88,8 +90,8 @@ Luhn geçse bile aday reddedilir; hiçbir kısa parça çıkarılmaz. Bu belirsi
 
 ## Doğrulama ve kalan kabul
 
-Son yerel kabul: `npm run kontrol` (28 dosya/346 test, tip, lint, biçim, derleme),
-`npm run test:tarayici` (66 senaryo), `npm audit` (bilinen açık 0), `git diff --check` geçti.
+Son yerel kabul (1.6.1): `npm run kontrol` (29 dosya/349 test, tip, lint, biçim, derleme),
+`npm run test:tarayici` (78 senaryo), `npm audit` (bilinen açık 0), `git diff --check` geçti.
 Yapay veride açık/koyu/dar uygulama ve yardımcının panel küçültmesi görsel olarak incelendi.
 
 Kalıcı testler: `tests/birim/posAktarimi.test.ts`, `tests/tarayici/eklenti.spec.ts`,
@@ -108,3 +110,15 @@ Gerçek Windows/Edge, sağlayıcının oturum sonrası HTML'i ve gerçek fotoğr
 sayılmaz. POS'ta görünen vergi/TC numarası yoksa, alanlar ayrı iframe'deyse veya sayfa olay gerektiriyorsa
 otomatik doldurma desteklenmez; uygulama kullanıcıya durumu gösterir, elle akış korunur.
 Sağlayıcının otomasyon izni, PCI/KVKK uyumu ve sözleşme uygunluğu bu testlerle kanıtlanmaz.
+
+## 1.6.1 bağlantı ve arıza taraması
+
+Yardımcı kurulu değilken hata sonrası kontrol mesajı temizlenir ve kurulum yönergesi açılır.
+Aktarımdan önce protokol 2 / sürüm biçimi doğrulanır; yerel adresler açıklamayla reddedilir.
+Giriş alanı değişimi/tekrar giriş sonucu, kaybolmuş iş ve belirsiz teslim açık hataya dönüşür.
+Teslim sonrası onay en fazla 5 saniye beklenir; otomatik kart tekrarı yoktur. Saat geri alma geçici
+kartı düşürür; uygulama/POS süre ölçümü monotonic'tir. Başka uygulama sekmesinde bekleyen iş varken
+yeni iş açılamaz. Önceki alan kaydı yeni seçim talimatını ezmez; alan silme arızası görünürdür.
+Windows CMD kendi ZIP'ini SHA-256 ile doğrular, yalnızca dosyaları hazırlar; sessiz tarayıcı kurulumu
+veya politika değiştirme yapmaz. Windows'ta çalışması henüz denenmedi.
+Detaylı kanıt, testler ve sınırlar: [tarama raporu](POS_YARDIMCISI_TARAMA_RAPORU.md).

@@ -108,9 +108,17 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.6.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.6.1. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-04 bağlantı/Windows kurulumu (1.6.1):** Kullanıcı doğru GitHub Pages adresini kullanıyor,
+yardımcıyı henüz kurmamış. Hata sonrası kalan “kontrol ediliyor” düzeltildi; protokol doğrulama,
+kart göndermeyen bağlantı kontrolü, giriş/TTL/teslim sonucu hataları, saat geri alma ve eşzamanlı
+bekleyen iş koruması eklendi. Windows CMD kendi ZIP'ini hash ile doğrular ve klasöre hazırlar;
+tarayıcı ekleme kullanıcı onayıdır, politika/registry değiştirme. Linux parser kontrolü Windows
+kurulum kabulü değildir. [Tarama raporu](docs/POS_YARDIMCISI_TARAMA_RAPORU.md).
+Müşteri kartıyla test/SMS/ödeme yasağı ve kapalı ağ sınırı aynen sürüyor.
 
 **2026-10-04 kart aktarımı (1.6.0):** Kullanıcı tek operatör için Edge yardımcısını ve fotoğraf
 numarası düzeltmesini yetkilendirdi. Müşteri kartı/fotoğrafıyla test, ödeme veya SMS kesinlikle yasak;
