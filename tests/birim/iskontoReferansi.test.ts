@@ -92,19 +92,22 @@ with patch('PIL.Image.open', forbid_unused_api), patch('fpdf.FPDF.image', forbid
     for document in json.loads(cal_guvenlik_pdfleri):
         ROOT.joinpath('girdiler').mkdir(exist_ok=True)
         ROOT.joinpath('girdiler/liste.pdf').write_bytes(base64.b64decode(document['bayt']))
-        checked.append(json.loads(cal_calistir(json.dumps({'tur': 'yukle', 'dosyalar': [{'ad': document['ad'], 'yol': str(ROOT / 'girdiler/liste.pdf')}]})))['tur'])
+        checked.append(json.loads(cal_calistir(json.dumps({'tur': 'yukle', 'dosyalar': [{'ad': document['ad'], 'yol': str(ROOT / 'girdiler/liste.pdf')}]}))))
     request = json.loads(cal_guvenlik_istek)
     request['tur'] = 'pdf'
     checked.append(json.loads(cal_calistir(json.dumps(request)))['tur'])
 json.dumps(checked)
 `) as string,
     ) as unknown;
-    expect(sonuc).toEqual([...referans.belgeler.map(() => 'belgeler'), 'dosya']);
+    expect(sonuc).toEqual([
+      ...referans.belgeler.map((d) => ({ tur: 'belgeler', belgeler: [d.belge], hatalar: [] })),
+      'dosya',
+    ]);
   } finally {
     p.globals.delete('cal_guvenlik_pdfleri');
     p.globals.delete('cal_guvenlik_istek');
   }
-});
+}, 30_000);
 
 it('250 sayfa sınırını aşan gerçek PDF, boş veya yarım başarıya dönüşmez', () => {
   p.runPython(`

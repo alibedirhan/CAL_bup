@@ -55,6 +55,9 @@ Sürüm **1.10.0**. Önceki commit/main/push/yayın yetkisi sürer. Yayın aynı
 commit'in Linux kontrol, Chromium/performans ve Windows yardımcı
 kapılarından sonra yapılır; Actions ve canlı sürüm/varlık özetleri
 yayın sonrası doğrulanır. Geçici kanıtlar `/tmp/cal-*` içindedir.
+İlk CI turunda 11 PDF'yi birden okuyan güvenlik regresyonu varsayılan 5
+saniyeyi aştı. Yalnız bu toplu testin bütçesi 30 saniye yapıldı; veri,
+hesap, hücre ve PDF beklentileri aynı kaldı. Başarısız tur yayın yapmadı.
 
 # 4 Ekim 2026 — 1.9.0 Satış: Müşteri Takip
 
