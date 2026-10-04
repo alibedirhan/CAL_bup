@@ -2,7 +2,8 @@
 
 import type { Ayarlar } from '../../cekirdek/ayarlar';
 import { KullaniciHatasi } from '../../cekirdek/hata';
-import type { Tarih } from '../../cekirdek/tarih';
+import { yilOf, type Tarih } from '../../cekirdek/tarih';
+import { gunSec } from './gunSecimi';
 import { dosyaTuru } from '../../kaynaklar/tani';
 import {
   dosyaOku,
@@ -23,16 +24,17 @@ export async function hedefAc(
   ayarlar: Ayarlar,
   bugun: Tarih,
   signal?: AbortSignal,
+  sonYil?: number,
 ): Promise<HedefDosya> {
   signal?.throwIfAborted();
   const motor = await motorYukle();
   signal?.throwIfAborted();
   const acik = await motor.kitapAc(d.bayt, d.ad);
   signal?.throwIfAborted();
-  const bilgi = motor.hedefiIncele(acik, ayarlar, bugun);
+  const bilgi = motor.hedefiIncele(acik, ayarlar, bugun, sonYil);
   signal?.throwIfAborted();
   if (d.tanitici) await hedefiHatirla(d.tanitici);
-  return { ...d, acik, bilgi };
+  return { ...d, acik, bilgi, ...(sonYil !== undefined ? { onayliSonYil: sonYil } : {}) };
 }
 
 export interface BirakmaSonucu {
@@ -122,11 +124,30 @@ export async function kaydet(
   }
 
   const taze = await motor.kitapAc(hedef.bayt, hedef.ad);
+  signal?.throwIfAborted();
+  const kontrol = motor.hedefiIncele(taze, ayarlar, bugun, hedef.onayliSonYil);
+  if (kontrol.yilKaynagi === 'tahmin')
+    throw new KullaniciHatasi('Kaydetmeden önce depo kontrol dosyasının yılını kontrol edin.');
+  const tazeSecim = gunSec(kontrol.gunler, secim.tarih);
+  if (
+    tazeSecim.ad !== secim.ad ||
+    tazeSecim.tur !== secim.tur ||
+    tazeSecim.onceki.ad !== secim.onceki.ad ||
+    tazeSecim.onceki.tarih !== secim.onceki.tarih
+  )
+    throw new KullaniciHatasi('Dosyanın gün seçimi değişmiş. Dosyayı yeniden açıp raporu hazırlayın.');
   const sayfa = motor.uygula(taze, secim, plan, ayarlar);
+  signal?.throwIfAborted();
   const bayt = await motor.kitapYaz(taze.excel);
 
   // Oluşan dosya tekrar açılabilir olmalı; bu kontrol indirme/yazmadan önce yapılır.
-  const yeniHedef = await hedefAc({ ad: hedef.ad, bayt, sonDegisiklik: Date.now() }, ayarlar, bugun, signal);
+  const yeniHedef = await hedefAc(
+    { ad: hedef.ad, bayt, sonDegisiklik: Date.now() },
+    ayarlar,
+    bugun,
+    signal,
+    yilOf(secim.tur === 'yeni' ? secim.tarih : kontrol.son.tarih),
+  );
   signal?.throwIfAborted();
   let yenidenAcUyarisi: string | null = null;
   let yedekId: string | null = null;

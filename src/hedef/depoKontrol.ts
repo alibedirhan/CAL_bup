@@ -14,6 +14,7 @@ import { tarihDegistir, type Tarih } from '../cekirdek/tarih';
 import type { DepoKontrolPlani } from '../raporlar/depoKontrol/hesapla';
 import { hucreDegeri } from '../kaynaklar/excel';
 import { eskiSonuclariSil, satirEkle, sayfaKopyala, sayfaSec } from './sayfa';
+import { satirEklemeyiDogrula } from './satirOzellikleri';
 
 const EN_UZUN_LISTE = 5000;
 
@@ -104,6 +105,7 @@ export function planiYaz(g: YazmaGirdisi): ExcelJS.Worksheet {
     throw new KullaniciHatasi(`'${ws.name}' sayfasının listesi değişmiş; işlemi baştan başlatın.`);
   }
 
+  if (plan.eklenenler.length) satirEklemeyiDogrula(ws, Math.min(...plan.eklenenler.map((e) => e.satir)));
   if (g.tur === 'yeni') ws = sayfaKopyala(wb, onceki, g.ad);
 
   // 1. Eksik ürün satırları (plan sırasıyla; her satır numarası eklendiği andaki yerdir)

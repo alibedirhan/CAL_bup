@@ -202,6 +202,14 @@ export function AyarlarSayfasi({ tema, temaDegisti, ayarlar: a, ayarDegisti }: O
 
       <DriveAyarlari ayarlar={a} ayarDegisti={guvenliDegis} />
 
+      <section className="kart" aria-labelledby="deneme-baslik">
+        <h2 id="deneme-baslik">Yapay dosyalarla deneme</h2>
+        <p>Windows ve Excel’de açma/kaydetmeyi kontrol etmek için örnek dosyalar ve beklenen sonuçlar.</p>
+        <a className="dugme" href={import.meta.env.BASE_URL + 'deneme-dosyalari.zip'} download>
+          Deneme dosyalarını indir
+        </a>
+      </section>
+
       <section className="kart" aria-labelledby="dk-ayar-baslik">
         <h2 id="dk-ayar-baslik">Günlük depo kontrol</h2>
         <div className="ayarlar">

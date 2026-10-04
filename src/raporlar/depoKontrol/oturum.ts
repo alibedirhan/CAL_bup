@@ -4,7 +4,7 @@
 import type { Ayarlar } from '../../cekirdek/ayarlar';
 import { KullaniciHatasi } from '../../cekirdek/hata';
 import type { KaynakVeri } from '../../cekirdek/kaynakVeri';
-import { girilenTarih, type Tarih } from '../../cekirdek/tarih';
+import { girilenTarih, yilOf, type Tarih } from '../../cekirdek/tarih';
 import type { AcikKitap } from '../../kaynaklar/excel';
 import type { Kitap } from '../../kaynaklar/kitap';
 import { d01Oku, sayimOku, subeAlisOku } from '../../kaynaklar/led';
@@ -12,6 +12,7 @@ import { gunSec, tarihOnerisi, type GunSecimi } from './gunSecimi';
 import type { DepoKontrolPlani } from './hesapla';
 import type { HedefBilgisi } from './islem';
 import { tarihleriDenetle, type TarihDenetimi } from './tarihDenetimi';
+import { hedefTarihleri } from './hedefTarihleri';
 
 export type KaynakTuru = 'd01' | 'sayim' | 'subeAlis';
 export const KAYNAK_TURLERI: readonly KaynakTuru[] = ['d01', 'sayim', 'subeAlis'];
@@ -23,6 +24,7 @@ export interface HedefDosya {
   tanitici?: FileSystemFileHandle;
   acik: AcikKitap;
   bilgi: HedefBilgisi;
+  onayliSonYil?: number;
 }
 
 export interface YuklenenKaynak {
@@ -35,6 +37,8 @@ export interface Oturum {
   hedef: HedefDosya | null;
   /** Kullanıcının yazdığı tarih; boşsa öneri kullanılır. */
   tarihGirdisi: string;
+  yilGirdisi: string;
+  yilOnayi: boolean;
   /** Seçilen günün sayfası zaten varsa üzerine yazma onayı. */
   mevcutOnayi: boolean;
   kaynaklar: Partial<Record<KaynakTuru, YuklenenKaynak>>;
@@ -47,6 +51,8 @@ export interface Oturum {
 export const BOS_OTURUM: Oturum = {
   hedef: null,
   tarihGirdisi: '',
+  yilGirdisi: '',
+  yilOnayi: false,
   mevcutOnayi: false,
   kaynaklar: {},
   onaylananTarihler: [],
@@ -58,6 +64,8 @@ export type Eylem =
   | { tur: 'hedefYuklendi'; hedef: HedefDosya }
   | { tur: 'hedefKaldirildi' }
   | { tur: 'tarihDegisti'; girdi: string }
+  | { tur: 'yilDegisti'; girdi: string }
+  | { tur: 'yilOnaylandi' }
   | { tur: 'mevcutOnaylandi' }
   | {
       tur: 'kaynaklarEklendi';
@@ -83,9 +91,46 @@ export function azalt(o: Oturum, e: Eylem): Oturum {
           : null,
       };
     case 'hedefYuklendi':
-      return { ...o, hedef: e.hedef, tarihGirdisi: '', mevcutOnayi: false, onaylananTarihler: [] };
+      return {
+        ...o,
+        hedef: e.hedef,
+        tarihGirdisi: '',
+        yilGirdisi: String(yilOf(e.hedef.bilgi.son.tarih)),
+        yilOnayi: false,
+        mevcutOnayi: false,
+        onaylananTarihler: [],
+      };
     case 'hedefKaldirildi':
-      return { ...o, hedef: null, tarihGirdisi: '', mevcutOnayi: false, onaylananTarihler: [] };
+      return {
+        ...o,
+        hedef: null,
+        tarihGirdisi: '',
+        yilGirdisi: '',
+        yilOnayi: false,
+        mevcutOnayi: false,
+        onaylananTarihler: [],
+      };
+    case 'yilDegisti': {
+      const hedef = o.hedef ? { ...o.hedef } : null;
+      if (hedef) delete hedef.onayliSonYil;
+      return {
+        ...o,
+        hedef,
+        yilGirdisi: e.girdi,
+        yilOnayi: false,
+        tarihGirdisi: '',
+        mevcutOnayi: false,
+        onaylananTarihler: [],
+      };
+    }
+    case 'yilOnaylandi':
+      if (!o.hedef || !/^\d{4}$/.test(o.yilGirdisi)) return o;
+      try {
+        hedefTarihleri(o.hedef.acik.kitap.sayfalar, o.hedef.bilgi.son.tarih, Number(o.yilGirdisi));
+        return { ...o, hedef: { ...o.hedef, onayliSonYil: Number(o.yilGirdisi) }, yilOnayi: true };
+      } catch {
+        return o;
+      }
     case 'tarihDegisti':
       return { ...o, tarihGirdisi: e.girdi, mevcutOnayi: false, onaylananTarihler: [] };
     case 'mevcutOnaylandi':
@@ -131,9 +176,11 @@ export interface Gorunum {
   /** Şu an tamamlanması gereken adım: 1 dosya, 2 tarih, 3 LED dosyaları, 4 kontrol, 5 kaydet. */
   adim: Adim;
   tarih: Tarih | null;
+  oneri: Tarih | null;
   tarihHatasi: string | null;
   secim: GunSecimi | null;
   mevcutOnayiGerekli: boolean;
+  yilOnayiGerekli: boolean;
   okunan: Partial<Record<KaynakTuru, KaynakVeri>>;
   okumaHatalari: Partial<Record<KaynakTuru, string>>;
   denetimler: TarihDenetimi[];
@@ -162,9 +209,11 @@ export function turet(o: Oturum, ayarlar: Ayarlar, bugun: Tarih, planla?: Planla
   const g: Gorunum = {
     adim: 1,
     tarih: null,
+    oneri: null,
     tarihHatasi: null,
     secim: null,
     mevcutOnayiGerekli: false,
+    yilOnayiGerekli: false,
     okunan: {},
     okumaHatalari: {},
     denetimler: [],
@@ -193,14 +242,27 @@ export function turet(o: Oturum, ayarlar: Ayarlar, bugun: Tarih, planla?: Planla
   if (!o.hedef) return g;
   g.adim = 2;
 
-  const oneri = tarihOnerisi(o.hedef.bilgi.gunler, ayarlar.pazarAtla);
+  let gunler = o.hedef.bilgi.gunler;
+  if (o.hedef.bilgi.yilKaynagi === 'tahmin') {
+    g.yilOnayiGerekli = !o.yilOnayi;
+    try {
+      if (!/^\d{4}$/.test(o.yilGirdisi)) throw new KullaniciHatasi('Dosya yılını dört rakamla yazın.');
+      gunler = hedefTarihleri(o.hedef.acik.kitap.sayfalar, bugun, Number(o.yilGirdisi)).gunler;
+    } catch (e) {
+      g.tarihHatasi = mesaj(e);
+      return g;
+    }
+  }
+  const oneri = tarihOnerisi(gunler, ayarlar.pazarAtla);
+  g.oneri = oneri;
+  if (g.yilOnayiGerekli) return g;
   g.tarih = o.tarihGirdisi.trim() ? girilenTarih(o.tarihGirdisi, oneri) : oneri;
   if (!g.tarih) {
     g.tarihHatasi = 'Tarih anlaşılamadı. Örnek: 30.09';
     return g;
   }
   try {
-    g.secim = gunSec(o.hedef.bilgi.gunler, g.tarih);
+    g.secim = gunSec(gunler, g.tarih);
   } catch (e) {
     g.tarihHatasi = mesaj(e);
     return g;

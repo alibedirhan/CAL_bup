@@ -17,6 +17,10 @@ Bupiliç İzmir Bölge Deposu için LED çıktılarından günlük raporları ha
 | Bakiye              | Hazır değil |
 | Palet / kasa        | Hazır değil |
 
+Gün sayfalarının yılı başlıklardan doğrulanamazsa uygulama dosya yılını açıkça kontrol etmenizi
+ister. Windows/Excel denemesi için Ayarlar’dan **Deneme dosyalarını indir** seçeneğiyle tamamen
+yapay örnekler ve beklenen sonuçlar alınabilir.
+
 ## Sanal POS
 
 Sanal POS bölümünde cari seçince **Kayıtlı kartlar → Kart ekle** görünür. Kart bilgileri elle

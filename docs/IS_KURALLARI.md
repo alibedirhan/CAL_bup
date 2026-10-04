@@ -227,3 +227,22 @@ başvuruların hedef sayfaya göre yeniden hesaplanması uygulanmış değildir.
 POS dahil bütün Chromium testleri dış ağa kapalı proxy ile çalışır; yalnızca yerel test sunucusu
 ve açıkça tanımlanan taklit yanıtlar kullanılabilir. Büyük dosya denemeleri yalnızca yapay
 kitaplarla yapılır; satır/sütun sınırında son hücrenin korunması ve aşan kitabın reddi doğrulanır.
+
+## Yıl kontrolü ve Excel özellikleri (1.8.0)
+
+Yıl, gün sayfasının A3/C3 başlıklarından ve sekme sırasından doğrulanır. Eski yıl dosyası
+bugünün yılına taşınmaz. Başlıklar eksik/tutarsızsa son gün sayfasının yılı dört rakamla
+1900–9998 arasında açıkça kontrol edilir; kontrol edilmeden plan/kayıt oluşmaz. Son günün
+geçerli başlık yılıyla çelişen onay reddedilir. Eski yanlış başlıklar otomatik değiştirilmez.
+Yıl değişince gün, üzerine yazma ve kaynak tarih onayları sıfırlanır. Aralık→ocak geçişi
+korunur; aynı gün/ay tekrarını içeren çok yıllı kitap desteklenmez.
+
+Satır eklemede veri doğrulama ve koşullu biçim formülleri/adresleri, filtre ve baskı alanları
+kaydırılır. Bitişiğin altına eklenen ürün filtreye katılır. Tablo/resim, tanımlı hücre adları,
+dizi formülü, formüllü renk ölçeği ya da eklenen satırın altında birleşik hücre varsa güvenle
+korunamadığı açıklanır ve işlem başlamaz. ZIP yerel/merkez başlık uyuşmazlığı, tekrarlı parça,
+veri örtüşmesi, şifreleme ve desteklenmeyen sıkıştırma reddedilir; boyut sınırları değişmez.
+
+POS aktarımında gizli/etkisiz üst kapsayıcı veya devre dışı fieldset uygun alan değildir;
+gizli firma numarası eşleşme kanıtı sayılmaz. Gerçek sağlayıcı oturumu doğrulanmış değildir.
+Ayarlar’daki deneme paketi yalnızca yapay LED/hedef Excel dosyaları ve beklenen sonuç içerir.

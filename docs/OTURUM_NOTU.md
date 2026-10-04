@@ -1,3 +1,39 @@
+# 4 Ekim 2026 — 1.8.0 üç aşamalı uygulama
+
+Başlangıç temiz `main`, `e8fbc91`, 1.7.1; önceki yayın Actions 37203386188 başarılıydı.
+Kullanıcı genel rapordaki kalan işleri üç aşamada sağlam biçimde tamamlama yetkisi verdi.
+Yanıtları: envanter/bakiye/palet-kasa ve karma ambalaj örnekleri sonraya kalacak; Drive kurulmadı,
+Windows denemesi daha sonra yapılabilir. Bu işleri tahmin ederek tamamlanmış sayma.
+
+1. **Yıl ve kayıt:** A3/C3 tarih kanıtı, eski yıl kitabını koruma, belirsiz yıl için dört
+   rakamlı açık kontrol; yıl değişince eski onaylar sıfırlanır. Pazar önerisi seçilen yıla göre
+   yenilenir. Kayıtta yıl/önceki gün yeniden denetlenir; iptal XLSX üretimi öncesinde kontrol edilir.
+   Tarihsel yanlış başlıklar otomatik değiştirilmez; gerçek Excel/ikiz hesabı korunur.
+2. **Dosya ve POS:** veri doğrulama/koşullu biçim formülleri, filtre ve baskı alanları kayar;
+   yeni son ürün filtreye katılır. Desteklenmeyen Excel satır yapısı/birleşim, plan ve yazıdan
+   önce reddedilir. ZIP merkezi/yerel başlık, yinelenen parça ve örtüşme denetimleri vardır.
+   MV3 gizli/etkisiz kapsayıcı ve devre dışı fieldset içinde doldurmaz; gizli firma kabul edilmez.
+3. **Kabul hazırlığı:** Ayarlar’daki “Deneme dosyalarını indir” dört yapay Excel ve beklenen
+   sonuçları verir. Paket gerçek tarayıcı akışında rapora dönüştürülüp yeniden açılır. Beklenen
+   LED 17, sayım 16, gelen mal 7, fark 1 kg; filtre/baskı alanı ve önceki gün de denetlenir.
+
+Tüm açık maddelerin karar/kanıt ve kalan kabul eşlemesi [genel raporun 1.8.0 bölümündedir](GENEL_TARAMA_RAPORU.md).
+Müşteri kartı/fotoğrafı, gerçek sağlayıcı girişi, SMS veya ödeme kullanılmadı. POS ve OCR testleri
+sadece yapay verili, dış ağa kapalı taklit ortamdadır. Kullanıcı Google hesabı ve gerçek Windows
+Excel kabulü sonraya kalır. Sağlayıcı/kurum giriş, ortak oturum, profil/pano/yedek politikası
+asistan tarafından doğrulanamaz; resmi karar bekler. Genel çok yıllı Excel editörü, bütün Excel
+özellikleri veya senkron çözümleme iptali uygulanmış diye sunulmaz.
+
+Nihai yerel doğrulama: **34 dosyada 438 kural/Excel testi**, **99 Chromium senaryosu**,
+**6 büyük yapay Excel senaryosu**. Gerçek Excel/ikiz testleri yerelde atlanmadan çalışır;
+CI şirket örneklerini içermez. Tip/lint/biçim/derleme ve dar ekran taşma kontrolü geçer.
+Bağımlılık sürümleri değişmez; ExcelJS 4.4.0 sabittir. Geçici log/ölçüm/görüntü `/tmp/` içindedir.
+
+Sürüm **1.8.0**. Önceki main/push/yayın yetkisi sürer. Yayın aynı commit'in Linux kontrol,
+Chromium/performans ve Windows yardımcı kurulum kapılarından sonra yapılır;
+[Actions](https://github.com/alibedirhan/CAL_bup/actions/workflows/yayin.yml) üzerinden doğrulanır.
+Canlı ana JS varlığının yerel derlemeyle özeti ve sürüm, yayın sonrası `/tmp/` kaydında kontrol edilir.
+
 # 4 Ekim 2026 — 1.7.1 açık noktaların devamı
 
 Başlangıç temiz `main`, `87ab1ff`, 1.7.0. Önceki yayının denetimi/yayını

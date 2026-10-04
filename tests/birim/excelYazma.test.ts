@@ -167,6 +167,21 @@ it('ürün sayısı aynı kalsa da önizlemeden sonra değişen listeye eski pla
   expect(hedef.excel.getWorksheet(secim.ad)).toBeUndefined();
 });
 
+it('eklenecek satırın altında birleşik hücre varsa önizleme ve kayıt kitabı değiştirmez', async () => {
+  const hedef = await kitapAc(await depoKontrolBaytlari(), 'Yapay.xlsx');
+  const bilgi = hedefiIncele(hedef, AYAR, BUGUN);
+  const secim = gunSec(bilgi.gunler, bilgi.oneri);
+  const plan = planla(hedef, secim, kaynaklar(), AYAR);
+  const ws = hedef.excel.getWorksheet(secim.onceki.ad);
+  if (!ws) throw new Error('Yapay gün eksik');
+  ws.mergeCells('F9:G9');
+  const once = structuredClone(hedef.excel.model);
+  expect(() => planla(hedef, secim, kaynaklar(), AYAR)).toThrow(/birleşik hücre/);
+  expect(() => uygula(hedef, secim, plan, AYAR)).toThrow(/birleşik hücre/);
+  expect(hedef.excel.model).toEqual(once);
+  expect(hedef.excel.getWorksheet(secim.ad)).toBeUndefined();
+});
+
 it('satır eklenmiş Excel yeniden açılınca tam satır aralığı doğru, dış başvurular ve adlar aynıdır', async () => {
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('Yapay');

@@ -37,9 +37,22 @@ function ipucu(e: Element): string {
     .replace(/ı/g, 'i');
 }
 export function gorunur(e: Element): boolean {
-  const r = e.getBoundingClientRect(),
-    s = getComputedStyle(e);
-  return e.isConnected && r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none';
+  const r = e.getBoundingClientRect();
+  if (!e.isConnected || r.width <= 0 || r.height <= 0) return false;
+  for (let p: Element | null = e; p; p = p.parentElement) {
+    const s = getComputedStyle(p);
+    if (
+      p.hasAttribute('hidden') ||
+      p.hasAttribute('inert') ||
+      p.getAttribute('aria-hidden') === 'true' ||
+      s.visibility !== 'visible' ||
+      s.display === 'none' ||
+      Number(s.opacity) === 0 ||
+      s.contentVisibility === 'hidden'
+    )
+      return false;
+  }
+  return true;
 }
 export function alanUygun(e: Element, rol: AlanRolu): boolean {
   if (!gorunur(e) || engelli.test(ipucu(e))) return false;
@@ -52,6 +65,7 @@ export function alanUygun(e: Element, rol: AlanRolu): boolean {
   if (
     !(e instanceof HTMLInputElement || e instanceof HTMLSelectElement) ||
     e.disabled ||
+    e.matches(':disabled') ||
     (e instanceof HTMLInputElement && (e.readOnly || !['text', 'tel', 'number'].includes(e.type)))
   )
     return false;

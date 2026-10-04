@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { gunAdi, tarihMetni } from '../../../cekirdek/tarih';
+import { gunAdi, sayfaAdi, tarihMetni } from '../../../cekirdek/tarih';
 import { dogrudanKayitVar, XLSX_KABUL } from '../../../platform/dosya';
 import { DriveRaporunuAc } from '../drive/DriveRaporu';
 import { Simge } from '../../bilesenler/Simge';
@@ -93,6 +93,35 @@ export function HedefBolumu({ dk }: { dk: DepoKontrol }) {
 
       <DriveRaporunuAc ac={dk.driveHedefAc} mesgul={dk.mesgul !== null} />
 
+      {hedef?.bilgi.yilKaynagi === 'tahmin' && (
+        <div className="onay">
+          <p>
+            Gün başlıklarından yıl bütünüyle doğrulanamadı. Son gün sayfasının ({hedef.bilgi.son.ad}) yılını
+            dosyayla karşılaştırın.
+          </p>
+          <label htmlFor="dosya-yili">Dosyanın son gün yılı</label>
+          <input
+            id="dosya-yili"
+            className="girdi rakam kisa"
+            inputMode="numeric"
+            maxLength={4}
+            disabled={dk.mesgul !== null}
+            value={dk.oturum.yilGirdisi}
+            aria-invalid={g.yilOnayiGerekli && !!g.tarihHatasi}
+            aria-describedby={g.yilOnayiGerekli && g.tarihHatasi ? 'gun-hatasi' : undefined}
+            onChange={(e) => dk.yilDegistir(e.target.value)}
+          />
+          <button
+            type="button"
+            className="dugme kucuk"
+            disabled={dk.mesgul !== null || !!g.tarihHatasi || dk.oturum.yilOnayi}
+            onClick={dk.yilOnayla}
+          >
+            {dk.oturum.yilOnayi ? 'Dosya yılı kontrol edildi' : 'Dosya yılını kontrol ettim'}
+          </button>
+        </div>
+      )}
+
       {hedef && (
         <div className="tarih-alani">
           <label htmlFor="gun-girdisi">Oluşturulacak gün</label>
@@ -103,10 +132,10 @@ export function HedefBolumu({ dk }: { dk: DepoKontrol }) {
               className="girdi rakam"
               inputMode="numeric"
               autoComplete="off"
-              placeholder={hedef.bilgi.oneri.slice(8, 10) + '.' + hedef.bilgi.oneri.slice(5, 7)}
+              placeholder={sayfaAdi(g.oneri ?? hedef.bilgi.oneri)}
               value={dk.oturum.tarihGirdisi}
               onChange={(e) => dk.tarihDegistir(e.target.value)}
-              aria-describedby="gun-aciklama"
+              aria-describedby={g.tarih ? 'gun-aciklama' : undefined}
             />
             {g.tarih && !g.tarihHatasi && (
               <span id="gun-aciklama" className="tarih-aciklama">
@@ -121,7 +150,11 @@ export function HedefBolumu({ dk }: { dk: DepoKontrol }) {
               Son sayfadan sonraki iş günü önerildi. Başka bir gün için yazın (ör. 30.09).
             </p>
           )}
-          {g.tarihHatasi && <p className="alan-hatasi">{g.tarihHatasi}</p>}
+          {g.tarihHatasi && (
+            <p id="gun-hatasi" className="alan-hatasi">
+              {g.tarihHatasi}
+            </p>
+          )}
           {g.mevcutOnayiGerekli && g.secim && (
             <div className="onay">
               <p>

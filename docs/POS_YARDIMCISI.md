@@ -122,3 +122,11 @@ yeni iş açılamaz. Önceki alan kaydı yeni seçim talimatını ezmez; alan si
 Windows CMD kendi ZIP'ini SHA-256 ile doğrular, yalnızca dosyaları hazırlar; sessiz tarayıcı kurulumu
 veya politika değiştirme yapmaz. Windows'ta çalışması henüz denenmedi.
 Detaylı kanıt, testler ve sınırlar: [tarama raporu](POS_YARDIMCISI_TARAMA_RAPORU.md).
+
+## 1.8.0 görünürlük sınırı
+
+Tanıtılan alanın üst kapsayıcıları da görünür ve etkin olmalıdır. Opaklığı sıfır, hidden,
+inert, aria-hidden veya content-visibility:hidden kapsayıcı içindeki alan/firma ile aktarım
+başlamaz. Devre dışı fieldset içindeki girdi reddedilir. Beş kapalı ağ MV3 regresyonunda alanlar
+boş kalır; ödeme/SMS/dış ağ isteği sıfırdır. Bu kontrol sağlayıcı arka uç ortak oturumunu veya
+kurum sözleşmesini doğrulamaz. Gerçek müşteri kartı/fotoğrafı ile test yasağı sürer.

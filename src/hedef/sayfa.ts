@@ -4,7 +4,8 @@
 
 import type ExcelJS from 'exceljs';
 import { KullaniciHatasi } from '../cekirdek/hata';
-import { aralikKaydir, formulKaydir } from './formul';
+import { formulKaydir } from './formul';
+import { satirEklemeyiDogrula, satirOzellikleriniHazirla } from './satirOzellikleri';
 
 type FormulDegeri = { formula?: string; sharedFormula?: string; result?: unknown };
 
@@ -78,17 +79,9 @@ export function sayfaKopyala(wb: ExcelJS.Workbook, kaynak: ExcelJS.Worksheet, ad
  * Formüller ve koşullu biçim aralıkları Excel'deki gibi kaydırılır.
  */
 export function satirEkle(ws: ExcelJS.Worksheet, satir: number, asagidanBicim = false): void {
-  const birlesik = ((ws.model as { merges?: string[] }).merges ?? []).filter((m) => {
-    const alt = Number(/(\d+)$/.exec(m)?.[1] ?? 0);
-    return alt >= satir;
-  });
-  if (birlesik.length > 0) {
-    throw new KullaniciHatasi(
-      `'${ws.name}' sayfasında satır ${satir} ve altında birleşik hücre var (${birlesik.join(', ')}); ` +
-        'satır eklenemedi.',
-    );
-  }
+  satirEklemeyiDogrula(ws, satir);
 
+  const ozellikleriUygula = satirOzellikleriniHazirla(ws, satir);
   paylasilanFormulleriAc(ws);
   const sutunSayisi = ws.columnCount;
   ws.insertRow(satir, [], 'n');
@@ -107,7 +100,7 @@ export function satirEkle(ws: ExcelJS.Worksheet, satir: number, asagidanBicim = 
     if (kaydirilmis !== c.formula) c.value = { formula: kaydirilmis };
   });
 
-  for (const cf of (ws as IcSayfa).conditionalFormattings) cf.ref = aralikKaydir(cf.ref, satir);
+  ozellikleriUygula();
 }
 
 /** Yalnızca bu sayfa seçili ve açık olsun (kopyadan sonra iki sekme birlikte seçili kalmasın). */

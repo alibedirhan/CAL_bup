@@ -194,3 +194,20 @@ Yapay dosya hazırlama ve motor yükleme ölçüm dışındadır; son hücre/say
 denetlenir. 10 ms zamanlayıcının en uzun aralığı ana iş parçacığı beklemesi için yaklaşık göstergedir;
 bellek ölçümü veya Windows hız garantisi değildir. Sonuç ve tarayıcı ekleri `/tmp/`'ta tutulur.
 Altı senaryo yayın kapısına eklendi; ölçüm sürelerine makineye bağlı geçme/kalma eşiği konmadı.
+
+## 1.8.0 yıl, Excel ve kabul sınırları
+
+`raporlar/depoKontrol/hedefTarihleri.ts` yalnızca Kitap/Sayfa portunu ve saf tarih kurallarını
+kullanır; ExcelJS/React/tarayıcı bağımlılığı yoktur. Yıl kanıtı veya kullanıcı onayı, oturumun
+tek gün seçimini belirler. Kayıt yeni açılmış kitapta aynı yıl/önceki gün kararını denetler.
+
+`hedef/satirOzellikleri.ts` ExcelJS adaptöründe ön kontrol ve özellik kaydırmasını toplar.
+Desteklenmeyen satır yapısı plan aşamasında ve yazmadan önce denetlenir. Özellik dönüşümleri
+mutasyondan önce hazırlanır; veri doğrulama/koşullu biçim formülleri yerel formül kaydırıcıyı
+kullanır. Bu yaklaşım tam Excel bağımlılık grafiği veya genel dosya editörü değildir.
+
+Arşiv merkezi ve yerel başlık karşılaştırması açılmadan yapılır; gerçek açılma/bellek miktarı
+merkez boyut beyanından bağımsız kesin ölçülmüş sayılmaz. Büyük dosya sınırları korunur.
+`tools/denemeDosyalari.ts` derlemede yapay kabul ZIP’i üretir; uygulamaya ExcelJS statik yükü
+getirmez. Tarayıcı testi dağıtılacak ZIP → gerçek uygulama → indirilen Excel zincirini sınar.
+POS görünürlük uygunluğu üst kapsayıcıları da denetler; kapalı proxy sınırı korunur.

@@ -30,7 +30,10 @@ function Bekleme({ dk }: { dk: DepoKontrol }) {
   let metin = 'Depo kontrol dosyasını seçin, sonra üç LED dosyasını bırakın.';
   if (dk.oturum.hedef) {
     const eksik = KAYNAK_TURLERI.filter((t) => !g.okunan[t]).map((t) => DOSYA_TURU_ADLARI[t]);
-    if (g.tarihHatasi || g.mevcutOnayiGerekli) {
+    if (g.yilOnayiGerekli) {
+      baslik = 'Dosya yılı kontrolü bekleniyor';
+      metin = 'Soldaki dosya yılını kontrol edip onaylayın.';
+    } else if (g.tarihHatasi || g.mevcutOnayiGerekli) {
       baslik = 'Gün seçimi bekleniyor';
       metin = 'Soldaki gün alanına bakın.';
     } else if (eksik.length > 0) {

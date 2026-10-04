@@ -108,9 +108,17 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.7.1. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.8.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-04 üç aşamalı devam (1.8.0):** Kullanıcı yeni rapor/karma ambalaj örneklerini,
+Drive kurulumunu ve gerçek Windows denemesini sonraya bıraktı. Gün başlığı yılı doğrulanır;
+belirsiz başlıklarda son yıl açıkça kontrol edilmeden plan/kayıt oluşmaz. Eski başlıklar
+kendiliğinden düzeltilmez. Satır eklemede Excel özellikleri kaydırılır; desteklenmeyen yapılar
+önizleme/yazıdan önce reddedilir. ZIP yerel/merkez başlık ve çakışma denetimleri güçlendi.
+MV3 gizli/etkisiz üst kapsayıcıda doldurmaz. Ayarlar’dan indirilebilir yapay kabul ZIP’i gerçek
+uygulamada doğrulanır. Nihai test/yayın ve dış kabul sınırları oturum notundadır.
 
 **2026-10-04 açık noktaların devamı (1.7.1):** 1.7.0'daki tamamlanan 29 bulgu tekrar uygulanmadı.
 Formül kaydırıcıda tam satır/küçük harf, Türkçe tanımlı ad ve sayfa aralığı adı regresyonları

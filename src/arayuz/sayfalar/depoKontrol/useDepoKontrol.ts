@@ -183,6 +183,8 @@ export function useDepoKontrol(ayarlar: Ayarlar) {
     dosyalarGeldi,
     hedefKaldir: () => degistir({ tur: 'hedefKaldirildi' }),
     tarihDegistir: (girdi: string) => degistir({ tur: 'tarihDegisti', girdi }),
+    yilDegistir: (girdi: string) => degistir({ tur: 'yilDegisti', girdi }),
+    yilOnayla: () => degistir({ tur: 'yilOnaylandi' }),
     mevcutOnayla: () => degistir({ tur: 'mevcutOnaylandi' }),
     tarihOnayla: (kaynak: string) => degistir({ tur: 'tarihOnaylandi', kaynak }),
     kaynakKaldir: (kaynak: KaynakTuru) => degistir({ tur: 'kaynakKaldirildi', kaynak }),

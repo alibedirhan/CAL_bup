@@ -13,6 +13,8 @@ const taklit = vi.hoisted(() => ({
   indir: vi.fn(),
   uygula: vi.fn(),
   ac: vi.fn(),
+  incele: vi.fn(),
+  kitapYaz: vi.fn(),
 }));
 vi.mock('../../src/platform/gecmis', () => ({ yedekAl: taklit.yedek, gecmiseEkle: taklit.gecmis }));
 vi.mock('../../src/platform/dosya', async (asil) => ({
@@ -25,11 +27,16 @@ vi.mock('../../src/raporlar/depoKontrol/motorYukle', () => ({
   motorYukle: async () => ({
     kitapAc: taklit.ac,
     uygula: taklit.uygula,
-    kitapYaz: async () => new Uint8Array([4, 5, 6]),
-    hedefiIncele: () => ({}),
+    kitapYaz: taklit.kitapYaz,
+    hedefiIncele: taklit.incele,
   }),
 }));
-const secim = { tur: 'yeni', ad: '02.10' } as GunSecimi;
+const secim: GunSecimi = {
+  tur: 'yeni',
+  ad: '02.10',
+  tarih: tarih(2026, 10, 2),
+  onceki: { ad: '01.10', tarih: tarih(2026, 10, 1) },
+};
 const plan = {
   genelDurum: 'Tamam',
   bToplam: 1,
@@ -53,8 +60,36 @@ beforeEach(() => {
   taklit.gecmis.mockResolvedValue(true);
   taklit.ac.mockResolvedValue({ excel: {}, kitap: d01Kitap() });
   taklit.uygula.mockReturnValue('02.10');
+  taklit.kitapYaz.mockResolvedValue(new Uint8Array([4, 5, 6]));
+  taklit.incele.mockReturnValue({
+    gunler: [{ ad: '01.10', tarih: '2026-10-01' }],
+    son: { ad: '01.10', tarih: '2026-10-01' },
+    yilKaynagi: 'baslik',
+  });
 });
 describe('dosya üzerine kayıt koruması', () => {
+  it('dosya yılı onaylanmadan indirme veya yazma başlamaz', async () => {
+    taklit.incele.mockReturnValueOnce({ yilKaynagi: 'tahmin' });
+    await expect(kaydet(hedef(), secim, plan, AYAR, bugun, 'indir')).rejects.toThrow(/yılını/);
+    expect(taklit.uygula).not.toHaveBeenCalled();
+    expect(taklit.indir).not.toHaveBeenCalled();
+  });
+  it('önceki gün değişmiş eski seçimle kaydetmez', async () => {
+    await expect(
+      kaydet(hedef(), { ...secim, onceki: { ...secim.onceki, ad: '30.09' } }, plan, AYAR, bugun, 'indir'),
+    ).rejects.toThrow(/gün seçimi değişmiş/);
+    expect(taklit.uygula).not.toHaveBeenCalled();
+  });
+  it('plan uygulandığı anda iptal edilirse dosya üretilmez ve indirilmez', async () => {
+    const a = new AbortController();
+    taklit.uygula.mockImplementationOnce(() => {
+      a.abort();
+      return '02.10';
+    });
+    await expect(kaydet(hedef(), secim, plan, AYAR, bugun, 'indir', a.signal)).rejects.toThrow();
+    expect(taklit.kitapYaz).not.toHaveBeenCalled();
+    expect(taklit.indir).not.toHaveBeenCalled();
+  });
   it('yedek kalıcı saklanamazsa dosyanın üzerine yazmaz', async () => {
     taklit.yedek.mockResolvedValue(null);
     await expect(kaydet(hedef(), secim, plan, AYAR, bugun, 'dosyaya')).rejects.toThrow(/yedeği/);

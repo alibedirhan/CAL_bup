@@ -197,3 +197,86 @@ konmadı. Ölçüm JSON'ları ve Playwright ekleri `/tmp/`'ta, test kodu depodad
 GitHub Actions yayın kapısına eklendi; yeni sınır veya büyük bir worker dönüşümü için önce kanıt gerekir.
 
 1.7.1 nihai kontrol ve yayın sonucu [oturum notunda](OTURUM_NOTU.md) tutulur.
+
+## 4 Ekim 2026 — 1.8.0 üç aşamalı uygulama
+
+Kullanıcı rapordaki kalan işlerin titizlikle tamamlanmasını istedi. İki yanıtla kapsamı daralttı:
+envanter/bakiye/palet-kasa ve karma ambalaj örnekleri sonraya kalacak; Drive henüz kurulmadı,
+Windows denemesi daha sonra yapılacak. 1.7.0 ve 1.7.1 düzeltmeleri yeniden uygulanmadı.
+
+### Aşama 1 — Gün ve kayıt kararının sağlamlaştırılması
+
+Yıllık kitabın gerçek yılı önce gün sayfalarının A3/C3 başlıklarından okunur. Başlıktaki tarih,
+sayfanın gün/ay adıyla uyuşmalı; iki başlık birbiriyle çelişmemelidir. Bütün başlıklar ve sekme
+sırası tutarlıysa eski yıl kitabı bugünün yılına çekilmez. Yıl bulunamıyorsa veya tarihsel bir
+başlık tutarsızsa kullanıcı son gün sayfasının yılını 1900–9998 arasında dört rakamla girip
+“Dosya yılını kontrol ettim” demeden rapor planı/kayıt hazırlanmaz.
+
+Mevcut gerçek kitapta tarihsel yanlış başlıklar bulunduğundan bütün dosyayı reddeden ya da bu
+eski başlıkları otomatik değiştiren kural eklenmedi. Son sayfanın geçerli başlık yılı açık bir
+başka yılla ezilemez. Tarihsel başlıklar aynen korunur; açık onay sekme sırasının yorumlanmasını
+belirler. Aralık→ocak geçişi, artık yıl ve tekilleştirme denetlenir. Başlıksız 29 Şubat kitabı
+onay bekleyen geçerli bir yıl taslağıyla açılır; tahmin kesin yıl diye sunulmaz. Genel çok yıllı
+editör uygulanmadı; aynı gün/ay tekrarları hâlâ reddedilir.
+
+Yıl değişince gün/üzerine yazma/kaynak tarihi onayları sıfırlanır. Dosya tekrar yüklenirse yıl
+kontrolü yeniden gerekir. Aynı oturumda başarılı kayıt son yıl bilgisini taşır; aralık→ocak
+kaydında yeni son yıl kullanılır. Kayıt motoru yılı ve önceki günü yeni açılmış kitapta tekrar
+kontrol eder; eski gün seçimi veya onaysız yıl, yazma/indirmeye ulaşmaz. Plan uygulanırken gelen
+iptal, XLSX üretiminden önce yeniden denetlenir. Senkron çözümlemeyi zorla kesme sınırı sürer.
+
+Kanıt: `hedefTarihleri.test.ts`, `dosyaYili.spec.ts`, `kayitGuvenligi.test.ts`; mevcut gerçek
+Excel/ikiz testleri korunur. Dar ekranda yatay taşma kontrolü de vardır.
+
+### Aşama 2 — Excel, arşiv ve POS sınırlarının korunması
+
+- Satır eklenince veri doğrulama adresleri/formülleri, koşullu biçim aralıkları/formülleri,
+  filtre ve baskı alanı/başlık satırları birlikte kaydırılır. Sabit liste metni değiştirilmez.
+  Son ürünün hemen altına eklenen ürün filtreye katılır. Excel yaz→yeniden aç testleri vardır.
+- Satır eklemede Excel tabloları, resimler, tanımlı hücre adları, dizi formülleri ve formüllü
+  renk ölçekleri desteklenmediği açıklanarak reddedilir. Bu, ilgili özelliğin dosyada bulunduğu
+  durum için ihtiyatlı sınırdır; gereksiz yerlerde ad/resim değişikliği yapılmaz. Birleşik hücre
+  sınırı önizlemede ve yeni sayfa kopyalanmadan önce kontrol edilir; hata kitabı değiştirmez.
+  Genel Excel özelliklerinin tamamı veya üç boyutlu bağımlılıklar korunuyor diye sunulmaz.
+- ZIP merkez dizini yerel başlıkla karşılaştırılır: yöntem, bayrak, ad, adres, veri sonu;
+  tekrarlı ad, örtüşen veri, şifreleme, desteklenmeyen yöntem ve ZIP64 boyutları reddedilir.
+  50/100 MB ve mevcut dosya/kitap sınırları korunur. Bu denetim arşiv metaverisidir; gerçek
+  açılmış bellek miktarının kesin ölçümü veya bütün zararlı ZIP türlerinin analizi değildir.
+- POS yardımcısı opaklığı sıfır, gizli, inert, aria-hidden veya içerik görünürlüğü kapalı
+  üst kapsayıcıları ve devre dışı fieldset içindeki alanları uygun saymaz. Gizli firma numarası
+  eşleşme kanıtı olamaz. Beş gerçek MV3 regresyonu alanların boş kaldığını ve sıfır dış ağ,
+  sıfır SMS, sıfır ödeme isteğini denetler. Sağlayıcı giriş/arka uç oturumunu doğrulamaz.
+
+Kanıt: `satirOzellikleri.test.ts`, `excelYazma.test.ts`, `xlsxDenetimi.test.ts`,
+`eklentiGorunurluk.spec.ts`. ExcelJS 4.4.0 ve yardımcı protokolü 2 korunur.
+
+### Aşama 3 — Tekrarlanabilir kabul ve kalan konular
+
+Ayarlar’da “Deneme dosyalarını indir” vardır. Derleme dört tamamen yapay Excel dosyası ve
+`DENEME.txt` üretir; gerçek rapor/kart/fotoğraf içermez. Beklenen LED 17, sayım 16, gelen mal 7,
+fark 1 kg; yeni ürün uyarısı ve önceki sayfaları koruma kontrolü vardır. Tarayıcı testi bu
+indirilen paketi gerçek uygulamaya verip çıktı dosyasını yeniden açar; formüller/toplamlar,
+filtre/baskı alanı ve önceki gün korunmasını denetler. Bu paket, Windows kabulünü yapılmış
+saymadan kullanıcıya hazır bir deneme sağlar. Kart/SMS/ödeme testi için kullanılamaz.
+
+| Önceki açık konu            | Bu aşamadaki sonuç                                                             | Kalan kabul                                                                   |
+| --------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| Sağlayıcı giriş güvenliği   | Tahmini kimlik/ödeme kuralı eklenmedi; kurum kabul listesi açık                | Resmi yetkili giriş ve otomasyon kapsamını doğrulamalı                        |
+| POS ekranı/ortak oturum     | Gizli/etkisiz alan sınırı güçlendirildi, kapalı ağ MV3 testleri var            | Gerçek arka uç ortak oturumu uygulamadan kanıtlanamaz                         |
+| Windows/masaüstü Excel      | İndirilebilir yapay paket ve beklenen sonuç hazır                              | Kullanıcı sonra aç/kaydet/Excel açık dosya deneyecek                          |
+| Canlı Google Drive          | Mevcut taklit izin/hesap/iptal testleri sürer; aynı yapay paket kullanılabilir | Kullanıcı OAuth kurulumu sonra yapılacak                                      |
+| Yıl bilgisi                 | Başlık kanıtı + belirsiz durumda açık yıl kontrolü uygulandı                   | Çok yıllı genel dosya desteği kapsam dışı                                     |
+| Yerel kart erişimi/pano     | PIN’siz profil tercihi korunur; erişim sınırı belgeli                          | Kurum profil/pano/yedek saklama düzeni belirlemeli                            |
+| OCR                         | Mevcut gerçek yerel worker ve tamamen yapay görüntü matrisi çalıştırılır       | Her aday kullanıcı karşılaştırması ister; müşteri fotoğrafıyla test yasak     |
+| Yeni raporlar/karma ambalaj | Kullanıcının açık isteğiyle ertelendi                                          | LED örnekleri ve beklenen sonuçlar sonraki iş                                 |
+| Büyük dosya/işlem sonucu    | Altı büyük yapay senaryo ve iptal/kayıt koruması doğrulanır                    | Senkron çözümleme zorla kesilemez; tamamlanmış dış yazı geri alınmış sayılmaz |
+| Excel/formül kapsamı        | Desteklenen özellik kaydırma, desteklenmeyen satır yapısına açıklamalı ret     | Genel Excel ayrıştırıcısı/tüm özellikleri koruma taahhüdü yok                 |
+
+Sağlayıcı/kurum kabulünde gereken kararlar: cari numarasından türetilen girişin yetkilendirme
+olmadığının resmi değerlendirmesi; boş ekran tanıtımının izin kapsamı; sekmeler arasında firma
+oturumunun değişme davranışı; çalışan tarayıcı profilinin erişimi, pano geçmişi ve taşınabilir
+kart yedeğinin saklanması. Asistan gerçek sağlayıcı oturumu, kurum politikası veya kullanıcı
+Google hesabına erişmedi; bu dış kararlar kod düzeltmesiyle kapatılmış sayılmaz.
+
+Nihai test ve yayın sayıları oturum notuna yazılır. POS testleri yalnızca yapay veriyle dış ağa
+kapalı taklit ortamda yapılır; müşteri kartı/fotoğrafı, gerçek giriş, SMS veya ödeme kullanılmaz.
