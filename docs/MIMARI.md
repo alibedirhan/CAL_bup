@@ -283,3 +283,14 @@ merkez boyut beyanından bağımsız kesin ölçülmüş sayılmaz. Büyük dosy
 `tools/denemeDosyalari.ts` derlemede yapay kabul ZIP’i üretir; uygulamaya ExcelJS statik yükü
 getirmez. Tarayıcı testi dağıtılacak ZIP → gerçek uygulama → indirilen Excel zincirini sınar.
 POS görünürlük uygunluğu üst kapsayıcıları da denetler; kapalı proxy sınırı korunur.
+
+## Kârlılık dikey dilimi (1.11.0)
+
+`cekirdek/karlilik` yalnız tür/validasyon, `satis/karlilik` enjekte edilmiş
+motor servisi, ayrı Pyodide işçisi ve iptal/timeout portu; React ekranı CAL
+bup bileşenleriyle beş bölüm sunar. Hesap/durum geçişi/Excel yeniden yazılmaz;
+özgün domain/application/adaptörler SHA-256 ile aynıdır. Eşleştirme ve dönem
+JSON'ları kaynak şemalarıyla işçide doğrulanır, `platform/karlilikDeposu`
+nesil + tüm önceki zarf denetimiyle güncel/yedekleri tek IndexedDB aktarımında
+saklar. Çıktı indirmeden önce depo yeniden kontrol edilir. İş kuralları,
+bağımsız başvuru ve platform/kapsam sınırları [KARLILIK.md](KARLILIK.md).

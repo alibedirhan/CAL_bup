@@ -16,6 +16,7 @@ import './arayuz/stiller/depoKontrol.css';
 import './arayuz/stiller/pos.css';
 import './arayuz/stiller/musteriTakip.css';
 import './arayuz/stiller/iskonto.css';
+import './arayuz/stiller/karlilik.css';
 import { Uygulama } from './arayuz/Uygulama';
 import { kayitliTercih, temaUygula } from './arayuz/tema';
 

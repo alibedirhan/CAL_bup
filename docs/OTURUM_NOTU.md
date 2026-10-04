@@ -1,3 +1,65 @@
+# 4 Ekim 2026 — 1.11.0 Kârlılık Analizi
+
+Başlangıç `main`, `a66de70`, 1.10.0. Kullanıcı projede kaldığı yerden
+Kârlılık modülüne devam etmeyi istedi. Etkin proje CAL bup; BUP Yönetim
+salt okunur hesap/okuyucu/çıktı kaynağı olarak korundu. Önceden bulunan
+`tasarim-ornekleri/` değişikliğe veya yayına katılmadı.
+
+- Satış → Kârlılık Analizi: Analiz, Genel Bakış, Senaryo, Eşleşme Merkezi,
+  Dönem Analizi. İki .xlsx, arama/sıralama/negatif marj/eşleşmeyen filtresi,
+  sayfalama, tam/görünen/senaryo Excel; marj/başabaş/Pareto ve gerçek dönem
+  değişimleri vardır. Eşleşmeyen maliyetin sıfır kabul edilmesi kaynak
+  davranışıdır; sonuçları şişirebileceği açıkça uyarılır.
+- 9 okuyucu/analiz, 45 senaryo/Excel, 4 hata ve eşleşme/dönem geçişleri
+  bağımsız masaüstü üreticisinden gelir. Hesap/facade/okuyucu/exporter/depo
+  kaynak SHA-256'ları aynıdır. Kural veya altın beklenti toleransla değişmedi.
+  Yapay formül örneği metin hücresine düzeltildi; ExcelJS −0/DTO float ile
+  Excel serileştirmesi ayrımı belgede açıktır.
+- Her işlem ayrı Pyodide işçisinde; iptal/rota/timeout/bitiş işçiyi kapatır.
+  Girdi/oran değişimi eski sonucu/çıktıyı geçersiz kılar. Geç yanıt uygulaması,
+  çift işlem ve eski sekmenin kaydı ezmesi engellenir. Çıktı öncesinde depo
+  tekrar okunur; başka sekmede değişen kayıt eski çıktıya taşınmaz.
+- Eşleşme/dönem kaynak JSON şemasıyla doğrulanır; güncel/yedekleri tek
+  IndexedDB CAS aktarımında kalır. Bozuk/engelli depo boş kayıt sayılmaz.
+  Kaldırma/silme geri alınabilir. Yazı sırasında iptalin belirsiz durumu
+  eski sonucu kaldırır ve güncel kaydı yeniden kontrol ettirir.
+- ZIP/imza/boyut/satır/hücre sınırları; XML entity ve sonlu olmayan sayı
+  regresyonları vardır. Formül metni Excel'de etkisizdir. Qt ve gerçek
+  config/şirket verileri aktarılmaz. Kaynak settings modülü yalnız kod import
+  bağımlılığı; tüm depolara /cal altında açık sanal yollar enjekte edilir.
+- İlk tarayıcı turundaki combobox adlandırma eksikleri aria-label ile
+  düzeltildi. Açık/koyu 1440×1000 ve 390×844 ekranlar incelendi; tablo kendi
+  kaydırma alanında kalır, sayfa yatay taşmaz. Kanıtlar
+  `/tmp/cal-karlilik-acik.png`, `-koyu.png`, `-acik-dar.png`, `-koyu-dar.png`
+  ve dört ek bölümün açık/koyu dar ekranlarıdır. Test komutu:
+  `npx playwright test tests/tarayici/karlilik.spec.ts`.
+
+Son tam yerel kapı ve yayın kanıtı aşağıdaki kapanış kaydına eklenir.
+Önceki commit/main/push/yayın yetkisi sürer; aynı commit'in CI Linux,
+Chromium/performans ve Windows yardımcı kapıları geçmeden yayın yapılmaz.
+Gerçek Windows/Excel kabulü kullanıcıyla bekler. Ayrı F2.11 Satış Şefi Raporu
+bu beş bölümlü aktarımın kapsamı dışındadır. Sıradaki ana modül Yaşlandırma.
+Detay [KARLILIK.md](KARLILIK.md), katmanlar [MIMARI.md](MIMARI.md), kapsam ve
+bağımlılık sınırları [SATIS_ESDEGERLIK.md](SATIS_ESDEGERLIK.md).
+
+**Kapanış yerel kabulü:** `npm run kontrol` — **41 dosyada 872 test**,
+tip/lint/biçim/derleme PASS. `npm run test:tarayici` — **131 PASS / 6,5 dk**.
+`npm run test:performans` — **9 PASS / 23,8 sn**. 12.000 ürün kârlılık
+okuma/analiz/ilk gösterim yaklaşık **3.41 sn**, ana ekranın en uzun
+zamanlayıcı aralığı **27 ms**; motor hazırlığı dahildir.
+Yerel ölçümdür; Windows/cihaz hız garantisi değildir. Aktarılan Python
+katman ve güvenlik auditleri 0 bulgu; npm runtime audit 0 bilinen açık.
+Python PDF paketlerindeki önceki iki açık kaydı değişmedi; kârlılık bu
+paketleri yüklemez. Son bütünlük kontrolünde vendor kaynakları etkin
+masaüstü SHA-256'larıyla hâlâ birebir eşleşir. Şirket verisi/ayar/dönem
+kaydı veya tasarım örneği staged değişiklikte yoktur.
+
+1.11.0 commit'i önceki yetkiyle main'e gönderilir; yayın aynı commit'in
+GitHub Actions Linux denetim, 131 Chromium/9 performans ve Windows yardımcı
+kapılarından sonra yapılır. Sonuç ve canlı 1.11.0 sürümü/varlık bütünlüğü
+oturum sonunda kontrol edilir. Güncel modül girişi:
+[Satış → Kârlılık Analizi](https://alibedirhan.github.io/CAL_bup/#/satis/karlilik).
+
 # 4 Ekim 2026 — 1.10.0 eşdeğerlik ve İskonto
 
 Başlangıç `main`, `45754df`, 1.9.0. Kullanıcının son isteği, test verisi

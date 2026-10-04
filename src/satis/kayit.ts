@@ -6,6 +6,11 @@ export interface SatisModulu {
 
 export const SATIS_MODULLERI = [
   {
+    id: 'karlilik',
+    ad: 'Kârlılık Analizi',
+    aciklama: 'Satış ve fiyat raporlarından ürün kârlılığını, senaryoları ve dönem değişimlerini inceleyin.',
+  },
+  {
     id: 'iskonto',
     ad: 'İskonto Hesaplama',
     aciklama: 'PDF fiyat listelerine kategori iskontosu uygulayın; Excel ve PDF çıktısı hazırlayın.',

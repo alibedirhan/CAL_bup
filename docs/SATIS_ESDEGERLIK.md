@@ -114,3 +114,14 @@ denemesinin yapıldığı iddia edilmez. Kullanıcının iş yeri kabulü ayrıc
 bekler. Drive ve örneksiz raporlar önceki kararla ertelenmiştir. Kârlılık ve
 Yaşlandırma bu sürümün işi değildir; sonraki satış dilimleri ayrı başvuruyla
 başlatılmalıdır.
+
+## Kârlılık — 1.11.0
+
+9 okuyucu/analiz, 45 senaryo/tam-görünen-senaryo Excel, 4 hata başvurusu,
+eşleştirme geçişleri ve iki dönem metrik/ürün değişimi özgün Python ile
+karşılaştırılır. Kaynak okuyucu/domain/application/exporter/depo dosyaları
+aynı SHA-256'dadır. Tarayıcı IndexedDB/clock/sanal dosya adaptörleri ayrıdır.
+Bu modül yalnız saf openpyxl/et-xmlfile/defusedxml yükler; PDF motorundaki
+Pillow/cryptography açıklarını kapattığı iddia edilmez. Eşdeğerlik kapsamı,
+Excel sayı serileştirmesi ve ayrı Satış Şefi Raporu sınırı
+[KARLILIK.md](KARLILIK.md) içinde; son kabul [OTURUM_NOTU.md](OTURUM_NOTU.md).

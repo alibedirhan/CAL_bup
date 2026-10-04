@@ -25,6 +25,27 @@
       "safe_turkish_text": "5787d56bee0b1d4895591c282790bea19f3a7f4b141d54ac54926f8be4ea1d46",
       "get_clean_filename": "64967471ad11b92fc6c934fe5ded9d0c7b4d56a390870b5b64ced46c731892a1",
       "get_date_display": "12920ad4f312773013e75343f42685ce45eb3412206c8e0e16d8259a62aa4f97"
-    }
+    },
+    "core/settings.py": "e004559fab2c84cf238b0a44495f6b308ab6509cc3fc94dfca9408b8909326de",
+    "core/versioned_json_store.py": "5242d946738b7454222b02af669cebc8667f8a12adb78d05b38e47c715e5e419",
+    "domain/karlilik/__init__.py": "154ceaf6371a456c78bd3f4460a90aec28463276d69084e1e837d9b72abc5bbf",
+    "domain/karlilik/models.py": "81abfc701be9db6cf045466a513146eb236bd577280c3cacc2474eebc1ceb6f0",
+    "domain/karlilik/analysis.py": "4e599857c611835b4bb39f524b4a5466fe6cf11ee23412d871f24dd844a2d67b",
+    "domain/karlilik/dashboard.py": "05ac3a00aae05bfe5bb94f0ed090a00c7c05e62b6360163ace29bb24eda9fff0",
+    "domain/karlilik/matching.py": "e052ad7d04b968b749b8f4573c928d52b33d783c6ac89a60e185982eff9a5b23",
+    "domain/karlilik/period.py": "c2ddf03f75a6eeca57bbb1126066cd8c7ba4fbcda3ee0077d718979d5af48284",
+    "domain/karlilik/scenario.py": "10c063b913a13c186d110b0d232708fae5e49efbdeafef9ddad7584da4eec4d4",
+    "application/profitability_analysis/dto.py": "cb032db38143364f8ea65a4829278c709da2ea17a5bf23ce00c4f40f4a8f7ceb",
+    "application/profitability_analysis/facade.py": "900c7aeba9886253420de8369dba7295928b15f0dab3f90e29a243901b5bebc4",
+    "application/profitability_analysis/ports.py": "254c16496e375222c2fd1046470eb024eaad668c919a56e5bf9614618ac4e4ce",
+    "application/profitability_analysis/dashboard.py": "21589b0bef55c12352d5b608513bfa45f68d46f8523b18dda784bedf4a30973e",
+    "application/profitability_analysis/match_quality.py": "79b4abd70579826108fad3756cc2c774ffea818f000737c098ad7b014e276faa",
+    "application/profitability_analysis/periods.py": "d9f2788468b007a23d366d66f1c9b340ca46e12eadc8b41087e34e6fcdc8cf37",
+    "application/profitability_analysis/scenario.py": "00754658d4bba29b819b19489a3a941620b294c5f2a3f385865b8c1eabef9442",
+    "infrastructure/excel/profitability_workbook_reader.py": "10c807120cd02ef2500ac94e20a62e0c53cff23b1c04ced53296c41ee21e02b0",
+    "infrastructure/export/profitability_exporter.py": "515648f5f8f1f2c354025553ae54d7294dc6e076c66d62bf1f6ec514902aa690",
+    "infrastructure/export/profitability_scenario_exporter.py": "196f6d164759199f9e3dd8f04ae7cfe1a77c3b1a595d8ec634438ba2bd53d731",
+    "infrastructure/persistence/profitability_matches.py": "6431dbfd606b36d990d1d67a32d8c8d9ada9a6cb9226d3688442d506780d6232",
+    "infrastructure/persistence/profitability_periods.py": "bfd96c51c0e24fd929b8a667eb8d83ef80fc8c91f91f4d28ea0d3651013ca73a"
   }
 }

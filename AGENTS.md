@@ -109,9 +109,21 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.10.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.11.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-04 Kârlılık (1.11.0):** Kullanıcı kaldığı yerden bu modülü istedi.
+İki Excel analizi, genel bakış, senaryo, onaylı eşleşme ve dönem karşılaştırması
+özgün Python kodlarıyla tarayıcı işçisinde çalışır; 9 okuyucu/analiz, 45 senaryo/
+Excel, 4 hata ve geçiş/dönem başvurusu bağımsız masaüstü üreticisindendir.
+Eşleşme/dönem JSON'ları kaynak şemasıyla doğrulanır; IndexedDB güncel/yedek
+tek CAS aktarımı, bozuk kaydı ezmeme ve çıktı öncesi yeniden okuma vardır.
+Gerçek config/dönem/stok/şirket dosyaları taşınmaz. Kaynak settings modülü
+kod olarak depo import bağımlılığıdır; tüm yollar /cal altında açıkça enjekte
+edilir, gerçek ayar yüklenmez. Ayrı F2.11 Satış Şefi Raporu sonraki aktarım;
+ana sıradaki modül Yaşlandırma'dır. [Kârlılık kaydı](docs/KARLILIK.md) ve
+[oturum notu](docs/OTURUM_NOTU.md) güncel kapsam/kabul kaynağıdır.
 
 **2026-10-04 eşdeğerlik ve İskonto (1.10.0):** Kullanıcı gerçek test verisi yokken
 masaüstünün iş mantığının korunmasını ve ardından sıradaki modülü istedi.

@@ -339,3 +339,16 @@ veri örtüşmesi, şifreleme ve desteklenmeyen sıkıştırma reddedilir; boyut
 POS aktarımında gizli/etkisiz üst kapsayıcı veya devre dışı fieldset uygun alan değildir;
 gizli firma numarası eşleşme kanıtı sayılmaz. Gerçek sağlayıcı oturumu doğrulanmış değildir.
 Ayarlar’daki deneme paketi yalnızca yapay LED/hedef Excel dosyaları ve beklenen sonuç içerir.
+
+## Satış — Kârlılık Analizi (1.11.0)
+
+İlk sayfa ve ilk beş satırdaki başlıklar kullanılır. Satış stok adı koddan
+önce gelir; toplam satırları kaynak gibi dışlanır. Fiyat haritası stok/tarih
+boş, Depo hücresinde ürün adı olan pozitif fiyatların ilk görüleninden
+kurulur. Birim kâr = ort. satış fiyatı − maliyet, net kâr = birim kâr ×
+miktar. Satış tutarı ayrıca korunur. Eşleşmeyen maliyet sıfır ve görünür
+uyarıdır; tahmini eşleşme yoktur. Öneri yalnız açık onay sonrası hesapta
+kullanılır. Senaryo −100…500 oranları, marj/başabaş/Pareto ve dönem
+karşılaştırması özgün Python kuralıdır. Tam/görünen/senaryo Excel kapsamı
+masaüstüyle aynı; görünür çıktı bütün filtreli sonuç sayfalarını içerir.
+Ayrıntı, depo sınırları ve Satış Şefi Raporu ayrımı [KARLILIK.md](KARLILIK.md).

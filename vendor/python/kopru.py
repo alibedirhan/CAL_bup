@@ -167,15 +167,20 @@ def musteri_oku(request):
 def cal_calistir(text):
     request = json.loads(text)
     try:
-        if request['tur'] == 'musteri':
+        if request['tur'] == 'karlilik':
+            sys.path.insert(0, '/cal')
+            from karlilik_kopru import karlilik_calistir
+            result = karlilik_calistir(request)
+        elif request['tur'] == 'musteri':
             result = musteri_oku(request)
         else:
             result = iskonto_calistir(request)
         return json.dumps(result, ensure_ascii=False, allow_nan=False)
     except Exception as error:
         # İz/yığın ve veri stdout/stderr/JavaScript konsoluna taşınmaz.
-        known = {'ValueError', 'HeaderNotFoundError', 'CariColumnNotFoundError', 'InvalidCustomerFileError', 'NoPriceListsLoadedError', 'DiscountRateValidationError', 'NoPreviewDataError', 'VisibleExportSelectionError', 'InvalidDiscountExportDataError', 'InvalidVisibleExportDataError'}
+        known = {'ValueError', 'HeaderNotFoundError', 'CariColumnNotFoundError', 'InvalidCustomerFileError', 'NoPriceListsLoadedError', 'DiscountRateValidationError', 'NoPreviewDataError', 'VisibleExportSelectionError', 'InvalidDiscountExportDataError', 'InvalidVisibleExportDataError', 'InvalidProfitabilityWorkbookError', 'ProfitabilityWorkbookLimitError', 'ProfitabilityHeaderNotFoundError', 'ProfitabilityColumnNotFoundError', 'ProfitabilityWorkbookEmptyError', 'InvalidProfitabilityScenarioError', 'ProfitabilityMatchSelectionError', 'ProfitabilityMatchQualityError', 'PeriodSelectionError', 'InvalidPeriodNameError', 'ProfitabilityPeriodServiceError'}
         message = str(error) if type(error).__name__ in known else 'Dosya işlemi tamamlanamadı. Dosyayı kontrol edip yeniden deneyin.'
         return json.dumps({'tur': 'hata', 'mesaj': message}, ensure_ascii=False)
     finally:
         shutil.rmtree(ROOT / 'girdiler', ignore_errors=True)
+        shutil.rmtree(ROOT / 'kayitlar', ignore_errors=True)

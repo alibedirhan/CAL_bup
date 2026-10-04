@@ -24,7 +24,7 @@ async function al(kok: URL, ad: string, sha256: string): Promise<Uint8Array> {
   return bayt;
 }
 
-async function baslat(tur: 'musteri' | 'iskonto', islem?: string): Promise<PyodideInterface> {
+async function baslat(tur: 'musteri' | 'iskonto' | 'karlilik', islem?: string): Promise<PyodideInterface> {
   const kok = new URL(import.meta.env.BASE_URL + 'python/', self.location.origin);
   const cevap = await fetch(new URL('manifest.json', kok), { credentials: 'omit', cache: 'no-cache' });
   if (!cevap.ok) throw new KullaniciHatasi('Dosya motoru hazırlanamadı. Sayfayı yenileyip yeniden deneyin.');
@@ -78,7 +78,10 @@ exec(Path('/cal/kopru.py').read_text(), globals())
   return p;
 }
 
-export async function pythonMotoru(tur: 'musteri' | 'iskonto', islem?: string): Promise<PyodideInterface> {
+export async function pythonMotoru(
+  tur: 'musteri' | 'iskonto' | 'karlilik',
+  islem?: string,
+): Promise<PyodideInterface> {
   motor ??= baslat(tur, islem).catch((hata: unknown) => {
     motor = undefined;
     throw hata;

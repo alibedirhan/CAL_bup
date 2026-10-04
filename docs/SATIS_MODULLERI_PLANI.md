@@ -110,3 +110,12 @@ Güncel katman, üretici, test ve bağımlılık sınırları
 [Satış eşdeğerliği](SATIS_ESDEGERLIK.md) ve [mimaridedir](MIMARI.md).
 Sonraki modül Kârlılık Analizi'dir; mevcut davranış için ayrı bağımsız
 okuyucu/hesap/çıktı başvurusu oluşturulmadan uygulamaya geçilmez.
+
+## Kullanıcının devam isteği — 1.11.0
+
+Kullanıcı kaldığı yerden Kârlılık Analizi'ne devam etmeyi istedi. Özgün iki
+Excel analizinin beş bölümü (Analiz, Genel Bakış, Senaryo, Eşleşme Merkezi,
+Dönem Analizi) ayrı bağımsız masaüstü başvurusuyla CAL bup'a taşındı.
+Yeni JS hesap yoktur. Ayrı F2.11 Satış Şefi Raporu bu dilime dahil değildir;
+kaynak uygulamada bulunan bu ek modülün aktarımı sonraki ayrı iştir.
+Sıradaki ana satış modülü Yaşlandırma'dır. Detay ve kabul [KARLILIK.md](KARLILIK.md).
