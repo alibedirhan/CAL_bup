@@ -11,6 +11,7 @@ import { DepoKontrolSayfasi } from './sayfalar/depoKontrol/DepoKontrolSayfasi';
 import { GecmisSayfasi } from './sayfalar/GecmisSayfasi';
 import { YakindaSayfasi } from './sayfalar/YakindaSayfasi';
 import { SanalPosSayfasi } from './sayfalar/pos/SanalPosSayfasi';
+import { SatisSayfalari } from './sayfalar/satis/SatisSayfalari';
 import { kayitliTercih, temaUygula, type TemaTercihi } from './tema';
 
 function hashDinle(bildir: () => void) {
@@ -73,7 +74,8 @@ export function Uygulama() {
             <DepoKontrolSayfasi rapor={depoKontrol} ayarlar={ayarlar} />
           </div>
         )}
-        {!depoKontrolAcik && (
+        <SatisSayfalari modulId={rota.tur === 'satis' ? rota.id : undefined} />
+        {!depoKontrolAcik && rota.tur !== 'satis' && (
           <div className="sayfa-ic">
             {rota.tur === 'gecmis' && <GecmisSayfasi />}
             {rota.tur === 'sanal-pos' && <SanalPosSayfasi />}

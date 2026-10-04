@@ -1,0 +1,103 @@
+.musteri-takip {
+  display: grid;
+  gap: 28px;
+}
+.musteri-izgara {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.excel-dosya-secimi {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--cizgi);
+  border-radius: var(--yaricap);
+  background: var(--yuzey-2);
+}
+.excel-dosya-secimi span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.excel-dosya-secimi span {
+  color: var(--soluk);
+  margin-top: 6px;
+}
+.excel-dosya-secimi .dugme {
+  justify-self: start;
+}
+.musteri-harf {
+  display: flex;
+  gap: 8px;
+  align-items: start;
+}
+.musteri-harf input {
+  margin-top: 5px;
+  accent-color: var(--vurgu);
+}
+.musteri-ozet {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.musteri-ozet > div {
+  padding: 12px;
+  border: 1px solid var(--cizgi);
+  border-radius: var(--yaricap-k);
+  background: var(--yuzey-2);
+}
+.musteri-ozet dt {
+  color: var(--soluk);
+  font-size: 12px;
+}
+.musteri-ozet dd {
+  margin: 6px 0 0;
+  font: 500 22px var(--yazi-rakam);
+}
+.musteri-tablo-araclari {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.musteri-tablo-araclari label {
+  display: grid;
+  gap: 6px;
+  flex: 1 1 160px;
+  font-size: 13px;
+}
+.musteri-adi {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.musteri-ayarlar,
+.musteri-ayar-duzen {
+  display: grid;
+  gap: 12px;
+}
+.musteri-plasiyer-satiri {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 65px minmax(0, 1fr) auto;
+  align-items: end;
+}
+.musteri-plasiyer-satiri label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+@media (max-width: 1180px) {
+  .musteri-izgara {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 520px) {
+  .musteri-ozet {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .musteri-takip .satir-dugmeleri .dugme {
+    white-space: normal;
+    text-align: center;
+  }
+}

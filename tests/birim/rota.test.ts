@@ -13,11 +13,13 @@ describe('rotaCoz', () => {
     expect(rotaCoz('#/ayarlar')).toEqual({ tur: 'ayarlar' });
     expect(rotaCoz('#/sanal-pos')).toEqual({ tur: 'sanal-pos' });
     expect(rotaCoz('#/rapor/envanter')).toEqual({ tur: 'rapor', id: 'envanter' });
+    expect(rotaCoz('#/satis/musteri-takip')).toEqual({ tur: 'satis', id: 'musteri-takip' });
   });
 
   it('bilinmeyen adreste açılış sayfasına döner', () => {
     expect(rotaCoz('#/olmayan/sayfa')).toEqual(ACILIS);
     expect(rotaCoz('#/rapor')).toEqual(ACILIS);
+    expect(rotaCoz('#/satis/olmayan')).toEqual(ACILIS);
   });
 
   it('adres ve çözüm birbirinin tersidir', () => {
@@ -26,6 +28,7 @@ describe('rotaCoz', () => {
       { tur: 'gecmis' } as const,
       { tur: 'ayarlar' } as const,
       { tur: 'sanal-pos' } as const,
+      { tur: 'satis', id: 'musteri-takip' } as const,
     ]) {
       expect(rotaCoz(rotaAdresi(r))).toEqual(r);
     }

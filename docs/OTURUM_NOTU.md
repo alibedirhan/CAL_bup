@@ -1,3 +1,57 @@
+# 4 Ekim 2026 — 1.9.0 Satış: Müşteri Takip
+
+Başlangıç `main`, `d01d84b`, 1.8.0. Kullanıcı Bup-Yönetim modüllerini CAL bup
+tasarımıyla Satış altında kullanmayı; iş davranışını birebir korumayı ve önce
+bir modülle başlamayı istedi. [Plan](SATIS_MODULLERI_PLANI.md) önce yazıldı.
+İlk modül Müşteri Takip tamamlandı; diğer satış modülleri bu tur açılmadı.
+Kullanıcı sonradan “devam edelim” dedi. Model kapasite mesajının projedeki
+bir hata olmadığı açıklandı ve çalışma sürdü.
+
+- Masaüstünün aktif okuyucu/facade/tam-görünen Excel hattı **yalnız yapay
+  Excel'lerle** çalıştırıldı. 64 iki yön/harf seçeneği karşılaştırması, dört
+  okuma hatası ve bütün Excel hücre/birleşim sözleşmeleri sabit başvurudur.
+  Kaynak SHA-256'ları kayıtlıdır; Python üretici gerçek config/veri okumaz.
+  Kaynak masaüstü projesine yazılmadı; önceden bulunan değişiklikler korundu.
+- Saf kurallar, kitap okuyucusu, enjekte edilen motor portu ve uygulama
+  servisi ayrıdır. ESLint yeni Satış/servis sınırlarını denetler. Katalog ve
+  ekran kaydı türlerle eşleşir; ekranı eksik yeni katalog girdisi derlenmez.
+- Satış → Müşteri Takip: dosya seçme/değiştirme, harf duyarlılığı, iki yön,
+  arama/sıralama/sayfalama, tam Excel/PNG ve görünen Excel vardır. Filtre
+  tam çıktıyı daraltmaz; görünür Excel bütün sonuç sayfalarını kapsar.
+- Excel ZIP/okuma/yazma ayrı işçidedir. İptal/rota çıkışı işçiyi kapatır;
+  geç yanıt yarım sonuç oluşturmaz. Girdi/harf değişimi eski çıktıyı keser.
+  Rota değişimi dosyaları ve bitmiş sonucu korur; yenileme listeleri unutur.
+- Araç/plasiyer ayarı doğrulanan sürümlü IndexedDB kaydıdır; güncel/yedek
+  atomiktir, eski sekme nesil denetimiyle reddedilir. Ayar her işlemde tekrar
+  okunur. Önerilen ad karşılaştırma anından, başlık güncel eşleşmeden gelir.
+  Bozuk kayıt boş sayılıp ezilmez. Gerçek masaüstü eşleştirmeleri taşınmadı.
+- Formül metni etkisiz Excel hücresidir. PNG uzun adları yalnız görselde
+  kaynak gibi kısaltır. Piksel bütçesiyle bölünen resimler tek ZIP olur.
+  JSZip'in zaten kullanılan 3.10.2 sürümü runtime'a taşınıp sabitlendi;
+  başka kütüphane veya servis eklenmedi. Rapor/POS kuralları değişmedi.
+
+**Nihai yerel doğrulama:** `npm run kontrol` — **36 dosyada 588 test**,
+tip/lint/biçim/derleme PASS; `npm run test:tarayici` — **112 senaryo PASS**;
+`npm run test:performans` — **7 senaryo PASS**. Yeni 40.000 satırlık müşteri
+ölçümü yaklaşık **874 ms**, en uzun ana ekran zamanlayıcı beklemesi **38 ms**;
+bu yerel ölçümdür, her bilgisayar için hız garantisi değildir. Runtime audit
+bilinen açık sayısı 0'dır. Açık/koyu masaüstü ve 390 px ekran görüntüleri
+incelendi; taşma/JS hatası yoktur. Geçici kanıtlar `/tmp/cal-musteri-*` içinde.
+
+POS regresyonları yalnız yapay kart/fotoğraf ve dış ağa kapalı taklit
+ortamda çalıştı. Gerçek kart/fotoğraf, SMS, ödeme veya sağlayıcı girişi yok.
+Yeni müşteri modülü dış ağ isteği yapmadı. Gerçek iş yeri Windows/Excel
+açma kabulü bu tur yapılmadı. Drive/örneksiz raporlar için önceki erteleme
+sürer. Eski tasarım örnekleri yerinde kaldı ve bu sürüme katılmadı.
+
+Sürüm **1.9.0**. Önceki commit/main/push/yayın yetkisi sürer; site Linux
+kontrol, Chromium/performans ve Windows yardımcı kapılarından sonra aynı
+commit ile yayımlanır. [Actions](https://github.com/alibedirhan/CAL_bup/actions/workflows/yayin.yml)
+ve canlı sürüm/varlık özeti yayın sonrası doğrulanır. Sonraki satış işi
+İskonto Hesaplama; önce PDF okuma/kategori/iskonto/KDV/yuvarlama/çıktı
+sözleşmesi için bağımsız yapay başvuru kurulmalıdır. Diğer modüllere geçmeden
+kullanıcının ilk modül incelemesi alınır.
+
 # 4 Ekim 2026 — 1.8.0 üç aşamalı uygulama
 
 Başlangıç temiz `main`, `e8fbc91`, 1.7.1; önceki yayın Actions 37203386188 başarılıydı.

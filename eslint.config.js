@@ -39,6 +39,7 @@ export default tseslint.config(
                 '**/arayuz/**',
                 '**/platform/**',
                 '**/raporlar/**',
+                '**/satis/**',
                 '**/kaynaklar/**',
                 '**/hedef/**',
                 '**/eklenti/**',
@@ -51,7 +52,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/platform/**', 'src/raporlar/**', 'src/kaynaklar/**', 'src/hedef/**'],
+    files: ['src/platform/**', 'src/raporlar/**', 'src/satis/**', 'src/kaynaklar/**', 'src/hedef/**'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -68,6 +69,7 @@ export default tseslint.config(
   },
   {
     files: ['src/arayuz/**'],
+    // Satış servisinin port ve saf kural sınırı aşağıdaki ayrı blokta da denetlenir.
     rules: {
       'no-restricted-imports': 'off',
       '@typescript-eslint/no-restricted-imports': [
@@ -78,6 +80,42 @@ export default tseslint.config(
               group: ['exceljs', '**/kaynaklar/excel', '**/hedef/**', '**/motor', '**/depoKontrol/islem'],
               allowTypeImports: true,
               message: 'Excel motoru yalnızca dinamik motorYukle ile yüklenir.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/satis/**/servis.ts', 'src/satis/**/portlar.ts'],
+    rules: {
+      'no-restricted-globals': [
+        'error',
+        'window',
+        'document',
+        'navigator',
+        'localStorage',
+        'sessionStorage',
+        'indexedDB',
+        'Worker',
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                'react',
+                'react-dom',
+                'exceljs',
+                '**/arayuz/**',
+                '**/platform/**',
+                '**/kaynaklar/**',
+                '**/hedef/**',
+                '**/motor',
+                '**/workerMotoru',
+              ],
+              message: 'Satış servisi yalnız portları ve saf kuralları kullanır.',
             },
           ],
         },

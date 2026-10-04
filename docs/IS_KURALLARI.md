@@ -4,6 +4,50 @@ Bu belge raporların _ne_ yaptığını anlatır; _nasıl_ yapıldığı `docs/M
 Excel/VBA aracından (v1.2) taşınmış ve 30.09.2026 gerçek dosyalarıyla doğrulanmıştır. Gerçek rakamlar
 burada yazmaz (depo herkese açık); doğrulanmış rakamlar yalnızca yereldeki `ornekler/beklenen.json`'dadır.
 
+## Müşteri Takip — masaüstü sözleşmesi (1.9.0)
+
+Kaynak BUP Yönetim'in aktif müşteri modülüyle yapay veride eşdeğerlik korunur:
+
+1. İlk Excel sayfası kullanılır. İlk 15 satırda `Cari Ünvan` başlık satırı
+   harf katlamasıyla aranır; sütun seçiminde kaynak uygulama gibi birebir
+   `Cari Ünvan` yazımı aranır. Sütunun altındaki dolu adlar alınır.
+2. Python `strip/upper/casefold` davranışı esas alınır. Kenarlar temizlenir;
+   iç boşluk, noktalama, aksan ve Türkçe harfler ayrıca normalleştirilmez.
+   Kaynakta harf duyarsız olan varsayılan ve duyarlı seçenek korunur.
+3. Eski/yeni sayıları, tekrarlar dahil okunan dolu satır sayısıdır. Eksikler
+   eski listede olup yenide olmayan, yeniler ters yönde olmayan adlardır.
+   Sonuç tekrarları kaldırılır; ilk görülen sıra ve yazım korunur.
+4. Depo ilk sütunun ilk 10 satırındaki `Cari Kategori 3 [...]` satırından,
+   köşeli parantezden sonraki metinden çıkarılır. Araç/plasiyer eşleşmesi
+   isteğe bağlıdır. Dosya önerisi karşılaştırma anındaki eşleşmedir; çıktı
+   başlığı kaynak facade gibi dışa aktarma anındaki güncel eşleşmeden gelir.
+5. Formüller çalıştırılmaz; varsa hesaplanmış sonuç okunur. Hesaplanmamış
+   formül kaynak okuyucu gibi boş sayılır. Birleşik hücrenin yalnız sol üst
+   değeri alınır; ExcelJS'in tekrarladığı birleşim değeri tekrar sayılmaz.
+6. Tam Excel `Sheet1` ve `# / Cari Ünvan` sütunlarıyla bütün eksik listesini
+   kaynak sırasıyla verir. Depo başlığı varsa A1:B1 birleşir, tablo 3. satırda
+   başlar; yoksa 1. satırda başlar. Arama/sekme/sıralama bu çıktıyı değiştirmez.
+7. Görünen Excel seçili eksik/yeni listesinin arama ve sıralama sonrası tüm
+   satırlarını, `Görünen Satırlar / Kapsam` sayfalarıyla verir. Ekrandaki 50
+   satırlık sayfalama çıktı kapsamını daraltmaz. Boş, tekrar eden veya güncel
+   sonuca ait olmayan seçim reddedilir. Metinler formüle dönüşmez.
+8. PNG tam eksik listesidir. Kaynak gibi 80 karakterden uzun adlar gösterimde
+   77 karakter + `...` olur; Excel ve hesap sonucu tam metni korur. Boş
+   sonuçta açıklama resmi vardır. 200 satırdan uzun liste piksel bütçesi için
+   PNG sayfalarına ayrılır ve tek ZIP içinde verilir. En fazla 5.000 satır;
+   daha büyük liste Excel ile aktarılır.
+
+Müşteri dosyası `.xlsx`, en fazla 25 MB, 16 sayfa, 100.000 satır, 256 sütun;
+okunan müşteri/üst bilgi hücresi en fazla 512 Unicode karakteridir. Ortak ZIP
+denetimi geçerlidir. Masaüstünün 100 MB/200.000 satır üst sınırları tarayıcıya
+aktarılmadı; iş kuralı değil platform kaynak sınırıdır.
+
+Araç/plasiyer ayarları iki haneli araç anahtarı, dolu ve en fazla 100 karakter
+adla doğrulanır. Tekrarlanan anahtarda son satır geçerlidir. En fazla 100 kayıt;
+bir önceki ayar aynı atomik kayıtta geri alma için korunur. OS ortam değişkeni
+ve masaüstündeki gerçek config tarayıcıya taşınmaz. Müşteri dosyaları ve
+sonuçları yenilemede unutulur; yerel ayarlar korunur.
+
 ## Kaynak sistem: LED
 
 Okunan raporlar Bupiliç'in **LED** sisteminden alınır (LOGO değil). Ortak özellikler:

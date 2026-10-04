@@ -1,4 +1,5 @@
 import { RAPORLAR } from '../../raporlar/kayit';
+import { SATIS_MODULLERI } from '../../satis/kayit';
 import { SURUM } from '../../surum';
 import { rotaAdresi, type Rota } from '../rota';
 import type { TemaTercihi } from '../tema';
@@ -47,6 +48,24 @@ export function KenarCubugu({ rota, tema, temaDegisti }: Ozellikler) {
               <Simge ad={RAPOR_SIMGELERI[r.id] ?? 'dosya'} />
               {r.ad}
               {r.durum === 'yakinda' && <span className="rozet">yakında</span>}
+            </a>
+          );
+        })}
+      </nav>
+
+      <nav className="menu" aria-label="Satış">
+        <div className="etiket">Satış</div>
+        {SATIS_MODULLERI.map((modul) => {
+          const hedef: Rota = { tur: 'satis', id: modul.id };
+          return (
+            <a
+              key={modul.id}
+              className="menu-oge"
+              href={rotaAdresi(hedef)}
+              aria-current={secili(hedef) ? 'page' : undefined}
+            >
+              <Simge ad="musteriler" />
+              {modul.ad}
             </a>
           );
         })}

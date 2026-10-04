@@ -21,6 +21,18 @@ Gün sayfalarının yılı başlıklardan doğrulanamazsa uygulama dosya yılın
 ister. Windows/Excel denemesi için Ayarlar’dan **Deneme dosyalarını indir** seçeneğiyle tamamen
 yapay örnekler ve beklenen sonuçlar alınabilir.
 
+## Satış
+
+**Müşteri Takip** hazırdır. Eski ve yeni tarihli LED müşteri Excel'lerini seçip
+**Karşılaştır** düğmesine basın. Eksik ve yeni müşterileri ayrı listelerde
+arayabilir ve sıralayabilirsiniz. Tam Excel/resim tüm eksik müşterileri,
+görünen Excel ise seçili listedeki arama ve sıralamanın tamamını içerir.
+Araç/plasiyer ayarları bu tarayıcıda tutulur; müşteri listeleri yalnız oturumda kalır.
+
+Masaüstü BUP Yönetim'in kuralları yapay dosyalardan üretilmiş bağımsız Python
+başvurusuyla karşılaştırılır. Aktarım planı ve kapsam:
+[Satış modülleri](docs/SATIS_MODULLERI_PLANI.md).
+
 ## Sanal POS
 
 Sanal POS bölümünde cari seçince **Kayıtlı kartlar → Kart ekle** görünür. Kart bilgileri elle

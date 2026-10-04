@@ -3,6 +3,43 @@
 Statik bir tek sayfa uygulaması (Vite + TypeScript + React). Sunucu yok: Excel dosyaları tarayıcıda
 okunur ve yazılır. GitHub Pages'te yayınlanır.
 
+## Satış dikey dilimi (1.9.0)
+
+İlk Satış modülü Müşteri Takip'tir. Katalog kimlikleri TypeScript'te ekran
+kaydıyla eşleşmek zorundadır; yeni katalog girdisinin ekranı eksikse derleme
+başarısız olur. Kabuk modülü katalog/ekran kaydından açar. Ekran ilk ziyarette
+ayrı parça olarak yüklenir; sonraki rota değişimlerinde oturumunu korur.
+
+- `cekirdek/musteriTakip`: saf karşılaştırma, Python metin davranışı,
+  adlandırma, çıktı seçimi ve ayar doğrulama. React/tarayıcı/ExcelJS bağı yoktur.
+- `kaynaklar/musteriListesi`: yalnız `Kitap` portunu kullanır. Birleşimlerin
+  sol üst hücresi ve hesaplanmış formül sonucu masaüstüyle aynı okunur.
+- `satis/musteriTakip/servis`: enjekte edilen `MusteriMotoru` portuyla iki
+  dosyayı sırayla okur; ikisi de başarılı olmadan sonuç dönmez. ESLint somut
+  adaptör ve tarayıcı/arayüz bağımlılıklarını bu serviste yasaklar.
+- Modül `motor`u Excel adaptörünü bağlar; `workerMotoru` her Excel işi için
+  modül işçisi kurar. İşçi, başarı/hata/iptal/zaman aşımında kapatılır.
+  ZIP açma ve Excel okuma/yazma ana ekranın iş parçacığını kullanmaz.
+- Platform PNG/ZIP ve sürümlü IndexedDB araç/plasiyer adaptörlerini sağlar.
+  Güncel kayıt + yedek tek aktarımda yazılır. Beklenen nesil uyuşmuyorsa eski
+  sekme yeni kaydı ezemez. Okuma hatası “kayıt yok” sayılmaz.
+
+Dosyalar ve karşılaştırma sonuçları yalnız oturum belleğindedir. Girdi veya
+harf seçeneği değişince sonuç geçersiz olur. Tek işlem kilidi, nesil ve
+AbortSignal geç yanıtları dışlar; rota çıkışı bekleyen Excel işçisini kapatır.
+Çıktı kullanıcı tıklamasıyla yeni dosya olarak indirilir; kaynak kitaplara
+yazılmaz. İndirme başlatılması dosyanın disk üzerinde kaydedildiğinin kanıtı
+değildir. Çok sayfalı resimler tek ZIP olur; tarayıcının çoklu indirme izni
+gerekmez. JSZip mevcut 3.10.2 sürümünde sabitlendi ve runtime bağımlılığına
+taşındı; ExcelJS sürümü değişmedi.
+
+Bağımsız Python başvurusu masaüstünün aktif okuyucu/facade/Excel exporter'ını
+yalnız yapay Excel'lerle çalıştırır. CI Python/masaüstü projeye erişmeden
+kayıtlı girdiler ve hücre sonuçlarıyla eşdeğerliği doğrular. Üretici ve kaynak
+SHA-256'ları başvurunun yenilenmesini açık ve denetlenebilir tutar.
+
+Kapsam ve kabul: [Satış aktarım planı](SATIS_MODULLERI_PLANI.md).
+
 ## Katmanlar ve bağımlılık yönü
 
 ```

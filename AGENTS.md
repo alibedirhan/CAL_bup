@@ -53,6 +53,7 @@ src/
                 formul.ts (formül kaydırma), depoKontrol.ts (planı sayfaya yazma)
   raporlar/     kayit.ts (rapor listesi) + depoKontrol/ (hesapla, gunSecimi, tarihDenetimi,
                 islem, oturum = ekran durumu, motor/motorYukle = ExcelJS ayrı parça)
+  satis/        katalog + musteriTakip/ (portlar, servis, dinamik Excel işçisi)
   platform/     tarayıcıya bağlı: dosya.ts (seç/kaydet), idb.ts, gecmis.ts (geçmiş + yedek),
                 ayarlar.ts, saklama.ts (localStorage)
   arayuz/       React: Uygulama.tsx, rota.ts, tema.ts, bilesenler/, sayfalar/, stiller/
@@ -73,7 +74,7 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 2. **Katmanlar:** `cekirdek/` hiçbir katmana, React'e, ExcelJS'e bağlanmaz (ESLint zorlar). Okuyucular
    ExcelJS'i bilmez, `Kitap` görünümünü okur. Rapor önce saf bir **plan** üretir; önizleme ve kayıt aynı
    planı kullanır. Ayrıntı: `docs/MIMARI.md`.
-3. **ExcelJS yalnızca `motor.ts` üzerinden yüklenir** (dinamik içe aktarma, ~940 KB ayrı parça).
+3. **ExcelJS yalnızca modülün `motor.ts` üzerinden yüklenir** (dinamik içe aktarma, ~940 KB ayrı parça).
    Arayüzden `kaynaklar/excel.ts`, `hedef/*` ya da `islem.ts`'i statik içe aktarma; yalnızca `import type`.
 4. ExcelJS 4.4.0'a **sabit**. Eksikleri `hedef/sayfa.ts`'te çözüldü (MIMARI.md tablosu). Yükseltirsen
    altın testleri ve tarayıcı denemesini yeniden yap.
@@ -108,9 +109,25 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.8.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.9.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-04 Satış — Müşteri Takip (1.9.0):** Kullanıcı bir modülle başlamayı,
+CAL bup arayüzünü ve masaüstü iş davranışını korumayı istedi. İlk dilim
+Müşteri Takip'tir; diğer üç satış modülü sonraki işlerdir.
+[Aktarım planı](docs/SATIS_MODULLERI_PLANI.md) ve iş kuralları bağlayıcıdır.
+Kaynak BUP Yönetim, config ve gerçek müşteri dosyalarını buraya kopyalama.
+64 yapay Python karşılaştırma başvurusu, dört hata ve Excel hücre sözleşmesi
+`tests/yardimci/veriler/musteriReferansi.json` içindedir; üretici kaynak dosyaların
+SHA-256'larını kaydeder. Yeni iş kuralı ancak bağımsız başvuruyla sınanır.
+Saf kurallar `cekirdek/musteriTakip`, okuyucu `kaynaklar/musteriListesi`,
+port/servis `satis/musteriTakip`, somut adaptörler motor/platformdadır.
+Excel işçisi iptal/rota çıkışında kapatılır. Liste sonuçları kalıcı kaydedilmez.
+Tam Excel/PNG eksik listesidir; görünen Excel etkin filtreli/sıralı listenin
+bütün sayfalarını içerir. Araç/plasiyer ayarı sürümlü/atomik/nesil denetimlidir;
+bozuk veya başka sekmede değişmiş kaydı ezme. Tasarım örnekleri kullanıcı tarafından
+sonraya bırakıldı; `tasarim-ornekleri/` üretim değişikliğine katılmaz.
 
 **2026-10-04 üç aşamalı devam (1.8.0):** Kullanıcı yeni rapor/karma ambalaj örneklerini,
 Drive kurulumunu ve gerçek Windows denemesini sonraya bıraktı. Gün başlığı yılı doğrulanır;

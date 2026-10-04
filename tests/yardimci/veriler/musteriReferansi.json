@@ -1,0 +1,4773 @@
+{
+  "kaynak": "BUP_Yonetim — yalnızca yapay veri",
+  "kaynakSha256": {
+    "domain/musteri_takip/comparison.py": "12da591e23c2c2ac5cec55e4668817f22bf45f034fc7e676665e83fc237da497",
+    "domain/musteri_takip/naming.py": "bc8550cce69d4f08318189554b5083b637cc166d887b85871d34c9c7c209801f",
+    "application/customer_tracking/facade.py": "3d2f860f2a1bcfa952f854885f78d6cb54bb255f8681db81103863275a746166",
+    "infrastructure/excel/customer_list_reader.py": "c77d0ad349778d2a4492c3dd28a501e812971078a01e63de4a119f8b1f94160f",
+    "infrastructure/export/customer_comparison_exporter.py": "4777d0725155a40ab13c88f0c485301f9f82bc9e35a4cb3619f15079f5b4ab9c",
+    "infrastructure/export/visible_table_exporter.py": "32e3cfa9c22213c4fd4c97565a6cfc57b5761628fd67b5bfad71edbd8eda4074"
+  },
+  "senaryolar": [
+    {
+      "ad": "tekrar-ve-iki-yon",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "  Yapay Alfa  ", 0],
+        [null, "Yapay Beta", 0],
+        [null, "yapay alfa", 0],
+        [null, null, 0],
+        [null, "", 0],
+        [null, "Yapay Gamma", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "YAPAY ALFA", 0],
+        [null, "Yapay Delta", 0],
+        [null, "Yapay Delta", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": ["Yapay Alfa", "Yapay Beta", "yapay alfa", "Yapay Gamma"],
+      "okunanYeni": ["YAPAY ALFA", "Yapay Delta", "Yapay Delta"],
+      "sonuc": {
+        "eksikler": ["Yapay Beta", "Yapay Gamma"],
+        "yeniler": ["Yapay Delta"],
+        "eskiSayisi": 4,
+        "yeniSayisi": 3,
+        "depo": null,
+        "mesaj": "Toplam 4 cari ünvandan 2 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Beta"],
+            [2, "Yapay Gamma"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Delta"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "tekrar-ve-iki-yon",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "  Yapay Alfa  ", 0],
+        [null, "Yapay Beta", 0],
+        [null, "yapay alfa", 0],
+        [null, null, 0],
+        [null, "", 0],
+        [null, "Yapay Gamma", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "YAPAY ALFA", 0],
+        [null, "Yapay Delta", 0],
+        [null, "Yapay Delta", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": ["Yapay Alfa", "Yapay Beta", "yapay alfa", "Yapay Gamma"],
+      "okunanYeni": ["YAPAY ALFA", "Yapay Delta", "Yapay Delta"],
+      "sonuc": {
+        "eksikler": ["Yapay Alfa", "Yapay Beta", "yapay alfa", "Yapay Gamma"],
+        "yeniler": ["YAPAY ALFA", "Yapay Delta"],
+        "eskiSayisi": 4,
+        "yeniSayisi": 3,
+        "depo": null,
+        "mesaj": "Toplam 4 cari ünvandan 4 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Alfa"],
+            [2, "Yapay Beta"],
+            [3, "yapay alfa"],
+            [4, "Yapay Gamma"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Delta"],
+            [2, "YAPAY ALFA"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 2]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "arac-baslik",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        ["Cari Kategori 3 [TEST] İZMİR ARAÇ 06"],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay Beta", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "yapay alfa", 0],
+        [null, "Yapay Yeni", 0]
+      ],
+      "plasiyerler": {
+        "06": "Yapay Plasiyer"
+      },
+      "harfDuyarli": false,
+      "okunanEski": ["Yapay Alfa", "Yapay Beta"],
+      "okunanYeni": ["yapay alfa", "Yapay Yeni"],
+      "sonuc": {
+        "eksikler": ["Yapay Beta"],
+        "yeniler": ["Yapay Yeni"],
+        "eskiSayisi": 2,
+        "yeniSayisi": 2,
+        "depo": "İZMİR ARAÇ 06",
+        "mesaj": "Toplam 2 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "Arac_06_Yapay Plasiyer"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["Araç 06 - Yapay Plasiyer", null],
+            [null, null],
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Beta"]
+          ],
+          "birlesimler": ["A1:B1"]
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Yeni"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "arac-baslik",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        ["Cari Kategori 3 [TEST] İZMİR ARAÇ 06"],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay Beta", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "yapay alfa", 0],
+        [null, "Yapay Yeni", 0]
+      ],
+      "plasiyerler": {
+        "06": "Yapay Plasiyer"
+      },
+      "harfDuyarli": true,
+      "okunanEski": ["Yapay Alfa", "Yapay Beta"],
+      "okunanYeni": ["yapay alfa", "Yapay Yeni"],
+      "sonuc": {
+        "eksikler": ["Yapay Alfa", "Yapay Beta"],
+        "yeniler": ["yapay alfa", "Yapay Yeni"],
+        "eskiSayisi": 2,
+        "yeniSayisi": 2,
+        "depo": "İZMİR ARAÇ 06",
+        "mesaj": "Toplam 2 cari ünvandan 2 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "Arac_06_Yapay Plasiyer"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["Araç 06 - Yapay Plasiyer", null],
+            [null, null],
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Alfa"],
+            [2, "Yapay Beta"]
+          ],
+          "birlesimler": ["A1:B1"]
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Yeni"],
+            [2, "yapay alfa"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 2]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "unicode-ve-ic-bosluk",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ışık", 0],
+        [null, "IŞIK", 0],
+        [null, "İşık", 0],
+        [null, "Straße", 0],
+        [null, "STRASSE", 0],
+        [null, "Yapay  İki", 0],
+        [null, "Yapay İki", 0],
+        [null, "Yapay Kenar", 0],
+        [null, "﻿Yapay BOM﻿", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ışık", 0],
+        [null, "strasse", 0],
+        [null, "Yapay İki", 0],
+        [null, "Yapay Kenar", 0],
+        [null, "Yapay BOM", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [
+        "ışık",
+        "IŞIK",
+        "İşık",
+        "Straße",
+        "STRASSE",
+        "Yapay  İki",
+        "Yapay İki",
+        "Yapay Kenar",
+        "﻿Yapay BOM﻿"
+      ],
+      "okunanYeni": ["ışık", "strasse", "Yapay İki", "Yapay Kenar", "Yapay BOM"],
+      "sonuc": {
+        "eksikler": ["İşık", "Yapay  İki", "﻿Yapay BOM﻿"],
+        "yeniler": ["Yapay BOM"],
+        "eskiSayisi": 9,
+        "yeniSayisi": 5,
+        "depo": null,
+        "mesaj": "Toplam 9 cari ünvandan 3 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "İşık"],
+            [2, "Yapay  İki"],
+            [3, "﻿Yapay BOM﻿"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay BOM"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "unicode-ve-ic-bosluk",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ışık", 0],
+        [null, "IŞIK", 0],
+        [null, "İşık", 0],
+        [null, "Straße", 0],
+        [null, "STRASSE", 0],
+        [null, "Yapay  İki", 0],
+        [null, "Yapay İki", 0],
+        [null, "Yapay Kenar", 0],
+        [null, "﻿Yapay BOM﻿", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ışık", 0],
+        [null, "strasse", 0],
+        [null, "Yapay İki", 0],
+        [null, "Yapay Kenar", 0],
+        [null, "Yapay BOM", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [
+        "ışık",
+        "IŞIK",
+        "İşık",
+        "Straße",
+        "STRASSE",
+        "Yapay  İki",
+        "Yapay İki",
+        "Yapay Kenar",
+        "﻿Yapay BOM﻿"
+      ],
+      "okunanYeni": ["ışık", "strasse", "Yapay İki", "Yapay Kenar", "Yapay BOM"],
+      "sonuc": {
+        "eksikler": ["IŞIK", "İşık", "Straße", "STRASSE", "Yapay  İki", "﻿Yapay BOM﻿"],
+        "yeniler": ["strasse", "Yapay BOM"],
+        "eskiSayisi": 9,
+        "yeniSayisi": 5,
+        "depo": null,
+        "mesaj": "Toplam 9 cari ünvandan 6 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "IŞIK"],
+            [2, "İşık"],
+            [3, "Straße"],
+            [4, "STRASSE"],
+            [5, "Yapay  İki"],
+            [6, "﻿Yapay BOM﻿"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay BOM"],
+            [2, "strasse"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 2]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "bos-liste",
+      "eski": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "yeni": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [],
+      "okunanYeni": [],
+      "sonuc": {
+        "eksikler": [],
+        "yeniler": [],
+        "eskiSayisi": 0,
+        "yeniSayisi": 0,
+        "depo": null,
+        "mesaj": "Toplam 0 cari ünvandan 0 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [["#", "Cari Ünvan"]],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "bos-liste",
+      "eski": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "yeni": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [],
+      "okunanYeni": [],
+      "sonuc": {
+        "eksikler": [],
+        "yeniler": [],
+        "eskiSayisi": 0,
+        "yeniSayisi": 0,
+        "depo": null,
+        "mesaj": "Toplam 0 cari ünvandan 0 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [["#", "Cari Ünvan"]],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "sayisal-ve-bool",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, 123, 0],
+        [null, true, 0],
+        [null, false, 0],
+        [null, 12.5, 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "123", 0],
+        [null, "True", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": ["123", "True", "False", "12.5"],
+      "okunanYeni": ["123", "True"],
+      "sonuc": {
+        "eksikler": ["False", "12.5"],
+        "yeniler": [],
+        "eskiSayisi": 4,
+        "yeniSayisi": 2,
+        "depo": null,
+        "mesaj": "Toplam 4 cari ünvandan 2 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "False"],
+            [2, "12.5"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "sayisal-ve-bool",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, 123, 0],
+        [null, true, 0],
+        [null, false, 0],
+        [null, 12.5, 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "123", 0],
+        [null, "True", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": ["123", "True", "False", "12.5"],
+      "okunanYeni": ["123", "True"],
+      "sonuc": {
+        "eksikler": ["False", "12.5"],
+        "yeniler": [],
+        "eskiSayisi": 4,
+        "yeniSayisi": 2,
+        "depo": null,
+        "mesaj": "Toplam 4 cari ünvandan 2 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "False"],
+            [2, "12.5"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "formul-metni",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        ["Cari Kategori 3 [TEST] =YAPAY_BASLIK"],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "=YAPAY()", 0],
+        [null, "+Yapay", 0],
+        [null, "-Yapay", 0],
+        [null, "@Yapay", 0],
+        [null, "Yapay Normal", 0]
+      ],
+      "yeni": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": ["=YAPAY()", "+Yapay", "-Yapay", "@Yapay", "Yapay Normal"],
+      "okunanYeni": [],
+      "sonuc": {
+        "eksikler": ["=YAPAY()", "+Yapay", "-Yapay", "@Yapay", "Yapay Normal"],
+        "yeniler": [],
+        "eskiSayisi": 5,
+        "yeniSayisi": 0,
+        "depo": "=YAPAY_BASLIK",
+        "mesaj": "Toplam 5 cari ünvandan 5 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "=YAPAY_BASLIK"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["'=YAPAY_BASLIK", null],
+            [null, null],
+            ["#", "Cari Ünvan"],
+            [1, "'=YAPAY()"],
+            [2, "'+Yapay"],
+            [3, "'-Yapay"],
+            [4, "'@Yapay"],
+            [5, "Yapay Normal"]
+          ],
+          "birlesimler": ["A1:B1"]
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "formul-metni",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        ["Cari Kategori 3 [TEST] =YAPAY_BASLIK"],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "=YAPAY()", 0],
+        [null, "+Yapay", 0],
+        [null, "-Yapay", 0],
+        [null, "@Yapay", 0],
+        [null, "Yapay Normal", 0]
+      ],
+      "yeni": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": ["=YAPAY()", "+Yapay", "-Yapay", "@Yapay", "Yapay Normal"],
+      "okunanYeni": [],
+      "sonuc": {
+        "eksikler": ["=YAPAY()", "+Yapay", "-Yapay", "@Yapay", "Yapay Normal"],
+        "yeniler": [],
+        "eskiSayisi": 5,
+        "yeniSayisi": 0,
+        "depo": "=YAPAY_BASLIK",
+        "mesaj": "Toplam 5 cari ünvandan 5 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "=YAPAY_BASLIK"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["'=YAPAY_BASLIK", null],
+            [null, null],
+            ["#", "Cari Ünvan"],
+            [1, "'=YAPAY()"],
+            [2, "'+Yapay"],
+            [3, "'-Yapay"],
+            [4, "'@Yapay"],
+            [5, "Yapay Normal"]
+          ],
+          "birlesimler": ["A1:B1"]
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "tek-haneli-arac",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        ["Cari Kategori 3 [TEST] Araç 7 / Yapay"],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay B", 0]
+      ],
+      "yeni": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "plasiyerler": {
+        "07": "Yapay / Plasiyer"
+      },
+      "harfDuyarli": false,
+      "okunanEski": ["Yapay B"],
+      "okunanYeni": [],
+      "sonuc": {
+        "eksikler": ["Yapay B"],
+        "yeniler": [],
+        "eskiSayisi": 1,
+        "yeniSayisi": 0,
+        "depo": "Araç 7 / Yapay",
+        "mesaj": "Toplam 1 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "Arac_07_Yapay  Plasiyer"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["Araç 07 - Yapay / Plasiyer", null],
+            [null, null],
+            ["#", "Cari Ünvan"],
+            [1, "Yapay B"]
+          ],
+          "birlesimler": ["A1:B1"]
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "tek-haneli-arac",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        ["Cari Kategori 3 [TEST] Araç 7 / Yapay"],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay B", 0]
+      ],
+      "yeni": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "plasiyerler": {
+        "07": "Yapay / Plasiyer"
+      },
+      "harfDuyarli": true,
+      "okunanEski": ["Yapay B"],
+      "okunanYeni": [],
+      "sonuc": {
+        "eksikler": ["Yapay B"],
+        "yeniler": [],
+        "eskiSayisi": 1,
+        "yeniSayisi": 0,
+        "depo": "Araç 7 / Yapay",
+        "mesaj": "Toplam 1 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "Arac_07_Yapay  Plasiyer"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["Araç 07 - Yapay / Plasiyer", null],
+            [null, null],
+            ["#", "Cari Ünvan"],
+            [1, "Yapay B"]
+          ],
+          "birlesimler": ["A1:B1"]
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "unicode-arac-siniri",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        ["Cari Kategori 3 [TEST] Yapayç06"],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay", 0]
+      ],
+      "yeni": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "plasiyerler": {
+        "06": "Yapay"
+      },
+      "harfDuyarli": false,
+      "okunanEski": ["Yapay"],
+      "okunanYeni": [],
+      "sonuc": {
+        "eksikler": ["Yapay"],
+        "yeniler": [],
+        "eskiSayisi": 1,
+        "yeniSayisi": 0,
+        "depo": "Yapayç06",
+        "mesaj": "Toplam 1 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "Yapayç06"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["Yapayç06", null],
+            [null, null],
+            ["#", "Cari Ünvan"],
+            [1, "Yapay"]
+          ],
+          "birlesimler": ["A1:B1"]
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "unicode-arac-siniri",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        ["Cari Kategori 3 [TEST] Yapayç06"],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay", 0]
+      ],
+      "yeni": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "plasiyerler": {
+        "06": "Yapay"
+      },
+      "harfDuyarli": true,
+      "okunanEski": ["Yapay"],
+      "okunanYeni": [],
+      "sonuc": {
+        "eksikler": ["Yapay"],
+        "yeniler": [],
+        "eskiSayisi": 1,
+        "yeniSayisi": 0,
+        "depo": "Yapayç06",
+        "mesaj": "Toplam 1 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "Yapayç06"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["Yapayç06", null],
+            [null, null],
+            ["#", "Cari Ünvan"],
+            [1, "Yapay"]
+          ],
+          "birlesimler": ["A1:B1"]
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "yapay-00",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "SSYapay", 0],
+        [null, "ßYapay", 0],
+        [null, "", 0],
+        [null, "", 0],
+        [null, "SSYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "yapay alfa", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, "ßYapay", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "ßYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, "  Yapay Kenar ", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay A", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [
+        "SSYapay",
+        "ßYapay",
+        "SSYapay",
+        "yapay alfa",
+        "yapay alfa",
+        "yapay alfa",
+        "ßYapay",
+        "ßYapay",
+        "ßYapay",
+        "Yapay Alfa",
+        "ßYapay",
+        "yapay alfa",
+        "ßYapay",
+        "Yapay Kenar"
+      ],
+      "okunanYeni": ["Yapay  A", "Yapay A", "Yapay A"],
+      "sonuc": {
+        "eksikler": ["SSYapay", "yapay alfa", "Yapay Kenar"],
+        "yeniler": ["Yapay  A", "Yapay A"],
+        "eskiSayisi": 14,
+        "yeniSayisi": 3,
+        "depo": null,
+        "mesaj": "Toplam 14 cari ünvandan 3 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "SSYapay"],
+            [2, "yapay alfa"],
+            [3, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay A"],
+            [2, "Yapay  A"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 2]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-00",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "SSYapay", 0],
+        [null, "ßYapay", 0],
+        [null, "", 0],
+        [null, "", 0],
+        [null, "SSYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "yapay alfa", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, "ßYapay", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "ßYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, "  Yapay Kenar ", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay A", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [
+        "SSYapay",
+        "ßYapay",
+        "SSYapay",
+        "yapay alfa",
+        "yapay alfa",
+        "yapay alfa",
+        "ßYapay",
+        "ßYapay",
+        "ßYapay",
+        "Yapay Alfa",
+        "ßYapay",
+        "yapay alfa",
+        "ßYapay",
+        "Yapay Kenar"
+      ],
+      "okunanYeni": ["Yapay  A", "Yapay A", "Yapay A"],
+      "sonuc": {
+        "eksikler": ["SSYapay", "ßYapay", "yapay alfa", "Yapay Alfa", "Yapay Kenar"],
+        "yeniler": ["Yapay  A", "Yapay A"],
+        "eskiSayisi": 14,
+        "yeniSayisi": 3,
+        "depo": null,
+        "mesaj": "Toplam 14 cari ünvandan 5 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "SSYapay"],
+            [2, "ßYapay"],
+            [3, "yapay alfa"],
+            [4, "Yapay Alfa"],
+            [5, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay A"],
+            [2, "Yapay  A"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 2]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-01",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "SSYapay", 0],
+        [null, "", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "SSYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "İYAPAY", 0],
+        [null, "ßYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, null, 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "İYAPAY", 0],
+        [null, "ßYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, null, 0],
+        [null, "Yapay Alfa", 0],
+        [null, "", 0],
+        [null, "SSYapay", 0],
+        [null, "İYAPAY", 0],
+        [null, "Yapay Alfa", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [
+        "SSYapay",
+        "ßYapay",
+        "Yapay A",
+        "SSYapay",
+        "Yapay A",
+        "İYAPAY",
+        "ßYapay",
+        "yapay alfa",
+        "ßYapay"
+      ],
+      "okunanYeni": [
+        "İYAPAY",
+        "ßYapay",
+        "yapay alfa",
+        "ßYapay",
+        "yapay alfa",
+        "Yapay Kenar",
+        "Yapay Alfa",
+        "SSYapay",
+        "İYAPAY",
+        "Yapay Alfa"
+      ],
+      "sonuc": {
+        "eksikler": ["Yapay A"],
+        "yeniler": ["Yapay Kenar"],
+        "eskiSayisi": 9,
+        "yeniSayisi": 10,
+        "depo": null,
+        "mesaj": "Toplam 9 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay A"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-01",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "SSYapay", 0],
+        [null, "", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "SSYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "İYAPAY", 0],
+        [null, "ßYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, null, 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "İYAPAY", 0],
+        [null, "ßYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, null, 0],
+        [null, "Yapay Alfa", 0],
+        [null, "", 0],
+        [null, "SSYapay", 0],
+        [null, "İYAPAY", 0],
+        [null, "Yapay Alfa", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [
+        "SSYapay",
+        "ßYapay",
+        "Yapay A",
+        "SSYapay",
+        "Yapay A",
+        "İYAPAY",
+        "ßYapay",
+        "yapay alfa",
+        "ßYapay"
+      ],
+      "okunanYeni": [
+        "İYAPAY",
+        "ßYapay",
+        "yapay alfa",
+        "ßYapay",
+        "yapay alfa",
+        "Yapay Kenar",
+        "Yapay Alfa",
+        "SSYapay",
+        "İYAPAY",
+        "Yapay Alfa"
+      ],
+      "sonuc": {
+        "eksikler": ["Yapay A"],
+        "yeniler": ["Yapay Kenar", "Yapay Alfa"],
+        "eskiSayisi": 9,
+        "yeniSayisi": 10,
+        "depo": null,
+        "mesaj": "Toplam 9 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay A"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Alfa"],
+            [2, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 2]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-02",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "ıyapay", 0],
+        [null, "İYAPAY", 0],
+        [null, "", 0],
+        [null, "Yapay Alfa", 0],
+        [null, null, 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ıyapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "Yapay  A", 0],
+        [null, "İYAPAY", 0],
+        [null, "", 0],
+        [null, "Yapay A", 0],
+        [null, "yapay alfa", 0],
+        [null, null, 0],
+        [null, "Yapay Alfa", 0],
+        [null, null, 0],
+        [null, "Yapay Alfa", 0],
+        [null, "SSYapay", 0],
+        [null, "ßYapay", 0],
+        [null, "SSYapay", 0],
+        [null, "", 0],
+        [null, "ßYapay", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": ["Yapay  A", "Yapay A", "ßYapay", "Yapay A", "ıyapay", "İYAPAY", "Yapay Alfa"],
+      "okunanYeni": [
+        "ıyapay",
+        "yapay alfa",
+        "Yapay  A",
+        "İYAPAY",
+        "Yapay A",
+        "yapay alfa",
+        "Yapay Alfa",
+        "Yapay Alfa",
+        "SSYapay",
+        "ßYapay",
+        "SSYapay",
+        "ßYapay"
+      ],
+      "sonuc": {
+        "eksikler": [],
+        "yeniler": [],
+        "eskiSayisi": 7,
+        "yeniSayisi": 12,
+        "depo": null,
+        "mesaj": "Toplam 7 cari ünvandan 0 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [["#", "Cari Ünvan"]],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "yapay-02",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "ıyapay", 0],
+        [null, "İYAPAY", 0],
+        [null, "", 0],
+        [null, "Yapay Alfa", 0],
+        [null, null, 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ıyapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "Yapay  A", 0],
+        [null, "İYAPAY", 0],
+        [null, "", 0],
+        [null, "Yapay A", 0],
+        [null, "yapay alfa", 0],
+        [null, null, 0],
+        [null, "Yapay Alfa", 0],
+        [null, null, 0],
+        [null, "Yapay Alfa", 0],
+        [null, "SSYapay", 0],
+        [null, "ßYapay", 0],
+        [null, "SSYapay", 0],
+        [null, "", 0],
+        [null, "ßYapay", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": ["Yapay  A", "Yapay A", "ßYapay", "Yapay A", "ıyapay", "İYAPAY", "Yapay Alfa"],
+      "okunanYeni": [
+        "ıyapay",
+        "yapay alfa",
+        "Yapay  A",
+        "İYAPAY",
+        "Yapay A",
+        "yapay alfa",
+        "Yapay Alfa",
+        "Yapay Alfa",
+        "SSYapay",
+        "ßYapay",
+        "SSYapay",
+        "ßYapay"
+      ],
+      "sonuc": {
+        "eksikler": [],
+        "yeniler": ["yapay alfa", "SSYapay"],
+        "eskiSayisi": 7,
+        "yeniSayisi": 12,
+        "depo": null,
+        "mesaj": "Toplam 7 cari ünvandan 0 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [["#", "Cari Ünvan"]],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "SSYapay"],
+            [2, "yapay alfa"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 2]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-03",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ıyapay", 0],
+        [null, "ıyapay", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay  A", 0]
+      ],
+      "yeni": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": ["ıyapay", "ıyapay", "Yapay A", "Yapay  A"],
+      "okunanYeni": [],
+      "sonuc": {
+        "eksikler": ["ıyapay", "Yapay A", "Yapay  A"],
+        "yeniler": [],
+        "eskiSayisi": 4,
+        "yeniSayisi": 0,
+        "depo": null,
+        "mesaj": "Toplam 4 cari ünvandan 3 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "ıyapay"],
+            [2, "Yapay A"],
+            [3, "Yapay  A"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "yapay-03",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ıyapay", 0],
+        [null, "ıyapay", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay  A", 0]
+      ],
+      "yeni": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": ["ıyapay", "ıyapay", "Yapay A", "Yapay  A"],
+      "okunanYeni": [],
+      "sonuc": {
+        "eksikler": ["ıyapay", "Yapay A", "Yapay  A"],
+        "yeniler": [],
+        "eskiSayisi": 4,
+        "yeniSayisi": 0,
+        "depo": null,
+        "mesaj": "Toplam 4 cari ünvandan 3 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "ıyapay"],
+            [2, "Yapay A"],
+            [3, "Yapay  A"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "yapay-04",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay  A", 0],
+        [null, "yapay alfa", 0],
+        [null, "yapay alfa", 0],
+        [null, null, 0],
+        [null, "SSYapay", 0],
+        [null, "", 0],
+        [null, "ıyapay", 0],
+        [null, "ıyapay", 0],
+        [null, "Yapay  A", 0],
+        [null, "İYAPAY", 0],
+        [null, "ıyapay", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, "", 0],
+        [null, "Yapay A", 0],
+        [null, "", 0],
+        [null, "", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, null, 0],
+        [null, "yapay alfa", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [
+        "Yapay  A",
+        "yapay alfa",
+        "yapay alfa",
+        "SSYapay",
+        "ıyapay",
+        "ıyapay",
+        "Yapay  A",
+        "İYAPAY",
+        "ıyapay"
+      ],
+      "okunanYeni": ["Yapay Alfa", "Yapay A", "Yapay Alfa", "Yapay  A", "Yapay A", "yapay alfa"],
+      "sonuc": {
+        "eksikler": ["SSYapay", "ıyapay", "İYAPAY"],
+        "yeniler": ["Yapay A"],
+        "eskiSayisi": 9,
+        "yeniSayisi": 6,
+        "depo": null,
+        "mesaj": "Toplam 9 cari ünvandan 3 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "SSYapay"],
+            [2, "ıyapay"],
+            [3, "İYAPAY"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay A"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-04",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay  A", 0],
+        [null, "yapay alfa", 0],
+        [null, "yapay alfa", 0],
+        [null, null, 0],
+        [null, "SSYapay", 0],
+        [null, "", 0],
+        [null, "ıyapay", 0],
+        [null, "ıyapay", 0],
+        [null, "Yapay  A", 0],
+        [null, "İYAPAY", 0],
+        [null, "ıyapay", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, "", 0],
+        [null, "Yapay A", 0],
+        [null, "", 0],
+        [null, "", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, null, 0],
+        [null, "yapay alfa", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [
+        "Yapay  A",
+        "yapay alfa",
+        "yapay alfa",
+        "SSYapay",
+        "ıyapay",
+        "ıyapay",
+        "Yapay  A",
+        "İYAPAY",
+        "ıyapay"
+      ],
+      "okunanYeni": ["Yapay Alfa", "Yapay A", "Yapay Alfa", "Yapay  A", "Yapay A", "yapay alfa"],
+      "sonuc": {
+        "eksikler": ["SSYapay", "ıyapay", "İYAPAY"],
+        "yeniler": ["Yapay Alfa", "Yapay A"],
+        "eskiSayisi": 9,
+        "yeniSayisi": 6,
+        "depo": null,
+        "mesaj": "Toplam 9 cari ünvandan 3 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "SSYapay"],
+            [2, "ıyapay"],
+            [3, "İYAPAY"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay A"],
+            [2, "Yapay Alfa"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 2]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-05",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay A", 0],
+        [null, "Yapay  A", 0],
+        [null, "SSYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "ßYapay", 0],
+        [null, "SSYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "İYAPAY", 0],
+        [null, "SSYapay", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay  A", 0],
+        [null, "İYAPAY", 0],
+        [null, "Yapay  A", 0],
+        [null, "ßYapay", 0],
+        [null, null, 0],
+        [null, "SSYapay", 0],
+        [null, "ıyapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "ıyapay", 0],
+        [null, "", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "SSYapay", 0],
+        [null, "", 0],
+        [null, "yapay alfa", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [
+        "Yapay A",
+        "Yapay  A",
+        "SSYapay",
+        "Yapay A",
+        "Yapay Kenar",
+        "ßYapay",
+        "SSYapay",
+        "Yapay A",
+        "Yapay Kenar",
+        "İYAPAY",
+        "SSYapay"
+      ],
+      "okunanYeni": [
+        "Yapay  A",
+        "İYAPAY",
+        "Yapay  A",
+        "ßYapay",
+        "SSYapay",
+        "ıyapay",
+        "yapay alfa",
+        "ıyapay",
+        "Yapay Kenar",
+        "Yapay Alfa",
+        "SSYapay",
+        "yapay alfa"
+      ],
+      "sonuc": {
+        "eksikler": ["Yapay A"],
+        "yeniler": ["ıyapay", "yapay alfa"],
+        "eskiSayisi": 11,
+        "yeniSayisi": 12,
+        "depo": null,
+        "mesaj": "Toplam 11 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay A"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "yapay alfa"],
+            [2, "ıyapay"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 2]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-05",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay A", 0],
+        [null, "Yapay  A", 0],
+        [null, "SSYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "ßYapay", 0],
+        [null, "SSYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "İYAPAY", 0],
+        [null, "SSYapay", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay  A", 0],
+        [null, "İYAPAY", 0],
+        [null, "Yapay  A", 0],
+        [null, "ßYapay", 0],
+        [null, null, 0],
+        [null, "SSYapay", 0],
+        [null, "ıyapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "ıyapay", 0],
+        [null, "", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "SSYapay", 0],
+        [null, "", 0],
+        [null, "yapay alfa", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [
+        "Yapay A",
+        "Yapay  A",
+        "SSYapay",
+        "Yapay A",
+        "Yapay Kenar",
+        "ßYapay",
+        "SSYapay",
+        "Yapay A",
+        "Yapay Kenar",
+        "İYAPAY",
+        "SSYapay"
+      ],
+      "okunanYeni": [
+        "Yapay  A",
+        "İYAPAY",
+        "Yapay  A",
+        "ßYapay",
+        "SSYapay",
+        "ıyapay",
+        "yapay alfa",
+        "ıyapay",
+        "Yapay Kenar",
+        "Yapay Alfa",
+        "SSYapay",
+        "yapay alfa"
+      ],
+      "sonuc": {
+        "eksikler": ["Yapay A"],
+        "yeniler": ["ıyapay", "yapay alfa", "Yapay Alfa"],
+        "eskiSayisi": 11,
+        "yeniSayisi": 12,
+        "depo": null,
+        "mesaj": "Toplam 11 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay A"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Alfa"],
+            [2, "yapay alfa"],
+            [3, "ıyapay"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 3]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-06",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "", 0],
+        [null, "yapay alfa", 0],
+        [null, null, 0],
+        [null, null, 0],
+        [null, "ßYapay", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, null, 0],
+        [null, "Yapay A", 0],
+        [null, "ıyapay", 0],
+        [null, "İYAPAY", 0],
+        [null, "", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, "", 0],
+        [null, "ßYapay", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [
+        "Yapay Alfa",
+        "Yapay Alfa",
+        "yapay alfa",
+        "ßYapay",
+        "Yapay Kenar",
+        "Yapay A",
+        "ıyapay",
+        "İYAPAY"
+      ],
+      "okunanYeni": ["Yapay Alfa", "ßYapay"],
+      "sonuc": {
+        "eksikler": ["Yapay Kenar", "Yapay A", "ıyapay", "İYAPAY"],
+        "yeniler": [],
+        "eskiSayisi": 8,
+        "yeniSayisi": 2,
+        "depo": null,
+        "mesaj": "Toplam 8 cari ünvandan 4 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Kenar"],
+            [2, "Yapay A"],
+            [3, "ıyapay"],
+            [4, "İYAPAY"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "yapay-06",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "", 0],
+        [null, "yapay alfa", 0],
+        [null, null, 0],
+        [null, null, 0],
+        [null, "ßYapay", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, null, 0],
+        [null, "Yapay A", 0],
+        [null, "ıyapay", 0],
+        [null, "İYAPAY", 0],
+        [null, "", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, "", 0],
+        [null, "ßYapay", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [
+        "Yapay Alfa",
+        "Yapay Alfa",
+        "yapay alfa",
+        "ßYapay",
+        "Yapay Kenar",
+        "Yapay A",
+        "ıyapay",
+        "İYAPAY"
+      ],
+      "okunanYeni": ["Yapay Alfa", "ßYapay"],
+      "sonuc": {
+        "eksikler": ["yapay alfa", "Yapay Kenar", "Yapay A", "ıyapay", "İYAPAY"],
+        "yeniler": [],
+        "eskiSayisi": 8,
+        "yeniSayisi": 2,
+        "depo": null,
+        "mesaj": "Toplam 8 cari ünvandan 5 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "yapay alfa"],
+            [2, "Yapay Kenar"],
+            [3, "Yapay A"],
+            [4, "ıyapay"],
+            [5, "İYAPAY"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "yapay-07",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ßYapay", 0],
+        [null, "SSYapay", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "ıyapay", 0],
+        [null, null, 0],
+        [null, "", 0],
+        [null, "İYAPAY", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, null, 0],
+        [null, null, 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "İYAPAY", 0],
+        [null, "Yapay A", 0],
+        [null, "yapay alfa", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [
+        "ßYapay",
+        "SSYapay",
+        "Yapay Alfa",
+        "ıyapay",
+        "İYAPAY",
+        "Yapay Kenar",
+        "Yapay A",
+        "Yapay Kenar"
+      ],
+      "okunanYeni": ["İYAPAY", "Yapay A", "yapay alfa", "Yapay Kenar"],
+      "sonuc": {
+        "eksikler": ["ßYapay", "ıyapay"],
+        "yeniler": [],
+        "eskiSayisi": 8,
+        "yeniSayisi": 4,
+        "depo": null,
+        "mesaj": "Toplam 8 cari ünvandan 2 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "ßYapay"],
+            [2, "ıyapay"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "yapay-07",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ßYapay", 0],
+        [null, "SSYapay", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "ıyapay", 0],
+        [null, null, 0],
+        [null, "", 0],
+        [null, "İYAPAY", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, null, 0],
+        [null, null, 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "İYAPAY", 0],
+        [null, "Yapay A", 0],
+        [null, "yapay alfa", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [
+        "ßYapay",
+        "SSYapay",
+        "Yapay Alfa",
+        "ıyapay",
+        "İYAPAY",
+        "Yapay Kenar",
+        "Yapay A",
+        "Yapay Kenar"
+      ],
+      "okunanYeni": ["İYAPAY", "Yapay A", "yapay alfa", "Yapay Kenar"],
+      "sonuc": {
+        "eksikler": ["ßYapay", "SSYapay", "Yapay Alfa", "ıyapay"],
+        "yeniler": ["yapay alfa"],
+        "eskiSayisi": 8,
+        "yeniSayisi": 4,
+        "depo": null,
+        "mesaj": "Toplam 8 cari ünvandan 4 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "ßYapay"],
+            [2, "SSYapay"],
+            [3, "Yapay Alfa"],
+            [4, "ıyapay"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "yapay alfa"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-08",
+      "eski": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"], [null, null, 0]],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, "", 0],
+        [null, "Yapay A", 0],
+        [null, "", 0],
+        [null, "yapay alfa", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [],
+      "okunanYeni": ["Yapay Kenar", "Yapay  A", "Yapay A", "Yapay A", "yapay alfa", "Yapay  A", "Yapay A"],
+      "sonuc": {
+        "eksikler": [],
+        "yeniler": ["Yapay Kenar", "Yapay  A", "Yapay A", "yapay alfa"],
+        "eskiSayisi": 0,
+        "yeniSayisi": 7,
+        "depo": null,
+        "mesaj": "Toplam 0 cari ünvandan 0 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [["#", "Cari Ünvan"]],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "yapay alfa"],
+            [2, "Yapay A"],
+            [3, "Yapay  A"],
+            [4, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 4]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-08",
+      "eski": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"], [null, null, 0]],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, "", 0],
+        [null, "Yapay A", 0],
+        [null, "", 0],
+        [null, "yapay alfa", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [],
+      "okunanYeni": ["Yapay Kenar", "Yapay  A", "Yapay A", "Yapay A", "yapay alfa", "Yapay  A", "Yapay A"],
+      "sonuc": {
+        "eksikler": [],
+        "yeniler": ["Yapay Kenar", "Yapay  A", "Yapay A", "yapay alfa"],
+        "eskiSayisi": 0,
+        "yeniSayisi": 7,
+        "depo": null,
+        "mesaj": "Toplam 0 cari ünvandan 0 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [["#", "Cari Ünvan"]],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "yapay alfa"],
+            [2, "Yapay A"],
+            [3, "Yapay  A"],
+            [4, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 4]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-09",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "yapay alfa", 0],
+        [null, "SSYapay", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "İYAPAY", 0],
+        [null, "yapay alfa", 0],
+        [null, "Yapay  A", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay  A", 0],
+        [null, "ßYapay", 0],
+        [null, "ıyapay", 0],
+        [null, "SSYapay", 0],
+        [null, "İYAPAY", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay  A", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": ["yapay alfa", "SSYapay", "Yapay Kenar", "İYAPAY", "yapay alfa", "Yapay  A"],
+      "okunanYeni": ["Yapay Alfa", "Yapay  A", "ßYapay", "ıyapay", "SSYapay", "İYAPAY", "ßYapay", "Yapay  A"],
+      "sonuc": {
+        "eksikler": ["Yapay Kenar"],
+        "yeniler": ["ıyapay"],
+        "eskiSayisi": 6,
+        "yeniSayisi": 8,
+        "depo": null,
+        "mesaj": "Toplam 6 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "ıyapay"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-09",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "yapay alfa", 0],
+        [null, "SSYapay", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "İYAPAY", 0],
+        [null, "yapay alfa", 0],
+        [null, "Yapay  A", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay  A", 0],
+        [null, "ßYapay", 0],
+        [null, "ıyapay", 0],
+        [null, "SSYapay", 0],
+        [null, "İYAPAY", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay  A", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": ["yapay alfa", "SSYapay", "Yapay Kenar", "İYAPAY", "yapay alfa", "Yapay  A"],
+      "okunanYeni": ["Yapay Alfa", "Yapay  A", "ßYapay", "ıyapay", "SSYapay", "İYAPAY", "ßYapay", "Yapay  A"],
+      "sonuc": {
+        "eksikler": ["yapay alfa", "Yapay Kenar"],
+        "yeniler": ["Yapay Alfa", "ßYapay", "ıyapay"],
+        "eskiSayisi": 6,
+        "yeniSayisi": 8,
+        "depo": null,
+        "mesaj": "Toplam 6 cari ünvandan 2 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "yapay alfa"],
+            [2, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "ıyapay"],
+            [2, "ßYapay"],
+            [3, "Yapay Alfa"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 3]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-10",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "yapay alfa", 0],
+        [null, null, 0],
+        [null, "SSYapay", 0],
+        [null, "SSYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "İYAPAY", 0],
+        [null, "", 0],
+        [null, "yapay alfa", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay  A", 0],
+        [null, null, 0],
+        [null, "ıyapay", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0],
+        [null, "ıyapay", 0],
+        [null, "SSYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay  A", 0],
+        [null, "yapay alfa", 0],
+        [null, "SSYapay", 0],
+        [null, "ıyapay", 0],
+        [null, null, 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": ["yapay alfa", "SSYapay", "SSYapay", "yapay alfa", "İYAPAY", "yapay alfa"],
+      "okunanYeni": [
+        "Yapay  A",
+        "ıyapay",
+        "Yapay Kenar",
+        "Yapay A",
+        "ıyapay",
+        "SSYapay",
+        "Yapay A",
+        "ßYapay",
+        "Yapay A",
+        "Yapay  A",
+        "Yapay  A",
+        "yapay alfa",
+        "SSYapay",
+        "ıyapay"
+      ],
+      "sonuc": {
+        "eksikler": ["İYAPAY"],
+        "yeniler": ["Yapay  A", "ıyapay", "Yapay Kenar", "Yapay A"],
+        "eskiSayisi": 6,
+        "yeniSayisi": 14,
+        "depo": null,
+        "mesaj": "Toplam 6 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "İYAPAY"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay A"],
+            [2, "Yapay Kenar"],
+            [3, "ıyapay"],
+            [4, "Yapay  A"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 4]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-10",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "yapay alfa", 0],
+        [null, null, 0],
+        [null, "SSYapay", 0],
+        [null, "SSYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "İYAPAY", 0],
+        [null, "", 0],
+        [null, "yapay alfa", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay  A", 0],
+        [null, null, 0],
+        [null, "ıyapay", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0],
+        [null, "ıyapay", 0],
+        [null, "SSYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay  A", 0],
+        [null, "yapay alfa", 0],
+        [null, "SSYapay", 0],
+        [null, "ıyapay", 0],
+        [null, null, 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": ["yapay alfa", "SSYapay", "SSYapay", "yapay alfa", "İYAPAY", "yapay alfa"],
+      "okunanYeni": [
+        "Yapay  A",
+        "ıyapay",
+        "Yapay Kenar",
+        "Yapay A",
+        "ıyapay",
+        "SSYapay",
+        "Yapay A",
+        "ßYapay",
+        "Yapay A",
+        "Yapay  A",
+        "Yapay  A",
+        "yapay alfa",
+        "SSYapay",
+        "ıyapay"
+      ],
+      "sonuc": {
+        "eksikler": ["İYAPAY"],
+        "yeniler": ["Yapay  A", "ıyapay", "Yapay Kenar", "Yapay A", "ßYapay"],
+        "eskiSayisi": 6,
+        "yeniSayisi": 14,
+        "depo": null,
+        "mesaj": "Toplam 6 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "İYAPAY"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "ßYapay"],
+            [2, "Yapay A"],
+            [3, "Yapay Kenar"],
+            [4, "ıyapay"],
+            [5, "Yapay  A"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 5]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-11",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "ıyapay", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "ıyapay", 0]
+      ],
+      "yeni": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"], [null, "Yapay A", 0]],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": ["Yapay Alfa", "ıyapay", "Yapay Alfa", "yapay alfa", "ßYapay", "Yapay Alfa", "ıyapay"],
+      "okunanYeni": ["Yapay A"],
+      "sonuc": {
+        "eksikler": ["Yapay Alfa", "ıyapay", "ßYapay"],
+        "yeniler": ["Yapay A"],
+        "eskiSayisi": 7,
+        "yeniSayisi": 1,
+        "depo": null,
+        "mesaj": "Toplam 7 cari ünvandan 3 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Alfa"],
+            [2, "ıyapay"],
+            [3, "ßYapay"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay A"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-11",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "ıyapay", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "ıyapay", 0]
+      ],
+      "yeni": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"], [null, "Yapay A", 0]],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": ["Yapay Alfa", "ıyapay", "Yapay Alfa", "yapay alfa", "ßYapay", "Yapay Alfa", "ıyapay"],
+      "okunanYeni": ["Yapay A"],
+      "sonuc": {
+        "eksikler": ["Yapay Alfa", "ıyapay", "yapay alfa", "ßYapay"],
+        "yeniler": ["Yapay A"],
+        "eskiSayisi": 7,
+        "yeniSayisi": 1,
+        "depo": null,
+        "mesaj": "Toplam 7 cari ünvandan 4 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Alfa"],
+            [2, "ıyapay"],
+            [3, "yapay alfa"],
+            [4, "ßYapay"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay A"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-12",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay  A", 0],
+        [null, "ıyapay", 0],
+        [null, "", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, "  Yapay Kenar ", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, null, 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": ["Yapay  A", "ıyapay", "Yapay A", "Yapay  A", "Yapay A", "Yapay Kenar"],
+      "okunanYeni": ["Yapay Alfa", "Yapay Kenar", "Yapay A", "Yapay  A", "Yapay A"],
+      "sonuc": {
+        "eksikler": ["ıyapay"],
+        "yeniler": ["Yapay Alfa"],
+        "eskiSayisi": 6,
+        "yeniSayisi": 5,
+        "depo": null,
+        "mesaj": "Toplam 6 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "ıyapay"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Alfa"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-12",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay  A", 0],
+        [null, "ıyapay", 0],
+        [null, "", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, "  Yapay Kenar ", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, null, 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": ["Yapay  A", "ıyapay", "Yapay A", "Yapay  A", "Yapay A", "Yapay Kenar"],
+      "okunanYeni": ["Yapay Alfa", "Yapay Kenar", "Yapay A", "Yapay  A", "Yapay A"],
+      "sonuc": {
+        "eksikler": ["ıyapay"],
+        "yeniler": ["Yapay Alfa"],
+        "eskiSayisi": 6,
+        "yeniSayisi": 5,
+        "depo": null,
+        "mesaj": "Toplam 6 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "ıyapay"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Alfa"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-13",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "SSYapay", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0],
+        [null, null, 0],
+        [null, "yapay alfa", 0],
+        [null, "SSYapay", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "ßYapay", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "İYAPAY", 0],
+        [null, "ıyapay", 0],
+        [null, "Yapay  A", 0],
+        [null, null, 0],
+        [null, "yapay alfa", 0],
+        [null, "yapay alfa", 0],
+        [null, "Yapay  A", 0],
+        [null, null, 0],
+        [null, "Yapay  A", 0],
+        [null, "ıyapay", 0],
+        [null, null, 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [
+        "SSYapay",
+        "Yapay Kenar",
+        "Yapay Kenar",
+        "Yapay A",
+        "yapay alfa",
+        "SSYapay",
+        "Yapay Kenar",
+        "ßYapay"
+      ],
+      "okunanYeni": [
+        "İYAPAY",
+        "ıyapay",
+        "Yapay  A",
+        "yapay alfa",
+        "yapay alfa",
+        "Yapay  A",
+        "Yapay  A",
+        "ıyapay"
+      ],
+      "sonuc": {
+        "eksikler": ["SSYapay", "Yapay Kenar", "Yapay A"],
+        "yeniler": ["İYAPAY", "ıyapay", "Yapay  A"],
+        "eskiSayisi": 8,
+        "yeniSayisi": 8,
+        "depo": null,
+        "mesaj": "Toplam 8 cari ünvandan 3 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "SSYapay"],
+            [2, "Yapay Kenar"],
+            [3, "Yapay A"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay  A"],
+            [2, "ıyapay"],
+            [3, "İYAPAY"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 3]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-13",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "SSYapay", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0],
+        [null, null, 0],
+        [null, "yapay alfa", 0],
+        [null, "SSYapay", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "ßYapay", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "İYAPAY", 0],
+        [null, "ıyapay", 0],
+        [null, "Yapay  A", 0],
+        [null, null, 0],
+        [null, "yapay alfa", 0],
+        [null, "yapay alfa", 0],
+        [null, "Yapay  A", 0],
+        [null, null, 0],
+        [null, "Yapay  A", 0],
+        [null, "ıyapay", 0],
+        [null, null, 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [
+        "SSYapay",
+        "Yapay Kenar",
+        "Yapay Kenar",
+        "Yapay A",
+        "yapay alfa",
+        "SSYapay",
+        "Yapay Kenar",
+        "ßYapay"
+      ],
+      "okunanYeni": [
+        "İYAPAY",
+        "ıyapay",
+        "Yapay  A",
+        "yapay alfa",
+        "yapay alfa",
+        "Yapay  A",
+        "Yapay  A",
+        "ıyapay"
+      ],
+      "sonuc": {
+        "eksikler": ["SSYapay", "Yapay Kenar", "Yapay A", "ßYapay"],
+        "yeniler": ["İYAPAY", "ıyapay", "Yapay  A"],
+        "eskiSayisi": 8,
+        "yeniSayisi": 8,
+        "depo": null,
+        "mesaj": "Toplam 8 cari ünvandan 4 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "SSYapay"],
+            [2, "Yapay Kenar"],
+            [3, "Yapay A"],
+            [4, "ßYapay"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay  A"],
+            [2, "ıyapay"],
+            [3, "İYAPAY"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 3]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-14",
+      "eski": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "yapay alfa", 0],
+        [null, "Yapay A", 0],
+        [null, "", 0],
+        [null, "ßYapay", 0],
+        [null, null, 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "İYAPAY", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, "ßYapay", 0],
+        [null, "  Yapay Kenar ", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [],
+      "okunanYeni": [
+        "yapay alfa",
+        "Yapay A",
+        "ßYapay",
+        "Yapay Kenar",
+        "Yapay Alfa",
+        "İYAPAY",
+        "Yapay Alfa",
+        "Yapay  A",
+        "Yapay A",
+        "ßYapay",
+        "Yapay Kenar"
+      ],
+      "sonuc": {
+        "eksikler": [],
+        "yeniler": ["yapay alfa", "Yapay A", "ßYapay", "Yapay Kenar", "İYAPAY", "Yapay  A"],
+        "eskiSayisi": 0,
+        "yeniSayisi": 11,
+        "depo": null,
+        "mesaj": "Toplam 0 cari ünvandan 0 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [["#", "Cari Ünvan"]],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay  A"],
+            [2, "İYAPAY"],
+            [3, "Yapay Kenar"],
+            [4, "ßYapay"],
+            [5, "Yapay A"],
+            [6, "yapay alfa"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 6]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-14",
+      "eski": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "yapay alfa", 0],
+        [null, "Yapay A", 0],
+        [null, "", 0],
+        [null, "ßYapay", 0],
+        [null, null, 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "İYAPAY", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, "ßYapay", 0],
+        [null, "  Yapay Kenar ", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [],
+      "okunanYeni": [
+        "yapay alfa",
+        "Yapay A",
+        "ßYapay",
+        "Yapay Kenar",
+        "Yapay Alfa",
+        "İYAPAY",
+        "Yapay Alfa",
+        "Yapay  A",
+        "Yapay A",
+        "ßYapay",
+        "Yapay Kenar"
+      ],
+      "sonuc": {
+        "eksikler": [],
+        "yeniler": ["yapay alfa", "Yapay A", "ßYapay", "Yapay Kenar", "Yapay Alfa", "İYAPAY", "Yapay  A"],
+        "eskiSayisi": 0,
+        "yeniSayisi": 11,
+        "depo": null,
+        "mesaj": "Toplam 0 cari ünvandan 0 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [["#", "Cari Ünvan"]],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay  A"],
+            [2, "İYAPAY"],
+            [3, "Yapay Alfa"],
+            [4, "Yapay Kenar"],
+            [5, "ßYapay"],
+            [6, "Yapay A"],
+            [7, "yapay alfa"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 7]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-15",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "ıyapay", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, "  Yapay Kenar ", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, "ßYapay", 0],
+        [null, "ßYapay", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": ["Yapay Kenar", "Yapay Alfa", "ıyapay", "Yapay  A", "Yapay A", "Yapay Kenar"],
+      "okunanYeni": ["Yapay Alfa", "ßYapay", "ßYapay"],
+      "sonuc": {
+        "eksikler": ["Yapay Kenar", "ıyapay", "Yapay  A", "Yapay A"],
+        "yeniler": ["ßYapay"],
+        "eskiSayisi": 6,
+        "yeniSayisi": 3,
+        "depo": null,
+        "mesaj": "Toplam 6 cari ünvandan 4 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Kenar"],
+            [2, "ıyapay"],
+            [3, "Yapay  A"],
+            [4, "Yapay A"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "ßYapay"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-15",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "ıyapay", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, "  Yapay Kenar ", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, "ßYapay", 0],
+        [null, "ßYapay", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": ["Yapay Kenar", "Yapay Alfa", "ıyapay", "Yapay  A", "Yapay A", "Yapay Kenar"],
+      "okunanYeni": ["Yapay Alfa", "ßYapay", "ßYapay"],
+      "sonuc": {
+        "eksikler": ["Yapay Kenar", "ıyapay", "Yapay  A", "Yapay A"],
+        "yeniler": ["ßYapay"],
+        "eskiSayisi": 6,
+        "yeniSayisi": 3,
+        "depo": null,
+        "mesaj": "Toplam 6 cari ünvandan 4 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Kenar"],
+            [2, "ıyapay"],
+            [3, "Yapay  A"],
+            [4, "Yapay A"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "ßYapay"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-16",
+      "eski": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0],
+        [null, "", 0],
+        [null, "Yapay  A", 0],
+        [null, "  Yapay Kenar ", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [],
+      "okunanYeni": ["Yapay Kenar", "Yapay A", "Yapay  A", "Yapay Kenar"],
+      "sonuc": {
+        "eksikler": [],
+        "yeniler": ["Yapay Kenar", "Yapay A", "Yapay  A"],
+        "eskiSayisi": 0,
+        "yeniSayisi": 4,
+        "depo": null,
+        "mesaj": "Toplam 0 cari ünvandan 0 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [["#", "Cari Ünvan"]],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay  A"],
+            [2, "Yapay A"],
+            [3, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 3]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-16",
+      "eski": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0],
+        [null, "", 0],
+        [null, "Yapay  A", 0],
+        [null, "  Yapay Kenar ", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [],
+      "okunanYeni": ["Yapay Kenar", "Yapay A", "Yapay  A", "Yapay Kenar"],
+      "sonuc": {
+        "eksikler": [],
+        "yeniler": ["Yapay Kenar", "Yapay A", "Yapay  A"],
+        "eskiSayisi": 0,
+        "yeniSayisi": 4,
+        "depo": null,
+        "mesaj": "Toplam 0 cari ünvandan 0 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [["#", "Cari Ünvan"]],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay  A"],
+            [2, "Yapay A"],
+            [3, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 3]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-17",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ßYapay", 0],
+        [null, "ıyapay", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ıyapay", 0],
+        [null, "", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0],
+        [null, null, 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay  A", 0],
+        [null, null, 0],
+        [null, "yapay alfa", 0],
+        [null, "Yapay  A", 0],
+        [null, null, 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": ["ßYapay", "ıyapay"],
+      "okunanYeni": ["ıyapay", "Yapay Kenar", "Yapay A", "Yapay A", "Yapay  A", "yapay alfa", "Yapay  A"],
+      "sonuc": {
+        "eksikler": ["ßYapay"],
+        "yeniler": ["Yapay Kenar", "Yapay A", "Yapay  A", "yapay alfa"],
+        "eskiSayisi": 2,
+        "yeniSayisi": 7,
+        "depo": null,
+        "mesaj": "Toplam 2 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "ßYapay"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "yapay alfa"],
+            [2, "Yapay  A"],
+            [3, "Yapay A"],
+            [4, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 4]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-17",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ßYapay", 0],
+        [null, "ıyapay", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ıyapay", 0],
+        [null, "", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0],
+        [null, null, 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay  A", 0],
+        [null, null, 0],
+        [null, "yapay alfa", 0],
+        [null, "Yapay  A", 0],
+        [null, null, 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": ["ßYapay", "ıyapay"],
+      "okunanYeni": ["ıyapay", "Yapay Kenar", "Yapay A", "Yapay A", "Yapay  A", "yapay alfa", "Yapay  A"],
+      "sonuc": {
+        "eksikler": ["ßYapay"],
+        "yeniler": ["Yapay Kenar", "Yapay A", "Yapay  A", "yapay alfa"],
+        "eskiSayisi": 2,
+        "yeniSayisi": 7,
+        "depo": null,
+        "mesaj": "Toplam 2 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "ßYapay"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "yapay alfa"],
+            [2, "Yapay  A"],
+            [3, "Yapay A"],
+            [4, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 4]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-18",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay  A", 0],
+        [null, "İYAPAY", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay A", 0],
+        [null, "İYAPAY", 0],
+        [null, "ßYapay", 0],
+        [null, null, 0],
+        [null, "İYAPAY", 0],
+        [null, "SSYapay", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay  A", 0],
+        [null, null, 0],
+        [null, "", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "İYAPAY", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, null, 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "SSYapay", 0],
+        [null, "ßYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, null, 0],
+        [null, "ßYapay", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [
+        "Yapay  A",
+        "İYAPAY",
+        "Yapay A",
+        "Yapay A",
+        "İYAPAY",
+        "ßYapay",
+        "İYAPAY",
+        "SSYapay",
+        "ßYapay",
+        "Yapay  A",
+        "Yapay  A"
+      ],
+      "okunanYeni": [
+        "İYAPAY",
+        "yapay alfa",
+        "ßYapay",
+        "Yapay Kenar",
+        "Yapay Alfa",
+        "SSYapay",
+        "ßYapay",
+        "yapay alfa",
+        "ßYapay"
+      ],
+      "sonuc": {
+        "eksikler": ["Yapay  A", "Yapay A"],
+        "yeniler": ["yapay alfa", "Yapay Kenar"],
+        "eskiSayisi": 11,
+        "yeniSayisi": 9,
+        "depo": null,
+        "mesaj": "Toplam 11 cari ünvandan 2 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay  A"],
+            [2, "Yapay A"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Kenar"],
+            [2, "yapay alfa"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 2]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-18",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay  A", 0],
+        [null, "İYAPAY", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay A", 0],
+        [null, "İYAPAY", 0],
+        [null, "ßYapay", 0],
+        [null, null, 0],
+        [null, "İYAPAY", 0],
+        [null, "SSYapay", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay  A", 0],
+        [null, null, 0],
+        [null, "", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "İYAPAY", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, null, 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "SSYapay", 0],
+        [null, "ßYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, null, 0],
+        [null, "ßYapay", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [
+        "Yapay  A",
+        "İYAPAY",
+        "Yapay A",
+        "Yapay A",
+        "İYAPAY",
+        "ßYapay",
+        "İYAPAY",
+        "SSYapay",
+        "ßYapay",
+        "Yapay  A",
+        "Yapay  A"
+      ],
+      "okunanYeni": [
+        "İYAPAY",
+        "yapay alfa",
+        "ßYapay",
+        "Yapay Kenar",
+        "Yapay Alfa",
+        "SSYapay",
+        "ßYapay",
+        "yapay alfa",
+        "ßYapay"
+      ],
+      "sonuc": {
+        "eksikler": ["Yapay  A", "Yapay A"],
+        "yeniler": ["yapay alfa", "Yapay Kenar", "Yapay Alfa"],
+        "eskiSayisi": 11,
+        "yeniSayisi": 9,
+        "depo": null,
+        "mesaj": "Toplam 11 cari ünvandan 2 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay  A"],
+            [2, "Yapay A"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Alfa"],
+            [2, "Yapay Kenar"],
+            [3, "yapay alfa"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 3]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-19",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ßYapay", 0],
+        [null, "ßYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "İYAPAY", 0],
+        [null, "SSYapay", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "İYAPAY", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "", 0],
+        [null, "ßYapay", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": ["ßYapay", "ßYapay", "yapay alfa", "İYAPAY", "SSYapay", "Yapay Kenar", "İYAPAY"],
+      "okunanYeni": ["ßYapay"],
+      "sonuc": {
+        "eksikler": ["yapay alfa", "İYAPAY", "Yapay Kenar"],
+        "yeniler": [],
+        "eskiSayisi": 7,
+        "yeniSayisi": 1,
+        "depo": null,
+        "mesaj": "Toplam 7 cari ünvandan 3 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "yapay alfa"],
+            [2, "İYAPAY"],
+            [3, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "yapay-19",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "ßYapay", 0],
+        [null, "ßYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "İYAPAY", 0],
+        [null, "SSYapay", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "İYAPAY", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "", 0],
+        [null, "ßYapay", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": ["ßYapay", "ßYapay", "yapay alfa", "İYAPAY", "SSYapay", "Yapay Kenar", "İYAPAY"],
+      "okunanYeni": ["ßYapay"],
+      "sonuc": {
+        "eksikler": ["yapay alfa", "İYAPAY", "SSYapay", "Yapay Kenar"],
+        "yeniler": [],
+        "eskiSayisi": 7,
+        "yeniSayisi": 1,
+        "depo": null,
+        "mesaj": "Toplam 7 cari ünvandan 4 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "yapay alfa"],
+            [2, "İYAPAY"],
+            [3, "SSYapay"],
+            [4, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "yapay-20",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "yapay alfa", 0],
+        [null, "Yapay A", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, null, 0],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay  A", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0]
+      ],
+      "yeni": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [
+        "yapay alfa",
+        "Yapay A",
+        "yapay alfa",
+        "ßYapay",
+        "Yapay Alfa",
+        "Yapay A",
+        "Yapay  A",
+        "Yapay Kenar",
+        "Yapay A"
+      ],
+      "okunanYeni": [],
+      "sonuc": {
+        "eksikler": ["yapay alfa", "Yapay A", "ßYapay", "Yapay  A", "Yapay Kenar"],
+        "yeniler": [],
+        "eskiSayisi": 9,
+        "yeniSayisi": 0,
+        "depo": null,
+        "mesaj": "Toplam 9 cari ünvandan 5 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "yapay alfa"],
+            [2, "Yapay A"],
+            [3, "ßYapay"],
+            [4, "Yapay  A"],
+            [5, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "yapay-20",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "yapay alfa", 0],
+        [null, "Yapay A", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, null, 0],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay  A", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0]
+      ],
+      "yeni": [["Yapay müşteri raporu"], [], ["Kod", "Cari Ünvan", "Bakiye"]],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [
+        "yapay alfa",
+        "Yapay A",
+        "yapay alfa",
+        "ßYapay",
+        "Yapay Alfa",
+        "Yapay A",
+        "Yapay  A",
+        "Yapay Kenar",
+        "Yapay A"
+      ],
+      "okunanYeni": [],
+      "sonuc": {
+        "eksikler": ["yapay alfa", "Yapay A", "ßYapay", "Yapay Alfa", "Yapay  A", "Yapay Kenar"],
+        "yeniler": [],
+        "eskiSayisi": 9,
+        "yeniSayisi": 0,
+        "depo": null,
+        "mesaj": "Toplam 9 cari ünvandan 6 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "yapay alfa"],
+            [2, "Yapay A"],
+            [3, "ßYapay"],
+            [4, "Yapay Alfa"],
+            [5, "Yapay  A"],
+            [6, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "yapay-21",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "yapay alfa", 0],
+        [null, "İYAPAY", 0],
+        [null, "SSYapay", 0],
+        [null, "Yapay  A", 0],
+        [null, "ıyapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, "ßYapay", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "yapay alfa", 0],
+        [null, "SSYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "yapay alfa", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "  Yapay Kenar ", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [
+        "yapay alfa",
+        "İYAPAY",
+        "SSYapay",
+        "Yapay  A",
+        "ıyapay",
+        "yapay alfa",
+        "ßYapay",
+        "Yapay  A",
+        "Yapay A",
+        "ßYapay"
+      ],
+      "okunanYeni": [
+        "yapay alfa",
+        "SSYapay",
+        "Yapay A",
+        "Yapay Alfa",
+        "yapay alfa",
+        "Yapay Alfa",
+        "Yapay Alfa",
+        "Yapay Kenar"
+      ],
+      "sonuc": {
+        "eksikler": ["İYAPAY", "Yapay  A", "ıyapay"],
+        "yeniler": ["Yapay Kenar"],
+        "eskiSayisi": 10,
+        "yeniSayisi": 8,
+        "depo": null,
+        "mesaj": "Toplam 10 cari ünvandan 3 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "İYAPAY"],
+            [2, "Yapay  A"],
+            [3, "ıyapay"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-21",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "yapay alfa", 0],
+        [null, "İYAPAY", 0],
+        [null, "SSYapay", 0],
+        [null, "Yapay  A", 0],
+        [null, "ıyapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay A", 0],
+        [null, "ßYapay", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "yapay alfa", 0],
+        [null, "SSYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "yapay alfa", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "  Yapay Kenar ", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [
+        "yapay alfa",
+        "İYAPAY",
+        "SSYapay",
+        "Yapay  A",
+        "ıyapay",
+        "yapay alfa",
+        "ßYapay",
+        "Yapay  A",
+        "Yapay A",
+        "ßYapay"
+      ],
+      "okunanYeni": [
+        "yapay alfa",
+        "SSYapay",
+        "Yapay A",
+        "Yapay Alfa",
+        "yapay alfa",
+        "Yapay Alfa",
+        "Yapay Alfa",
+        "Yapay Kenar"
+      ],
+      "sonuc": {
+        "eksikler": ["İYAPAY", "Yapay  A", "ıyapay", "ßYapay"],
+        "yeniler": ["Yapay Alfa", "Yapay Kenar"],
+        "eskiSayisi": 10,
+        "yeniSayisi": 8,
+        "depo": null,
+        "mesaj": "Toplam 10 cari ünvandan 4 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "İYAPAY"],
+            [2, "Yapay  A"],
+            [3, "ıyapay"],
+            [4, "ßYapay"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Kenar"],
+            [2, "Yapay Alfa"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 2]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-22",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "İYAPAY", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0],
+        [null, "SSYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, null, 0],
+        [null, "SSYapay", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay  A", 0],
+        [null, null, 0],
+        [null, "Yapay Alfa", 0],
+        [null, "İYAPAY", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "SSYapay", 0],
+        [null, "Yapay  A", 0],
+        [null, "", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay  A", 0],
+        [null, "İYAPAY", 0],
+        [null, "Yapay A", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "İYAPAY", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "yapay alfa", 0],
+        [null, null, 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [
+        "İYAPAY",
+        "Yapay Kenar",
+        "Yapay Kenar",
+        "Yapay A",
+        "SSYapay",
+        "yapay alfa",
+        "Yapay Alfa",
+        "Yapay Kenar",
+        "SSYapay",
+        "Yapay Kenar",
+        "Yapay Alfa",
+        "Yapay Kenar",
+        "Yapay  A",
+        "Yapay Alfa",
+        "İYAPAY"
+      ],
+      "okunanYeni": [
+        "SSYapay",
+        "Yapay  A",
+        "Yapay Kenar",
+        "ßYapay",
+        "Yapay  A",
+        "Yapay  A",
+        "İYAPAY",
+        "Yapay A",
+        "Yapay Kenar",
+        "İYAPAY",
+        "Yapay Alfa",
+        "yapay alfa"
+      ],
+      "sonuc": {
+        "eksikler": [],
+        "yeniler": [],
+        "eskiSayisi": 15,
+        "yeniSayisi": 12,
+        "depo": null,
+        "mesaj": "Toplam 15 cari ünvandan 0 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [["#", "Cari Ünvan"]],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": null
+    },
+    {
+      "ad": "yapay-22",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "İYAPAY", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay A", 0],
+        [null, "SSYapay", 0],
+        [null, "yapay alfa", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, null, 0],
+        [null, "SSYapay", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay  A", 0],
+        [null, null, 0],
+        [null, "Yapay Alfa", 0],
+        [null, "İYAPAY", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "SSYapay", 0],
+        [null, "Yapay  A", 0],
+        [null, "", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "ßYapay", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay  A", 0],
+        [null, "İYAPAY", 0],
+        [null, "Yapay A", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "İYAPAY", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "yapay alfa", 0],
+        [null, null, 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [
+        "İYAPAY",
+        "Yapay Kenar",
+        "Yapay Kenar",
+        "Yapay A",
+        "SSYapay",
+        "yapay alfa",
+        "Yapay Alfa",
+        "Yapay Kenar",
+        "SSYapay",
+        "Yapay Kenar",
+        "Yapay Alfa",
+        "Yapay Kenar",
+        "Yapay  A",
+        "Yapay Alfa",
+        "İYAPAY"
+      ],
+      "okunanYeni": [
+        "SSYapay",
+        "Yapay  A",
+        "Yapay Kenar",
+        "ßYapay",
+        "Yapay  A",
+        "Yapay  A",
+        "İYAPAY",
+        "Yapay A",
+        "Yapay Kenar",
+        "İYAPAY",
+        "Yapay Alfa",
+        "yapay alfa"
+      ],
+      "sonuc": {
+        "eksikler": [],
+        "yeniler": ["ßYapay"],
+        "eskiSayisi": 15,
+        "yeniSayisi": 12,
+        "depo": null,
+        "mesaj": "Toplam 15 cari ünvandan 0 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [["#", "Cari Ünvan"]],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "ßYapay"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-23",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, "ıyapay", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay A", 0],
+        [null, "İYAPAY", 0],
+        [null, "İYAPAY", 0],
+        [null, "  Yapay Kenar ", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "SSYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "", 0],
+        [null, null, 0],
+        [null, "yapay alfa", 0],
+        [null, "", 0],
+        [null, "İYAPAY", 0],
+        [null, "Yapay  A", 0],
+        [null, "ıyapay", 0],
+        [null, "Yapay A", 0],
+        [null, "İYAPAY", 0],
+        [null, "", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": false,
+      "okunanEski": [
+        "Yapay Alfa",
+        "ıyapay",
+        "Yapay Alfa",
+        "Yapay Kenar",
+        "Yapay  A",
+        "Yapay Alfa",
+        "Yapay A",
+        "İYAPAY",
+        "İYAPAY",
+        "Yapay Kenar"
+      ],
+      "okunanYeni": ["SSYapay", "Yapay A", "yapay alfa", "İYAPAY", "Yapay  A", "ıyapay", "Yapay A", "İYAPAY"],
+      "sonuc": {
+        "eksikler": ["Yapay Kenar"],
+        "yeniler": ["SSYapay"],
+        "eskiSayisi": 10,
+        "yeniSayisi": 8,
+        "depo": null,
+        "mesaj": "Toplam 10 cari ünvandan 1 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "SSYapay"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 1]
+          ],
+          "birlesimler": []
+        }
+      ]
+    },
+    {
+      "ad": "yapay-23",
+      "eski": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay Alfa", 0],
+        [null, "ıyapay", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "  Yapay Kenar ", 0],
+        [null, "Yapay  A", 0],
+        [null, "Yapay Alfa", 0],
+        [null, "Yapay A", 0],
+        [null, "İYAPAY", 0],
+        [null, "İYAPAY", 0],
+        [null, "  Yapay Kenar ", 0]
+      ],
+      "yeni": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "SSYapay", 0],
+        [null, "Yapay A", 0],
+        [null, "", 0],
+        [null, null, 0],
+        [null, "yapay alfa", 0],
+        [null, "", 0],
+        [null, "İYAPAY", 0],
+        [null, "Yapay  A", 0],
+        [null, "ıyapay", 0],
+        [null, "Yapay A", 0],
+        [null, "İYAPAY", 0],
+        [null, "", 0]
+      ],
+      "plasiyerler": {},
+      "harfDuyarli": true,
+      "okunanEski": [
+        "Yapay Alfa",
+        "ıyapay",
+        "Yapay Alfa",
+        "Yapay Kenar",
+        "Yapay  A",
+        "Yapay Alfa",
+        "Yapay A",
+        "İYAPAY",
+        "İYAPAY",
+        "Yapay Kenar"
+      ],
+      "okunanYeni": ["SSYapay", "Yapay A", "yapay alfa", "İYAPAY", "Yapay  A", "ıyapay", "Yapay A", "İYAPAY"],
+      "sonuc": {
+        "eksikler": ["Yapay Alfa", "Yapay Kenar"],
+        "yeniler": ["SSYapay", "yapay alfa"],
+        "eskiSayisi": 10,
+        "yeniSayisi": 8,
+        "depo": null,
+        "mesaj": "Toplam 10 cari ünvandan 2 tanesi yeni dosyada bulunmuyor.",
+        "dosyaAdi": "karşılaştırma_sonucu"
+      },
+      "tamExcel": [
+        {
+          "ad": "Sheet1",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "Yapay Alfa"],
+            [2, "Yapay Kenar"]
+          ],
+          "birlesimler": []
+        }
+      ],
+      "gorunenYeniExcel": [
+        {
+          "ad": "Görünen Satırlar",
+          "satirlar": [
+            ["#", "Cari Ünvan"],
+            [1, "yapay alfa"],
+            [2, "SSYapay"]
+          ],
+          "birlesimler": []
+        },
+        {
+          "ad": "Kapsam",
+          "satirlar": [
+            ["Bilgi", "Değer"],
+            ["Rapor", "Müşteri Takip — Yeni Müşteriler"],
+            ["Kapsam", "Ekranda görünen satırlar"],
+            ["Liste", "Yeni Müşteriler"],
+            ["Sıralama", "Ekrandaki sıra"],
+            ["Satır Sayısı", 2]
+          ],
+          "birlesimler": []
+        }
+      ]
+    }
+  ],
+  "hatalar": [
+    {
+      "ad": "baslik-yok",
+      "satirlar": [["Yapay"]],
+      "hataTuru": "HeaderNotFoundError"
+    },
+    {
+      "ad": "gec-baslik",
+      "satirlar": [
+        ["Yapay müşteri raporu"],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [null, "Yapay", 0]
+      ],
+      "hataTuru": "HeaderNotFoundError"
+    },
+    {
+      "ad": "kucuk-harf-baslik",
+      "satirlar": [["cari ünvan"], ["Yapay"]],
+      "hataTuru": "CariColumnNotFoundError"
+    },
+    {
+      "ad": "uzun-hucre",
+      "satirlar": [
+        ["Yapay müşteri raporu"],
+        [],
+        ["Kod", "Cari Ünvan", "Bakiye"],
+        [
+          null,
+          "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY",
+          0
+        ]
+      ],
+      "hataTuru": "InvalidCustomerFileError"
+    }
+  ]
+}
