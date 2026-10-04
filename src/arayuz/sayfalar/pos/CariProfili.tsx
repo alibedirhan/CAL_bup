@@ -61,7 +61,7 @@ export function CariProfili({
       />
       <PosGirisYardimi
         cari={cari}
-        baslik="POS’a giriş"
+        baslik="Elle POS’a giriş"
         izin={() => !mesgul}
         bildir={bildir}
         gizlilikNo={gizlilikNo}

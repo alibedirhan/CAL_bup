@@ -88,9 +88,10 @@ export function PosGirisYardimi({
       </div>
       <IslemBildirimi islem={kopyalama} />
       <p className="ipucu">
-        Bu düğme seçilen carinin numarasını ve giriş şifresini doğrudan POS’a gönderir. Giriş kabul edilirse
-        cari hesabı açılır; CAL bup sonucu okuyamaz. Açılan sekmeyi göremiyorsanız tarayıcının açılır pencere
-        iznini kontrol edin.
+        Kart bilgileri dolsun istiyorsanız seçili kartın yanındaki “Seçili kartla POS’u aç” düğmesini
+        kullanın. Buradaki “POS’u aç” yalnızca seçilen carinin numarasını ve giriş şifresini POS’a gönderir.
+        Giriş kabul edilirse cari hesabı açılır; CAL bup sonucu okuyamaz. Açılan sekmeyi göremiyorsanız
+        tarayıcının açılır pencere iznini kontrol edin.
       </p>
       <a
         className="dugme hayalet"
@@ -150,7 +151,7 @@ export function PosGirisYardimi({
       <Mesaj ton={dogrulandi ? 'bilgi' : 'uyari'}>
         {dogrulandi
           ? 'Cari kontrolünü siz onayladınız. Kart, CVV, tutar ve banka şifresini POS/banka ekranlarında elle girin.'
-          : 'Doğru cari açıldığını kontrol etmeden kart bilgilerini girmeyin. CAL bup POS oturumunu otomatik doğrulayamaz.'}
+          : 'Elle girişte doğru cari açıldığını kendiniz kontrol edin. Bu giriş yöntemi POS oturumunu otomatik doğrulamaz.'}
       </Mesaj>
       <p className="ipucu">POS’taki bakiye ödeme tutarı değildir; tutarı kendiniz belirleyip kontrol edin.</p>
       <p className="ipucu">

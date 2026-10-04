@@ -1,3 +1,25 @@
+# 4 Ekim 2026 — 1.6.0 kart aktarımı ve numara okuma
+
+Kullanıcı tek operatör için seçili cari/kartla POS açılışı ve numara/tarih doldurmayı istedi;
+CVV ve tutarı kendisi girecek. Müşteri kartıyla test/ödeme/SMS kesinlikle yasak; tüm yeni denemeler
+sentetik görüntü/kart ve taklit ödeme ekranındadır. Mimari ve sınırlar: [POS_YARDIMCISI.md](POS_YARDIMCISI.md).
+
+- Yapay kabartma/desende yalnızca tarih okunması yeniden üretildi; sınırlı numara şeridi OCR ile
+  PAN ve tarih birlikte bulundu. Okunamayan PAN incelemede elle tamamlanır, açık onayla forma geçer.
+- Dar MV3 Edge/Chrome yardımcı projede geliştirildi, aynı sürümlü ZIP uygulamadan indirilir.
+  Boş alanların açık tanıtımı ve görünen vergi/TC karşılaştırması gerekir. PAN/son kullanma doldurulur;
+  CVV/tutar/ödeme/SMS düğmeleri ve olayları kullanılmaz. Yanlış cari veya değişmiş alan durdurur.
+- Tek kullanımlık 120 saniyelik oturum kuyruğu, sekme bağlama, teslimden önce kart silme,
+  seçim/rota/sekme/süre iptali, görünür kurulum/hata/başarı vardır. POS sekmesine geçiş aktarımı kesmez.
+- Kullanıcı boş gerçek POS ekranını paylaştı; görünen cari numarası ve tek S.K.T alanı doğrulandı.
+  Görseldeki müşteri adı/numarası/bakiye/e-posta kod/test/belgeye alınmadı; gerçek DOM denenmedi.
+- Son yerel kontrol: 28 dosyada 346 test ve 66 Chromium senaryosu geçti; bilinen bağımlılık açığı 0.
+  Tip/lint/biçim/derleme, MV3 manifest/ZIP, açık/koyu/dar görsel kontrol ve sahneleme veri taraması geçti.
+  Ek kural: Luhn geçen uzun PAN+CVV birleşmesi olabilen OCR adayı reddedilir; elle kayıt etkilenmez.
+  Yayın main gönderiminin ardından Actions'ın aynı kontrolleri geçmesine bağlıdır.
+- Sağlayıcının gerçek ödeme DOM'u/Windows Edge kabulü ve otomasyon sözleşmesi kanıtlanmış değildir.
+  İlk kurulum kullanıcı tarafından boş alanlarda yapılır; görünür numara/uygun alan yoksa elle akış kalır.
+
 # 4 Ekim 2026 — 1.5.0 OCR/bildirim üç aşaması
 
 Kullanıcı üç aşamayı sırayla uygulamayı istedi; geliştirme ve yerel kabul kapıları tamamlandı.

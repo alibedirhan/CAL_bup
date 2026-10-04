@@ -6,6 +6,7 @@ import type { PosCari } from '../../../cekirdek/posCari';
 import { kartMaskesi, kartSuresiGecti, type PosKart } from '../../../cekirdek/posKart';
 import { posBilgisiniKopyala } from '../../../platform/posGiris';
 import { KartFormu } from './KartFormu';
+import { PosKartAktarimi } from './PosKartAktarimi';
 
 export function CariKartlari({
   cari,
@@ -124,6 +125,7 @@ export function CariKartlari({
       {secili && (
         <div className="pos-secili-kart">
           <h3>Seçilen kart: {secili.ad}</h3>
+          <PosKartAktarimi key={secili.id} cari={cari} kart={secili} mesgul={blok} />
           <dl className="bilgi-satirlari">
             <div>
               <dt>Kart sahibi</dt>

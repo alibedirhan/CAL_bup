@@ -129,8 +129,9 @@ oturumdan çıkar, açılan firma adı/numarasını karşılaştırır ve kontro
 Her kart kalıcı cari kimliğine bağlıdır; kart adı, numara, son kullanma, kart sahibi ve isteğe bağlı
 iletişim telefonu elle kaydedilir. Fotoğraf numara/tarih adaylarını yerelde okuyabilir; gözden geçirme
 ve kayıt ayrı kullanıcı adımıdır. CVV/CVC, banka PIN’i, SMS/OTP, fotoğraf veya ham OCR saklanmaz.
-Telefon bankanın SMS hedefini değiştirmez. Tutar ve banka doğrulaması POS/banka ekranında yapılır;
-kartı POS’a otomatik doldurma veya SMS başlatma için doğrulanmış entegrasyon bulunmamaktadır.
+Telefon bankanın SMS hedefini değiştirmez. Tutar ve banka doğrulaması POS/banka ekranında yapılır.
+1.6.0'da ayrı MV3 yardımcı, kullanıcı tarafından tanıtılmış boş numara/S.K.T alanlarını cari numarası
+eşleşince doldurabilir. Sağlayıcının kart API'si doğrulanmış değildir; SMS/ödeme otomasyonu yoktur.
 
 - 500 cari, cari başına 10 kart; şifreli zarf/yedek toplamı 2 MiB’yi geçemez.
 - Numara 12–19 ASCII rakam ve Luhn; telefon isteğe bağlı Türkiye cep telefonu biçimidir.
@@ -162,3 +163,19 @@ Kayıt sonucu kalıcı depo doğrulandığında başarıdır. İndirme düğmesi
 başlatıldığını bildirir; dosya sisteminde tamamlandığını iddia etmez. Ayar kaydı başarısızken yalnızca
 oturumda geçerli olduğu açıklanır. Okunamayan/bozuk geçmiş boş liste değildir. Belirsiz veya durdurulmuş
 yazı kesin geri alınmış sayılmaz; otomatik yeniden yazma yapılmaz. [Kapanış raporu](OCR_VE_BILDIRIM_UYGULAMA_SONUCU.md).
+
+## Kart aktarımı ve eksik OCR numarası (1.6.0)
+
+Aktarım açık kart seçimi ve “Seçili kartla POS’u aç” isteği gerektirir. Kalıcı cari/kart kimlikleri
+ve görünen POS vergi/TC numarası karşılaştırılır; yalnızca bu işin hedef sekmesine teslim yapılır.
+Bekleyen kart 120 saniyeyle sınırlıdır, teslimden önce silinir. Cari/kart/rota/veri değişimi ve sekme
+kapanması iptal eder; uygulamadan POS sekmesine geçmek aktarımı iptal etmez. CVV/tutar girilmez,
+ödeme/SMS düğmesine basılmaz ve ödeme ekranında alan değişim olayları gönderilmez.
+Değişmiş/gizli/uygunsuz alan veya başka girilmiş bilgi varsa yazı durur; belirsiz teslim tekrarlanmaz.
+
+Yalnızca tarih okunduğunda PAN inceleme alanında elle tamamlanabilir; biçim/Luhn denetlenir ve
+fotoğraf kontrolü yeniden istenir. Numara/tarih birlikte, açık onayla uygulanır. Numara bulunamazsa
+aynı görüntü/yön üzerinde sınırlı ek şerit okuması vardır; rakam tahmin edilmez. Ayrıntı ve test sınırları:
+[POS_YARDIMCISI.md](POS_YARDIMCISI.md).
+Uzun OCR adayı geçerli kısa PAN + 3/4 ek rakam olabiliyorsa CVV birleşmesi belirsizliğinde reddedilir;
+kısa PAN veya kod çıkarılmaz. Gerçek uzun kartın elle kaydı normal 12–19/Luhn kuralını kullanır.

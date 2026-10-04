@@ -72,6 +72,9 @@ export class KartOkumaMotoru {
     const image = new Uint8Array(await blob.arrayBuffer());
     return this.is('recognize', { image, options, output: { text: true, blocks: true } }, [image.buffer]);
   }
+  async parametreler(params: Record<string, string>): Promise<void> {
+    await this.is('setParameters', { params });
+  }
   kapat(hata = new KullaniciHatasi('Fotoğraf okuma durduruldu. Elle devam edebilirsiniz.')): void {
     if (this.kapali) return;
     this.kapali = true;

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { KartOkumaSonucu } from '../../../cekirdek/posKartFotografi';
+import { kartNumarasi } from '../../../cekirdek/posKart';
 /** Adaylar fotoğraf oturumuna aittir. Uygulama tek işlemde PAN ve tarihi değiştirir. */
 export function FotoAdaylari({
   sonuc,
@@ -18,6 +19,14 @@ export function FotoAdaylari({
   const eksik = !numara || !t;
   const belirsiz = (sonuc.numaralar.length > 1 && !numara) || (sonuc.tarihler.length > 1 && !t);
   const kanit = sonuc.kanitlar?.filter((k) => k.deger === numara || k.deger === tarih);
+  let gecersiz = false;
+  if (numara) {
+    try {
+      kartNumarasi(numara);
+    } catch {
+      gecersiz = true;
+    }
+  }
   return (
     <section className="pos-foto-adaylari" aria-label="Fotoğraftan bulunan alanlar">
       <h3>Fotoğraftan bulunan alanlar</h3>
@@ -39,6 +48,30 @@ export function FotoAdaylari({
               </option>
             ))}
           </select>
+        </label>
+      )}
+      {!sonuc.numaralar.length && (
+        <label>
+          Okunamayan kart numarasını elle tamamla
+          <input
+            className="girdi rakam"
+            inputMode="numeric"
+            maxLength={23}
+            autoComplete="off"
+            value={numara}
+            aria-invalid={gecersiz}
+            onChange={(e) => {
+              setNumara(e.target.value);
+              setOnay(false);
+            }}
+          />
+          <span className="ipucu">
+            Tarih okundu, kart numarası okunamadı. Fotoğraftaki numarayı elle yazabilir veya yalnızca numara
+            bölgesini kırpıp yeniden okuyabilirsiniz.
+          </span>
+          {gecersiz && (
+            <span className="alan-hatasi">Kart numarası kontrolü geçmedi. Rakamları kontrol edin.</span>
+          )}
         </label>
       )}
       {numara && <p className="rakam">{numara.replace(/(.{4})(?=.)/g, '$1 ')}</p>}
@@ -81,7 +114,12 @@ export function FotoAdaylari({
         <input type="checkbox" checked={onay} onChange={(e) => setOnay(e.target.checked)} />
         Bulunan numara ve tarihi fotoğrafla karşılaştırdım.
       </label>
-      <button className="dugme" type="button" disabled={!onay || belirsiz} onClick={() => uygula(numara, t)}>
+      <button
+        className="dugme"
+        type="button"
+        disabled={!onay || belirsiz || gecersiz}
+        onClick={() => uygula(numara.replace(/ /g, ''), t)}
+      >
         Kontrol ettiğim alanları uygula
       </button>
     </section>

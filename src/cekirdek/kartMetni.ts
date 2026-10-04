@@ -28,8 +28,21 @@ export function kartMetniniCoz(metin: string): KartOkumaSonucu {
     );
   const numaralar = new Set<string>();
   const dene = (s: string) => {
+    const n = s.replace(/[\s-]/g, '');
+    // Rakam kısıtlı OCR, PAN yanındaki CVV etiketini kaybedebilir.
+    // Geçerli PAN + 3/4 ek rakamdan oluşabilen uzun aday belirsizdir; parça çıkarılmaz.
+    if (n.length > 16) {
+      for (const son of [3, 4]) {
+        try {
+          kartNumarasi(n.slice(0, -son));
+          return;
+        } catch {
+          /* Geçerli kısa PAN yok; tam aday ayrıca doğrulanır. */
+        }
+      }
+    }
     try {
-      numaralar.add(kartNumarasi(s.replace(/[\s-]/g, '')));
+      numaralar.add(kartNumarasi(n));
     } catch {
       /* Geçersiz aday tahminle düzeltilmez. */
     }

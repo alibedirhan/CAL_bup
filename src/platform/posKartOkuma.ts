@@ -7,6 +7,7 @@ import {
 import { KartOkumaMotoru, type OkumaAsamasi } from './ocr/motor';
 import { kartGoruntusu, goruntuyuDondur, egimiBul, okumaSuruyor } from './ocr/goruntu';
 import { okumaAlanlari } from './ocr/alanlar';
+import { numaraSeridi } from './ocr/numara';
 
 export async function kartFotografiniOku(
   dosya: File,
@@ -51,7 +52,7 @@ export async function kartFotografiniOku(
       });
       await worker.hazirla();
       const sonuc: KartOkumaSonucu = { numaralar: [], tarihler: [], kanitlar: [], gecersizNumara: false };
-      // Dört yön, bir kontrast düzeltmesi: en fazla beş deneme, toplam 90 saniye.
+      // Beş genel + gerekirse dört numara şeridi: en fazla dokuz deneme, toplam 90 saniye.
       for (const [donus, kontrast] of [
         [0, false],
         [90, false],
@@ -85,6 +86,36 @@ export async function kartFotografiniOku(
         gecici.height = 0;
         gecici = undefined;
         if (sonuc.numaralar.length && sonuc.tarihler.length) break;
+      }
+      if (!sonuc.numaralar.length) {
+        okumaSuruyor(c.signal);
+        const donus = sonuc.kanitlar?.[0]?.donus ?? 0;
+        const yon = goruntuyuDondur(canvas, donus);
+        try {
+          await worker.parametreler({
+            tessedit_char_whitelist: '0123456789 /.-',
+            tessedit_pageseg_mode: '7',
+          });
+          for (const kip of ['renk', 'koyu', 'acik', 'kabartma'] as const) {
+            okumaSuruyor(c.signal);
+            gecici = numaraSeridi(yon, kip);
+            asama('okuma');
+            const s = okumaAlanlari(await worker.oku(gecici), donus);
+            for (const k of s.kanitlar ?? []) if (k.bolge) k.bolge.y += yon.height * 0.2;
+            // Aynı fotoğrafın aynı yönündeki numara şeridi, önceki tarih ile birleştirilebilir.
+            if (s.numaralar.length) {
+              sonuc.numaralar = s.numaralar;
+              sonuc.kanitlar?.push(...(s.kanitlar ?? []));
+            }
+            gecici.width = 0;
+            gecici.height = 0;
+            gecici = undefined;
+            if (sonuc.numaralar.length) break;
+          }
+        } finally {
+          yon.width = 0;
+          yon.height = 0;
+        }
       }
       return sonuc;
     } finally {

@@ -21,3 +21,9 @@ it('farklı tarihler seçim için korunur; yinelenenler bir defa sunulur', () =>
     { ay: '12', yil: '2035' },
   ]);
 });
+it('PAN ve kısa güvenlik kodu birleşimi Luhn geçse de OCR kart adayı olmaz', () => {
+  // Yapay PAN + 105 tesadüfen 19 haneli Luhn kontrolünü geçer; CVV çıkarılmaz.
+  expect(kartMetnindenAlanlar('4242 4242 4242 4242 105\n12/35').numaralar).toEqual([]);
+  expect(kartMetnindenAlanlar('4242424242424242105\n12/35').numaralar).toEqual([]);
+  expect(kartMetnindenAlanlar('4242 4242 4242 4242 CVV 105\n12/35').numaralar).toEqual(['4242424242424242']);
+});

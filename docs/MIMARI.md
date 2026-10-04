@@ -49,6 +49,13 @@ bu depoyu çağırır. `posKartOkuma` isteğe bağlı ayrı OCR worker’ını y
 ile worker/WASM/modeli kendi yayınına koyar. CDN veya fotoğrafı dışarı gönderen servis yoktur.
 Veri sınırları ve sağlayıcı entegrasyonunun mevcut sınırı: [SANAL_POS.md](SANAL_POS.md).
 
+1.6.0 `cekirdek/posAktarimi` saf aktarım/alan şemasını tanımlar; `platform/posYardimcisi` tek istek
+kimlikli mesaj portudur. `eklenti/` yalnızca dar MV3/DOM adaptörlerini içerir: seri arka plan kuyruğu,
+sekme/cari eşleşmesi ve kullanıcı alan tanıtımı. Çekirdek eklentiye bağlanamaz (ESLint).
+`tools/posEklentisi` ana derlemeden sonra aynı sürümlü üç bağımsız betik/manifest/ZIP üretir.
+Ödeme alanlarına erişim uygulama içinde veya varsayılan seçicilerle yapılmaz.
+[POS_YARDIMCISI.md](POS_YARDIMCISI.md) veri yaşam döngüsü, test ve gerçek sağlayıcı kabul sınırıdır.
+
 1. `src/raporlar/kayit.ts`'ye bir kayıt ekleyin (`durum: 'yapimda'`).
 2. Gerekirse `src/kaynaklar/`'a yeni LED okuyucusu (dosyayı içeriğinden tanıyan bir `tani` işleviyle).
 3. `src/raporlar/<id>/` altında `hesapla()` (saf, birim testli) ve `uygula()` (kitaba yazar).

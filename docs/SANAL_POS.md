@@ -1,4 +1,4 @@
-# Sanal POS — 1.5.0
+# Sanal POS — 1.6.0
 
 Cari profili ve isimli kart yönetimi gerçek uygulamanın Sanal POS bölümündedir. Seçilen carinin
 altında “Kayıtlı kartlar / Kart ekle” görünür. Elle kart kaydı, fotoğraftan numara/tarih okuma,
@@ -13,14 +13,16 @@ numara/tarih/ad gösterme-kopyalama vardır. Tutar ve banka doğrulaması POS/ba
 3. “Kart ekle” ile kart adı, numara, son kullanma, kart üzerindeki ad ve isteğe bağlı telefonu girin.
    Fotoğraf seçmek zorunlu değildir. Okunan numara/tarihi fotoğrafla karşılaştırıp açıkça uygulayın;
    gerekirse önizlemeden döndürün/kırpın. Kaydetmeden önce kart ve cari kontrol kutusunu işaretleyin.
-4. Kartı açıkça seçin. POS’a giriş yapın; firma adı/numara eşleşmesini kontrol ettiğinizi işaretleyin.
-   Kart numarası gösterme ve kopyalama bundan sonra açılır. Bu beyan sağlayıcı doğrulaması değildir.
+4. Kartı açıkça seçin. Kurulu Edge yardımcısıyla “Seçili kartla POS’u aç” cari numarasını karşılaştırır,
+   tanıtılmış kart numarası/S.K.T alanlarını doldurur. İlk kurulum için [POS_YARDIMCISI.md](POS_YARDIMCISI.md).
+   Elle akışta “POS’u aç” ile giriş yapıp firma adı/numarasını kontrol ettiğinizi işaretleyin;
+   numara gösterme/kopyalama açılır. Elle beyan sağlayıcı doğrulaması değildir.
 5. Tutar, CVV ve banka doğrulaması yalnızca POS/banka ekranlarında tamamlanır.
 
-**Otomatik kart doldurma veya SMS başlatma yoktur.** Mevcut cari giriş formu kart/ödeme API’si
-olarak kullanılamaz. Bu sağlayıcının desteklediği kart aktarım sözleşmesi bulunamadı/doğrulanmadı;
-kullanıcıya entegrasyon bağlantısı olup olmadığı soruldu. Alan/uç/oturum tahmin edilerek ödeme
-isteği yazılmadı. Destek doğrulanırsa ayrı adaptör ve taklit sağlayıcı testleri gerekir.
+**Numara/S.K.T doldurma ayrı, dar yetkili MV3 yardımcısıyla mümkündür; ödeme/SMS otomasyonu yoktur.**
+Sağlayıcının kart API'si doğrulanmış değildir. Yardımcı kullanıcı tarafından boş alanları tanıtılmış
+sayfada çalışır; görünen cari numarası zorunludur, değişmiş alanlar/iframe desteklenmez.
+Mevcut cari giriş formu kart/ödeme API'si değildir. Gerçek ödeme isteği veya tahmin edilen uç eklenmedi.
 
 - Kart seçmek giriş, ödeme veya SMS göndermez; tutar/bakiye hesaplanmaz ve saklanmaz.
 - Telefon kart sahibinin **iletişim kaydıdır**; bankadaki telefon veya SMS/mobil onay hedefi değişmez.
@@ -89,7 +91,8 @@ iptal/90 saniye sınırı sonlandırmayı sağlar. Sürümün mesaj protokolüne
 bağımlılık yükseltmesinde gerçek OCR ve worker/model/WASM arıza testleri gerekir.
 Worker, WASM ve model kendi yayınımızdadır; CDN/harici OCR veya model önbelleği yoktur.
 
-Dört yön, sınırlı küçük eğiklik ve kontrast dönüşümüyle en fazla beş deneme yapılır. Tuval kenarı
+Dört yön, sınırlı küçük eğiklik ve kontrast dönüşümüyle beş genel deneme yapılır. PAN yoksa aynı
+fotoğrafın seçilmiş yönünde dört numara şeridi denemesi eklenir; toplam en fazla dokuz/90 saniye. Tuval kenarı
 2400 piksel sınırındadır; küçük görüntü en fazla iki kat büyütülür. Çıktı yalnızca Luhn geçen PAN,
 tarih adayları ve bu adayların geçici güven/konum bilgisidir. Ad/telefon/CVV çıkarılmaz; ham metin
 form/veri deposuna çıkmaz. Kesilen kenar adayları ve etiketsiz dört rakamlık olası CVV/tarih tahmin edilmez.
@@ -98,6 +101,8 @@ Fotoğraf form alanlarını otomatik değiştirmez. Önizlemedeki adaylar ayrı 
 kutusu ve “Kontrol ettiğim alanları uygula” ile PAN/tarih birlikte uygulanır. Eksik alanın boşaltılacağı
 önceden açıklanır; eski tarih yeni numarayla sessiz birleşmez. Elle değişiklik eski adayları kaldırır.
 Döndürme/kırpma sonrası yeniden okuma gerekir; bu kontrol kart sahipliği doğrulaması değildir.
+Yalnızca tarih okunmuşsa PAN inceleme alanında elle tamamlanabilir; Luhn geçmeyen PAN uygulanamaz.
+Uygulama numara girdisine odaklanır; fotoğraf alanları onaysız doldurulmaz.
 
 İptal/form/rota/sekme çıkışında worker, canvas ve önizleme URL'si kapatılır; eski sonuç uygulanmaz.
 Fotoğraf/ham OCR saklanmaz veya dışarı gönderilmez. JS/işletim sistemi belleğinin kesin silinmesi
@@ -117,6 +122,9 @@ Sağlayıcı giriş kuralı zayıftır; CAL bup bunu güçlendiremez. Önceki ca
 `npm run kontrol` ve `npm run test:tarayici` yayın öncesinde/CI’da çalışır. Kart/depo testleri gerçek
 Web Crypto; tarayıcı testleri gerçek Chromium/IndexedDB ve yerel OCR kullanır. POS taklittir; gerçek
 hesaba giriş veya ödeme testi yapılmaz. Sahiplik/PCI/Windows Excel/sağlayıcı oturumu bu testlerle kanıtlanmaz.
+1.6.0 MV3 paketi gerçek Chromium'a yüklenir; giriş/ödeme ekranları yapaydır ve canlı ağa kapalı
+proxy ile sınırlandırılır. Güncel teknik kabul ve ilk düzeneğin yönlendirme düzeltmesi:
+[POS_YARDIMCISI.md](POS_YARDIMCISI.md).
 
 - [İlk plan ve sınırlar](SANAL_POS_PROFIL_PLANI.md).
 - [Tesseract yerel dağıtım](https://github.com/naptha/tesseract.js/blob/master/docs/local-installation.md).

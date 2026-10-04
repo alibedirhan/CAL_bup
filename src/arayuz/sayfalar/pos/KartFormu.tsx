@@ -32,6 +32,7 @@ export function KartFormu({
   const [formNo, setFormNo] = useState(0);
   const [okunuyor, setOkunuyor] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
+  const numaraGirdisi = useRef<HTMLInputElement>(null);
   const bagli = useRef(false);
   useEffect(() => {
     bagli.current = true;
@@ -93,6 +94,8 @@ export function KartFormu({
           setKontrol(false);
           setHata('');
           setAlanlar({});
+          numaraGirdisi.current?.focus();
+          numaraGirdisi.current?.scrollIntoView({ block: 'center' });
         }}
       />
       <FormHatasi hata={hata} id="pos-kart-hata" />
@@ -150,6 +153,7 @@ export function KartFormu({
         <label htmlFor="pos-kart-numara">Kart numarası</label>
         <input
           id="pos-kart-numara"
+          ref={numaraGirdisi}
           aria-invalid={Boolean(alanlar['pos-kart-numara'])}
           aria-describedby={alanlar['pos-kart-numara'] ? 'pos-kart-hata' : undefined}
           className="girdi rakam"

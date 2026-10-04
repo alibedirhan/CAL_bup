@@ -108,9 +108,22 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.5.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.6.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-04 kart aktarımı (1.6.0):** Kullanıcı tek operatör için Edge yardımcısını ve fotoğraf
+numarası düzeltmesini yetkilendirdi. Müşteri kartı/fotoğrafıyla test, ödeme veya SMS kesinlikle yasak;
+yalnızca sentetik kart ve ağdan yalıtılmış taklit POS kullanılır. Numara/tarih ayrı incelemeden açık
+onayla forma geçer; okunamayan numara elle tamamlanabilir. MV3 yardımcı yalnızca uygulama yolu ve
+tam POS alan adında çalışır; kullanıcı boş alanları tanıtır, görünen vergi/TC numarası karşılaştırılır.
+PAN/tarih yalnızca bağlanmış hedef sekmeye, bir kez teslim edilir; ödeme DOM olayları üretilmez.
+CVV/tutar/SMS/ödeme kullanıcıda kalır. POS sekmesine geçiş izinli aktarımı kesmez; cari/kart/veri/rota
+değişimi keser. Kaynak kod `src/eklenti/`, ZIP ana derlemenin parçasıdır.
+Gerçek sağlayıcının HTML'i, Windows/Edge ve sözleşme uygunluğu doğrulanmış sayılmaz. Varsayılan
+ödeme seçicisi, iframe enjeksiyonu veya otomatik ödeme uçları ekleme. Testlerin kapalı proxy sınırını
+kaldırma. Mimari/kurulum/test sınırları: [docs/POS_YARDIMCISI.md](docs/POS_YARDIMCISI.md).
+1.5.0 ve aşağıdaki eski notlar tarihsel bağlamdır; otomatik doldurma yoktu ifadeleri o sürüme aittir.
 
 **2026-10-04 OCR/bildirim üç aşaması (1.5.0):** Kullanıcı aşamaları sırayla uygulamayı yetkilendirdi.
 20 bulgu kod/regresyon düzeyinde giderildi; [kapanış raporu](docs/OCR_VE_BILDIRIM_UYGULAMA_SONUCU.md).

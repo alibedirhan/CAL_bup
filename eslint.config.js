@@ -25,7 +25,14 @@ export default tseslint.config(
           patterns: [
             { group: ['react', 'react-dom', 'exceljs'], message: 'Çekirdek saf kalmalı.' },
             {
-              group: ['**/arayuz/**', '**/platform/**', '**/raporlar/**', '**/kaynaklar/**', '**/hedef/**'],
+              group: [
+                '**/arayuz/**',
+                '**/platform/**',
+                '**/raporlar/**',
+                '**/kaynaklar/**',
+                '**/hedef/**',
+                '**/eklenti/**',
+              ],
               message: 'Çekirdek başka katmana bağlanamaz.',
             },
           ],

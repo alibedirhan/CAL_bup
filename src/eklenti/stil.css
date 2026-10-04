@@ -1,0 +1,41 @@
+:host {
+  all: initial;
+  position: fixed;
+  z-index: 2147483647;
+  bottom: 16px;
+  right: 16px;
+  width: min(390px, calc(100vw - 32px));
+  font: 14px/1.5 var(--yazi-govde);
+  color: var(--murekkep);
+}
+section {
+  padding: 16px;
+  background: var(--yuzey);
+  border: 1px solid var(--cizgi-guclu);
+  border-radius: var(--yaricap);
+  box-shadow: var(--golge);
+}
+p {
+  margin: 10px 0;
+}
+div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+button {
+  font: inherit;
+  color: var(--murekkep);
+  background: var(--yuzey-2);
+  border: 1px solid var(--cizgi-guclu);
+  border-radius: var(--yaricap-k);
+  padding: 6px 10px;
+  cursor: pointer;
+}
+button:focus-visible {
+  outline: none;
+  box-shadow: var(--odak);
+}
+[hidden] {
+  display: none;
+}
