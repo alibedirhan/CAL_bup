@@ -31,4 +31,23 @@ describe('formulKaydir', () => {
       'G22:G23 G152:G188 G27:G150 E4:F212',
     );
   });
+
+  it('tam satır aralıklarını ve küçük harfli hücreleri kaydırır', () => {
+    expect(formulKaydir('SUM(4:211,$106:$212)+b212', 106, 2)).toBe('SUM(4:213,$108:$214)+b214');
+  });
+
+  it('üç boyutlu ve dış sayfadaki tam satır aralıklarını korur', () => {
+    expect(formulKaydir('SUM(A212:Z212!B106:B212)+SUM(Sayfa!106:212)+B212', 106)).toBe(
+      'SUM(A212:Z212!B106:B212)+SUM(Sayfa!106:212)+B213',
+    );
+    expect(formulKaydir("SUM('[Yapay.xlsx]İlk:Son'!$106:$212)+B212", 106)).toBe(
+      "SUM('[Yapay.xlsx]İlk:Son'!$106:$212)+B213",
+    );
+  });
+
+  it('Türkçe tanımlı adları ve iç içe tablo sütun başlıklarını hücre sanmaz', () => {
+    expect(formulKaydir('ÖB212+B212Ö+XFE212+SUM(Tablo[[B212]:[D212]])+B212', 106)).toBe(
+      'ÖB212+B212Ö+XFE212+SUM(Tablo[[B212]:[D212]])+B213',
+    );
+  });
 });

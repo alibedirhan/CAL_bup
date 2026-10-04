@@ -1,7 +1,7 @@
 {
   "name": "cal-bup",
   "private": true,
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "Bupiliç İzmir deposu için LED çıktılarından günlük rapor hazırlayan tarayıcı uygulaması",
   "type": "module",
   "scripts": {
@@ -15,7 +15,8 @@
     "bicim": "prettier --write .",
     "bicim:kontrol": "prettier --check .",
     "kontrol": "npm run tip && npm run lint && npm run bicim:kontrol && npm run test && npm run build",
-    "test:tarayici": "playwright test"
+    "test:tarayici": "playwright test",
+    "test:performans": "playwright test --config playwright.performans.config.ts"
   },
   "dependencies": {
     "@fontsource-variable/geologica": "^5.3.0",

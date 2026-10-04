@@ -15,6 +15,9 @@ export default defineConfig({
     headless: true,
     viewport: { width: 1440, height: 1000 },
     serviceWorkers: 'block',
+    // Route taklidi unutulsa da POS/Google dahil dış ağa çıkılamaz.
+    proxy: { server: 'http://127.0.0.1:9', bypass: '127.0.0.1,localhost' },
+    launchOptions: { args: ['--disable-background-networking'] },
   },
   webServer: {
     command: 'npm run preview -- --host 127.0.0.1 --port 4180 --strictPort',

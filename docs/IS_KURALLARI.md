@@ -216,3 +216,14 @@ kullanıcıdadır. Ayrıntı: [tarama raporu](POS_YARDIMCISI_TARAMA_RAPORU.md).
   vardır; ilk 20 kayıttan sonrası “Daha fazla göster” ile açılır.
 
 Kanıtlar ve kalan gerçek ortam kabulü: [genel tarama raporu](GENEL_TARAMA_RAPORU.md).
+
+## Ek formül ve doğrulama kuralları (1.7.1)
+
+Satır eklenirken yerel tam satır aralıkları (`4:211`, `$106:$212`) ve küçük harfli hücre
+başvuruları da kaydırılır. Türkçe tanımlı adlar ve Excel hücre sınırı dışındaki adlar (`XFE212`)
+hücre sayılmaz. Başka sayfa/kitap ve sayfa aralığı başvurularının metni korunur; üç boyutlu
+başvuruların hedef sayfaya göre yeniden hesaplanması uygulanmış değildir.
+
+POS dahil bütün Chromium testleri dış ağa kapalı proxy ile çalışır; yalnızca yerel test sunucusu
+ve açıkça tanımlanan taklit yanıtlar kullanılabilir. Büyük dosya denemeleri yalnızca yapay
+kitaplarla yapılır; satır/sütun sınırında son hücrenin korunması ve aşan kitabın reddi doğrulanır.

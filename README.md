@@ -42,9 +42,11 @@ npm run dev       # yerel sunucu: http://localhost:5173/CAL_bup/
 npm run kontrol   # tip denetimi + lint + biçim + test + derleme (yayından önce hepsi geçmeli)
 npx playwright install chromium  # ilk tarayıcı testi kurulumu
 npm run test:tarayici             # gerçek Chromium/IndexedDB/OCR ile uçtan uca testler
+npm run test:performans           # derleme sonrası büyük yapay Excel sınırları ve okuma ölçümü
 ```
 
 `main` dalına gönderilen her değişiklik GitHub Actions'ta denetlenir ve geçerse siteye yayınlanır.
+Tarayıcı testlerinde dış ağ kapalıdır; POS/Google taklitleri yalnızca yapay veri kullanır.
 
 - Geliştiriciler ve yapay zekâ araçları için: [AGENTS.md](AGENTS.md)
 - Google Drive bağlantısı ve ilk kurulum: [docs/DRIVE.md](docs/DRIVE.md)

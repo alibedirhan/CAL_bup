@@ -1,3 +1,32 @@
+# 4 Ekim 2026 — 1.7.1 açık noktaların devamı
+
+Başlangıç temiz `main`, `87ab1ff`, 1.7.0. Önceki yayının denetimi/yayını
+[37199866103](https://github.com/alibedirhan/CAL_bup/actions/runs/37199866103) başarılıdır.
+Kullanıcı rapordaki açık noktaların değerlendirilmesi, uygulanabilir iyileştirmeler ve doğrulamayı
+istedi; önceki 29 düzeltme tekrar uygulanmadı. [Genel raporun devam bölümü](GENEL_TARAMA_RAPORU.md)
+her açık konuya ilişkin kararı, yeni bulguları ve ölçüm sınırlarını içerir.
+
+- Tam satır aralıkları ve küçük harfli hücreler satır eklenince kaydırılır. Türkçe tanımlı adlar,
+  hücre sınırı dışındaki adlar ve sayfa aralığının adı yanlışlıkla değiştirilmez. Üç yeni regresyon
+  eski kodda başarısız oldu; düzeltmeden sonra geçti. Sentetik Excel yaz/yeniden aç testi eklendi.
+- Normal Playwright bağlamlarında da kapalı proxy var. Taklit route olmasa bile dış ağa
+  çıkılamadığı ve yerel uygulamanın açıldığı sınandı; MV3 kendi daha sıkı sınırını korur.
+- `npm run test:performans`: üretim Excel motoru Chromium'da altı büyük yapay kitapla ölçülür.
+  100000 satır/256 sütun sınırları son hücre korunarak kabul edilir; 100001 satır/257 sütun/
+  401 sayfa reddedilir. Yerel okuma ilk ölçümde 0,2–1,9 saniye; yoğun tabloda zamanlayıcı yaklaşık
+  0,4 saniye bekleyebiliyor. Tam boyut/bellek/Windows garantisi değildir. Yayın kapısına eklendi.
+- Yerel kontrol: **31 dosyada 401 kural/Excel testi**, gerçek Excel/ikiz testleri atlanmadan
+  geçti; **89 Chromium senaryosu** ve **6 büyük dosya senaryosu** geçti. Tip/lint/biçim/derleme
+  başarılı. Bağımlılık sürümleri, ExcelJS 4.4.0 ve yardımcı protokolü 2 korundu.
+- POS denemeleri yalnızca yapay kart/fotoğraf ve dış ağa kapalı taklit ortamda yapıldı.
+  Gerçek müşteri kartı/fotoğrafı, SMS, ödeme veya sağlayıcı girişi kullanılmadı.
+- Gerçek Windows/Excel, kullanıcı Google kurulumu, sağlayıcı güvenliği/ortak oturum, profil
+  erişim düzeni ve örneksiz yeni raporlar hâlâ dış bilgi/kullanıcı kabulü bekler. Yıl/dönüşüm/
+  kolon veya ödeme kuralı uydurulmadı; tamamlandı diye sunulmaz.
+- Sürüm **1.7.1**. Önceki main/yayın yetkisi sürer; yayın ana commit'in Linux, Windows kurulum
+  ve tarayıcı/performans kapılarına bağlıdır. Sonuç [Actions](https://github.com/alibedirhan/CAL_bup/actions/workflows/yayin.yml)
+  üzerinde aynı commit için izlenir. Ölçüm JSON'ları ve Playwright çıktıları `/tmp/` içindedir.
+
 # 4 Ekim 2026 — 1.7.0 genel tarama ve iyileştirmeler
 
 Kullanıcı Sanal POS dahil tüm alanların hata, mantık, mimari ve açıklamalar bakımından ayrıntılı

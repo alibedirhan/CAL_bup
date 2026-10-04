@@ -2,6 +2,9 @@
 
 **Tarih:** 4 Ekim 2026 · **İncelenen başlangıç:** 1.6.1 (`b4b1ea1`) · **Düzeltme sürümü:** 1.7.0
 
+**Devam çalışması:** 1.7.1 açık nokta değerlendirmesi ve yeni kanıtlar belgenin sonundadır.
+1.7.0'daki 29 bulgu tarihsel kapanış kaydı olarak korunmuştur.
+
 ## Sonuç
 
 Sanal POS, kart/fotoğraf akışı, günlük depo kontrol, Excel okuma/yazma, Drive, ayarlar,
@@ -120,3 +123,77 @@ Yayın durumu [oturum notunda](OTURUM_NOTU.md) tutulur.
 Önceki POS/OCR raporları kendi sürümlerinin tarihsel kayıtlarıdır. Güncel kurallar için
 [İş kuralları](IS_KURALLARI.md), [mimari](MIMARI.md), [Sanal POS](SANAL_POS.md) ve
 [POS yardımcısı](POS_YARDIMCISI.md) belgeleri birlikte okunmalıdır.
+
+## 4 Ekim 2026 — 1.7.1 açık noktaların değerlendirilmesi
+
+Başlangıç temiz `main`, `87ab1ff`; 1.7.0 yayını GitHub Actions 37199866103'te başarılıdır.
+Önceki 29 bulgu yeniden uygulanmadı. Açık noktalar aşağıdaki kararlara bağlandı:
+
+- **Sağlayıcı giriş güvenliği ve gerçek POS ortak oturumu:** resmi kurum/sağlayıcı doğrulaması
+  gerektirir. Giriş kuralı, alan seçicisi veya ödeme uçları tahmin edilmedi. Canlı sağlayıcıya
+  bağlanılmadı; müşteri kartı/fotoğrafı, SMS veya ödeme kullanılmadı.
+- **Windows/masaüstü Excel:** gerçek cihaz kabulü yerelde tamamlanamaz. Mevcut yalıtılmış Windows
+  CI kurulum denemesi korundu; yapay Excel dosyasıyla kullanıcı kabulü bekliyor.
+- **Canlı Google Drive:** kullanıcı OAuth istemcisi/hesabı gerekir; taklit test gerçek kurulum
+  yerine geçmez. Yetkisiz gerçek hesap/izin/yükleme yapılmadı.
+- **Yıl bilgisi olmayan gün sayfaları:** yıl kesin çıkarılamaz. Açık yıl/çok yıllı dosya gereksinimi
+  olmadan iş kuralı değiştirilmedi; yıllık ayrı dosya sınırı sürer.
+- **Yerel kart erişimi ve pano:** işletim sistemi/tarayıcı profil politikası kurumda belirlenir.
+  Günlük PIN istememe tercihi ve yerel şifreleme düzeni korundu.
+- **OCR:** müşteri fotoğrafıyla kabul yapılamaz; mevcut yerel motor ve yapay matris regresyonları
+  doğrulanır. Adayın kullanıcı tarafından karşılaştırılması gereği devam eder.
+- **Envanter/bakiye/palet-kasa ve karma ambalaj:** LED örneği, ağırlık/eşleme kuralı ve elle
+  hazırlanmış beklenen rapor yok; yeni kolon/dönüşüm uydurulmadı.
+- **Büyük dosya:** aşağıdaki altı yapay senaryoyla ilk tekrar çalıştırılabilir tarayıcı ölçümü
+  eklendi. Mevcut sınırlar kabul/ret ve son hücre açısından doğrulandı. Sınırlar yükseltilmedi;
+  senkron çözümleme ve tamamlanmış dış yazının geri alınamaması sınırı sürer.
+- **Formül kaydırıcı:** aşağıdaki yeni biçim sorunları düzeltildi. Genel Excel ayrıştırıcısı,
+  tanımlı ad yöneticisi veya üç boyutlu bağımlılık güncelleyicisi uygulanmış sayılmaz.
+
+### Yeni düzeltmeler ve kanıtlar
+
+1. **Tam satır/küçük harf başvuruları:** `SUM(4:211,$106:$212)+b212`, 106. satıra iki satır
+   eklenince eski metinde kalıyordu. Yerel tam satır uçları ve küçük harfli hücreler kaydırılır.
+2. **Sayfa aralığının adı:** `A212:Z212!B106:B212` başvurusunda ilk sayfa adı `A213` oluyordu.
+   Sayfa aralığı ve dış sayfanın tam satır başvurusu bütün olarak korunur.
+3. **Tanımlı adlar:** `ÖB212`, `B212Ö`, `XFE212` hücre sanılıp değişiyordu. Unicode ad sınırları
+   ve Excel'in gerçek hücre sınırları ayrılır; iç içe tablo başlıkları korunur.
+4. **Test ağı:** MV3 dışındaki normal Playwright bağlamları ortak kapalı proxy sınırına alındı.
+   Bir taklit kuralı unutulsa da dış bağlantı kurulamaz. Yerel uygulamanın açık kaldığı ve route
+   tanımlanmamış `.invalid` isteğinin proxy hatasıyla reddedildiği kalıcı testle doğrulandı.
+
+İlk üç regresyon 1.7.0 kodunda başarısız oldu; düzeltmeden sonra geçti. Ek Excel regresyonu
+satır ekleme → dosyayı yazma → yeniden açma zincirinde formülü, eski sonuç temizliğini ve ürünün
+yeni satırını denetler. Microsoft'un [formül başvuruları](https://support.microsoft.com/en-us/excel/get-started/overview-of-formulas-in-excel)
+ve [tanımlı adlar](https://support.microsoft.com/en-us/excel/names-in-formulas) açıklamaları biçim
+ayrımı için başvurudur; masaüstü Excel'de fiili açma bu otomatik testin kapsamı değildir.
+
+### Büyük yapay Excel ölçümü
+
+Komut: önce `npm run build`, sonra `npm run test:performans`. Üretimdeki derlenmiş Excel motoru
+gerçek Chromium'da çağrılır. Node tarafında sentetik kitap hazırlanır; hazırlama, bayt aktarımı
+ve motor yükleme okuma ölçümüne dahil değildir. Dosya ve içerik dış ağa gönderilmez.
+
+İlk yerel ölçüm: Linux, Intel i7-13700H, 20 mantıksal işlemci, yaklaşık 63 GiB bellek,
+Node 22.22.2. Süreler tek çalıştırma gözlemidir; Windows performans/kabul garantisi değildir.
+
+| Yapay kitap                     | XLSX bayt | Okuma ms | En uzun zamanlayıcı aralığı ms | Sonuç                    |
+| ------------------------------- | --------: | -------: | -----------------------------: | ------------------------ |
+| 31 sayfa × 250 satır × 10 sütun |    348768 |      217 |                             37 | Kabul, son hücre korundu |
+| 100000 satır × 4 sütun          |   2134307 |      631 |                            432 | Kabul, son hücre korundu |
+| 2000 satır × 256 sütun          |   1869581 |      564 |                            340 | Kabul, son hücre korundu |
+| 100001 satır × 1 sütun          |   1064546 |      382 |                            285 | Sınır açıklamasıyla ret  |
+| 1 satır × 257 sütun             |      7604 |       37 |                             12 | Sınır açıklamasıyla ret  |
+| 401 sayfa × 1 hücre             |    244683 |     1857 |                             27 | Sınır açıklamasıyla ret  |
+
+10 ms zamanlayıcının en uzun aralığı, ana iş parçacığında beklemeyi yaklaşık gösterir;
+bellek/tam ekran yanıt süresi ölçümü değildir. Yoğun tablolarda yüzlerce ms bekleme görüldü.
+Ret sınırları ExcelJS çözümlemesinden sonra uygulanır; bu deneme, 25 MB/100 MB ZIP sınırının
+tam dolduğu kitabın veya tüm satır/sütun sınırlarının aynı anda kullanımının ölçümü değildir.
+Dosya içindeki formül/hesap ve rapor planlama/yazma süreleri ayrıca ölçülmedi.
+
+Senaryolar süre eşiğiyle değil içerik ve kabul/ret doğruluğuyla geçer. Makineye bağlı süre eşiği
+konmadı. Ölçüm JSON'ları ve Playwright ekleri `/tmp/`'ta, test kodu depodadır. Altı senaryo
+GitHub Actions yayın kapısına eklendi; yeni sınır veya büyük bir worker dönüşümü için önce kanıt gerekir.
+
+1.7.1 nihai kontrol ve yayın sonucu [oturum notunda](OTURUM_NOTU.md) tutulur.

@@ -2,7 +2,7 @@ import ExcelJS from 'exceljs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { VARSAYILAN_AYARLAR as AYAR } from '../../src/cekirdek/ayarlar';
 import { tarih } from '../../src/cekirdek/tarih';
-import { kitapYaz } from '../../src/hedef/sayfa';
+import { kitapYaz, satirEkle } from '../../src/hedef/sayfa';
 import { kitapAc, type AcikKitap } from '../../src/kaynaklar/excel';
 import { OkumaHatasi } from '../../src/kaynaklar/kitap';
 import { gunSec } from '../../src/raporlar/depoKontrol/gunSecimi';
@@ -165,4 +165,20 @@ it('ürün sayısı aynı kalsa da önizlemeden sonra değişen listeye eski pla
   s.getCell('A4').value = 'Yapay değiştirilmiş ürün';
   expect(() => uygula(hedef, secim, plan, AYAR)).toThrow(/listesi değişmiş/);
   expect(hedef.excel.getWorksheet(secim.ad)).toBeUndefined();
+});
+
+it('satır eklenmiş Excel yeniden açılınca tam satır aralığı doğru, dış başvurular ve adlar aynıdır', async () => {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Yapay');
+  ws.getCell('A4').value = 'Yapay ürün';
+  ws.getCell('A10').value = 'Yapay son ürün';
+  const once = 'SUM($4:$10)+ÖB10+XFE10+SUM(A10:Z10!B4:B10)+SUM(Diğer!4:10)+b10';
+  ws.getCell('H2').value = { formula: once, result: 123 };
+  satirEkle(ws, 6);
+  const yeni = await kitapAc(await kitapYaz(wb), 'Yapay.xlsx');
+  expect(yeni.excel.getWorksheet('Yapay')?.getCell('H2').formula).toBe(
+    'SUM($4:$11)+ÖB10+XFE10+SUM(A10:Z10!B4:B10)+SUM(Diğer!4:10)+b11',
+  );
+  expect(yeni.excel.getWorksheet('Yapay')?.getCell('H2').result).toBeUndefined();
+  expect(yeni.excel.getWorksheet('Yapay')?.getCell('A11').value).toBe('Yapay son ürün');
 });

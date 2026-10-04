@@ -177,3 +177,20 @@ Geçmiş/yedek listesi okuma ve atomik yazı içinde aynı saf doğrulayıcıdan
 listeye dönüştürülmez. Drive bağlantı nesli rapor bileşenlerinin eski liste/başarısını da geçersiz kılar.
 Ayar değişikliği rapor onaylarını sıfırlar; etkin dosya işlemi sırasında bağlam değişikliği engellenir.
 İnceleme/kanıt ve gerçek ortam sınırları: [genel tarama raporu](GENEL_TARAMA_RAPORU.md).
+
+## 1.7.1 ek doğrulama
+
+Formül kaydırıcı Unicode ad sınırlarını, Excel'in gerçek sütun/satır sınırlarını, küçük harfli
+hücreleri ve tam satır aralıklarını ayırır. Dış sayfa aralığı/tam satır/sayfa aralığı başvurusu
+tek korunan parça olarak ele alınır. Sentetik kitapta satır ekle → yaz → yeniden aç regresyonu vardır.
+Tam Excel ayrıştırıcısı veya üç boyutlu bağımlılık güncelleyicisi değildir.
+
+Ana Playwright yapılandırmasındaki kapalı proxy tüm normal bağlamların dış ağını kapatır;
+MV3 kalıcı bağlamı kendi daha sıkı proxy sınırını korur. Route taklidi olmayan `.invalid` isteği
+proxy bağlantı hatasıyla reddedilir; yerel uygulama açık kalır. Gerçek POS/SMS/ödeme kullanılmaz.
+
+`npm run test:performans` ayrı Playwright yapılandırmasıyla derlenmiş gerçek Excel motorunu ölçer.
+Yapay dosya hazırlama ve motor yükleme ölçüm dışındadır; son hücre/sayfa/satır ve ret sonucu
+denetlenir. 10 ms zamanlayıcının en uzun aralığı ana iş parçacığı beklemesi için yaklaşık göstergedir;
+bellek ölçümü veya Windows hız garantisi değildir. Sonuç ve tarayıcı ekleri `/tmp/`'ta tutulur.
+Altı senaryo yayın kapısına eklendi; ölçüm sürelerine makineye bağlı geçme/kalma eşiği konmadı.

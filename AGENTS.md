@@ -108,9 +108,17 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.7.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.7.1. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-04 açık noktaların devamı (1.7.1):** 1.7.0'daki tamamlanan 29 bulgu tekrar uygulanmadı.
+Formül kaydırıcıda tam satır/küçük harf, Türkçe tanımlı ad ve sayfa aralığı adı regresyonları
+düzeltildi; Excel yaz/yeniden aç testi eklendi. Normal Playwright bağlamları da dış ağa kapalı
+proxy kullanır; MV3 sınırı korunur. `npm run test:performans`, derlemeden sonra altı büyük yapay
+Excel senaryosunu çalıştırır ve `/tmp/`'a ölçüm yazar; yayın kapısındadır. Yerel 401 test,
+89 Chromium senaryosu ve altı performans/sınır senaryosu başarılıdır. Gerçek Windows/Google/
+sağlayıcı kabulü ve yeni LED örnekleri beklenir; iş kuralları tahmin edilmez.
 
 **2026-10-04 genel tarama (1.7.0):** Kullanıcı Sanal POS ve bütün alanlarda ayrıntılı tarama,
 gerekli düzeltmeler ve rapor istedi. [Genel rapor](docs/GENEL_TARAMA_RAPORU.md) 29 düzeltilmiş
