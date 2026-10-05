@@ -11,12 +11,14 @@ export function KartFormu({
   cari,
   kart,
   mesgul,
+  gizlilikNo,
   kaydet,
   vazgec,
 }: {
   cari: PosCari;
   kart: PosKart | null;
   mesgul: boolean;
+  gizlilikNo: number;
   kaydet: (kart: PosKart) => Promise<IslemSonucu>;
   vazgec: () => void;
 }) {
@@ -31,6 +33,9 @@ export function KartFormu({
   const [alanlar, setAlanlar] = useState<Record<string, string>>({});
   const [formNo, setFormNo] = useState(0);
   const [okunuyor, setOkunuyor] = useState(false);
+  // Sekme gizlenince/boşta kalınca form kapanmaz; yalnız numara ve fotoğraf görünümü örtülür.
+  const [acikNo, setAcikNo] = useState(gizlilikNo);
+  const gizli = acikNo !== gizlilikNo;
   const dialog = useRef<HTMLDialogElement>(null);
   const numaraGirdisi = useRef<HTMLInputElement>(null);
   const bagli = useRef(false);
@@ -83,14 +88,30 @@ export function KartFormu({
       <p>
         Bu kart <b>{cari.ad}</b> profiline kaydedilecek.
       </p>
+      {gizli && (
+        <div className="pos-gizlilik-uyarisi" role="status">
+          <p>Ekrandan ayrıldığınız için kart numarası ve fotoğraf gizlendi. Yazdıklarınız korunuyor.</p>
+          <button className="dugme kucuk" type="button" onClick={() => setAcikNo(gizlilikNo)}>
+            Gizlenen bilgileri göster
+          </button>
+        </div>
+      )}
       <KartFotografi
         mesgul={mesgul}
         formNo={formNo}
         durum={setOkunuyor}
+        gizli={gizli}
         uygula={(n, t) => {
-          setNumara(n);
-          setAy(t?.ay ?? '');
-          setYil(t?.yil ?? '');
+          // Yalnız tarih bulunduysa formdaki numara korunur. Yeni numara ise başka kartın
+          // tarihiyle sessizce birleşmesin diye kendi tarihiyle (yoksa boş tarihle) uygulanır.
+          if (n) {
+            setNumara(n);
+            setAy(t?.ay ?? '');
+            setYil(t?.yil ?? '');
+          } else if (t) {
+            setAy(t.ay);
+            setYil(t.yil);
+          }
           setKontrol(false);
           setHata('');
           setAlanlar({});
@@ -156,7 +177,7 @@ export function KartFormu({
           ref={numaraGirdisi}
           aria-invalid={Boolean(alanlar['pos-kart-numara'])}
           aria-describedby={alanlar['pos-kart-numara'] ? 'pos-kart-hata' : undefined}
-          className="girdi rakam"
+          className={gizli ? 'girdi rakam pos-gizli-girdi' : 'girdi rakam'}
           inputMode="numeric"
           maxLength={23}
           autoComplete="off"

@@ -180,17 +180,38 @@ test('şifreli profil yedeği başka tarayıcıya kart ve telefonuyla geri alın
   expect(hatalar).toEqual([]);
 });
 
-test('başka sekmede kart kaydı yenilenir; açık form ve eski seçim korunmaz', async ({ page, context }) => {
+test('başka sekmede kart kaydı yenilenir; açık form korunur, eski kart sessizce ezilmez', async ({
+  page,
+  context,
+}) => {
   await ortam(page);
   await cariEkle(page);
+  await kartEkle(page);
   const ikinci = await context.newPage();
   await ikinci.goto(yol);
   await cariSec(ikinci, 'A');
   await ikinci.getByRole('button', { name: 'Kart ekle', exact: true }).click();
-  await kartEkle(page);
-  await expect(ikinci.getByRole('dialog')).toHaveCount(0);
-  await cariSec(ikinci, 'A');
-  await expect(ikinci.locator('.pos-odeme-karti')).toHaveCount(1);
+  await ikinci.getByLabel('Karta vereceğiniz isim').fill('Yarım kalan yapay kart');
+  await kartEkle(page, 'Öteki sekmenin kartı', '5555555555554444');
+  // Öteki sekmenin kaydı bu sekmedeki yarım formu kapatmaz; liste arkada güncellenir.
+  await expect(ikinci.getByRole('dialog')).toBeVisible();
+  await expect(ikinci.getByLabel('Karta vereceğiniz isim')).toHaveValue('Yarım kalan yapay kart');
+  await expect(ikinci.locator('.pos-odeme-karti')).toHaveCount(2);
+  await ikinci.getByRole('button', { name: 'Vazgeç', exact: true }).click();
+  // İki sekmede aynı kart düzenlenirse sonra kaydeden diğerinin değişikliğini ezemez.
+  await ikinci.getByRole('button', { name: 'Yapay şirket kartı kartını düzenle', exact: true }).click();
+  await ikinci.getByLabel('Karta vereceğiniz isim').fill('İkinci sekmenin adı');
+  await page.getByRole('button', { name: 'Yapay şirket kartı kartını düzenle', exact: true }).click();
+  await page.getByLabel('Karta vereceğiniz isim').fill('Birinci sekmenin adı');
+  await page.getByLabel('Kart bilgilerini ve bu cari altında kaydetmeyi kontrol ettim.').check();
+  await page.getByRole('button', { name: 'Kartı kaydet', exact: true }).click();
+  await expect(page.locator('.pos-odeme-karti').filter({ hasText: 'Birinci sekmenin adı' })).toBeVisible();
+  await expect(ikinci.locator('.pos-odeme-karti').filter({ hasText: 'Birinci sekmenin adı' })).toBeVisible();
+  await ikinci.getByLabel('Kart bilgilerini ve bu cari altında kaydetmeyi kontrol ettim.').check();
+  await ikinci.getByRole('button', { name: 'Kartı kaydet', exact: true }).click();
+  await expect(ikinci.getByRole('dialog')).toContainText('başka sekmede değiştirildi');
+  await ikinci.getByRole('button', { name: 'Vazgeç', exact: true }).click();
+  await expect(ikinci.locator('.pos-odeme-karti').filter({ hasText: 'İkinci sekmenin adı' })).toHaveCount(0);
 });
 
 test('fotoğraf gerçek yerel OCR ile okunur; CVV/fotoğraf kayda girmez; iptal yeniden kullanılabilir', async ({
@@ -246,7 +267,7 @@ test('fotoğraf gerçek yerel OCR ile okunur; CVV/fotoğraf kayda girmez; iptal 
   expect(hatalar).toEqual([]);
 });
 
-test('açık/koyu/dar görünüm ve gizli sekmede kart formunun kapanması', async ({ page }) => {
+test('açık/koyu/dar görünüm; gizli sekmede kart formu korunur ve numara örtülür', async ({ page }) => {
   const { hatalar } = await ortam(page);
   await cariEkle(page);
   await kartEkle(page);
@@ -266,10 +287,141 @@ test('açık/koyu/dar görünüm ve gizli sekmede kart formunun kapanması', asy
     animations: 'disabled',
   });
   await page.getByRole('button', { name: 'Kart ekle', exact: true }).click();
+  await page.getByLabel('Kart numarası', { exact: true }).fill('5555555555554444');
+  await gizleVeGoster(page);
+  // Gizli sekmede form kapanmaz; yazılan numara korunur ama ekranda örtülür.
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(page.getByLabel('Kart numarası', { exact: true })).toHaveValue('5555555555554444');
+  await expect(page.getByLabel('Kart numarası', { exact: true })).toHaveClass(/pos-gizli-girdi/);
+  await page.getByRole('button', { name: 'Gizlenen bilgileri göster', exact: true }).click();
+  await expect(page.getByLabel('Kart numarası', { exact: true })).not.toHaveClass(/pos-gizli-girdi/);
+  expect(hatalar).toEqual([]);
+});
+
+async function gizleVeGoster(page: Page) {
   await page.evaluate(() => {
-    Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
     document.dispatchEvent(new Event('visibilitychange'));
   });
-  await expect(page.getByRole('dialog')).toHaveCount(0);
+}
+
+test('iki dakika boşta kalınca açık formlar kapanmaz; yalnız açık numara gizlenir', async ({ page }) => {
+  await page.clock.install();
+  const { hatalar } = await ortam(page);
+  await cariEkle(page);
+  await page.getByRole('button', { name: 'Yeni cari', exact: true }).click();
+  await page.getByLabel('Cari adı', { exact: true }).fill('Yarım Yapay Cari');
+  await page.clock.runFor(125_000);
+  await expect(page.getByLabel('Cari adı', { exact: true })).toHaveValue('Yarım Yapay Cari');
+  await page.getByRole('button', { name: 'Vazgeç', exact: true }).click();
+  await cariSec(page, 'A');
+  await page.getByRole('button', { name: 'Kart ekle', exact: true }).click();
+  await kartFormunuDoldur(page);
+  await page.clock.runFor(125_000);
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(page.getByLabel('Kart numarası', { exact: true })).toHaveValue('4242424242424242');
+  await expect(page.getByRole('button', { name: 'Gizlenen bilgileri göster', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Kartı kaydet', exact: true }).click();
+  await expect(page.locator('.pos-odeme-karti')).toContainText('Yapay şirket kartı');
+  expect(hatalar).toEqual([]);
+});
+
+test('firma kontrolü sekme geçişinde korunur; yeni POS girişi ve kart değişimi sıfırlar', async ({
+  page,
+}) => {
+  const { hatalar } = await ortam(page);
+  await cariEkle(page);
+  await kartEkle(page);
+  await kartEkle(page, 'İkinci yapay kart', '5555555555554444');
+  await page.locator('.pos-odeme-karti').filter({ hasText: 'Yapay şirket kartı' }).click();
+  const kutu = page.getByLabel('POS’taki firma adı ve numaranın seçtiğim cariyle eşleştiğini kontrol ettim.');
+  // POS başka sekmede zaten açıksa kutu yeniden POS açmadan da kullanılabilir.
+  await kutu.check();
+  await gizleVeGoster(page);
+  await expect(kutu).toBeChecked();
+  await expect(page.getByRole('button', { name: 'Kart numarasını kopyala', exact: true })).toBeEnabled();
+  await page.locator('.pos-odeme-karti').filter({ hasText: 'İkinci yapay kart' }).click();
+  await expect(kutu).not.toBeChecked();
+  await kutu.check();
+  const popup = page.context().waitForEvent('page');
+  await page.getByRole('button', { name: 'POS’u aç', exact: true }).click();
+  await (await popup).close();
+  await expect(kutu).not.toBeChecked();
+  expect(hatalar).toEqual([]);
+});
+
+test('iki bilgisayarda farklılaşan yedek incelenir; seçim yapılmadan eklenmez, seçime göre birleşir', async ({
+  page,
+  browser,
+}) => {
+  const { hatalar } = await ortam(page);
+  await expect(page.locator('body')).not.toContainText('henüz şifreli yedek alınmadı');
+  await cariEkle(page);
+  await kartEkle(page);
+  await cariEkle(page, 'B');
+  await expect(page.getByText('Bu tarayıcıda henüz şifreli yedek alınmadı', { exact: false })).toBeVisible();
+  await page.getByRole('button', { name: 'Şifreli yedeği indir', exact: true }).click();
+  await page.getByLabel('Taşınabilir yedek parolası', { exact: true }).fill(parola);
+  await page.getByLabel('Taşınabilir yedek parolası tekrar', { exact: true }).fill(parola);
+  const indirilen = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Yedeği şifrele ve indir', exact: true }).click();
+  const dosya = await (await indirilen).path();
+  await expect(page.getByText('Son şifreli yedek:', { exact: false })).toBeVisible();
+  // Numara ile arama: en az üç rakam.
+  await page.getByLabel('Cari adına veya numarasına göre ara').fill('0000');
+  await expect(page.locator('.pos-cari')).toHaveCount(1);
+  await expect(page.locator('.pos-cari')).toContainText('Yapay Cari B');
+  await page.getByLabel('Cari adına veya numarasına göre ara').fill('');
+
+  // İkinci bilgisayar: aynı cari ayrı oluşturulmuş, adı ve kartın telefonu farklı.
+  const context = await browser.newContext();
+  const yeni = await context.newPage();
+  await ortam(yeni);
+  await yeni.getByRole('button', { name: 'Yeni cari', exact: true }).click();
+  await yeni.getByLabel('Cari adı', { exact: true }).fill('Yapay Cari A Ltd');
+  await yeni.getByLabel('Vergi/TC numarası', { exact: true }).fill('0123456789');
+  await yeni.getByLabel('Cari adı ve numaranın aynı kişiye ait olduğunu kontrol ettim.').check();
+  await yeni.getByRole('button', { name: 'Cariyi kaydet', exact: true }).click();
+  await yeni.getByRole('button', { name: 'Kart ekle', exact: true }).click();
+  await kartFormunuDoldur(yeni);
+  await yeni.getByLabel('Kart sahibinin iletişim telefonu (isteğe bağlı)', { exact: true }).fill('');
+  await yeni.getByLabel('Kart bilgilerini ve bu cari altında kaydetmeyi kontrol ettim.').check();
+  await yeni.getByRole('button', { name: 'Kartı kaydet', exact: true }).click();
+  await expect(yeni.locator('.pos-odeme-karti')).toHaveCount(1);
+  const ekle = async () => {
+    await yeni.locator('summary').filter({ hasText: 'Şifreli yedekten kayıt ekle' }).click();
+    await yeni.getByLabel('Şifreli profil veya eski cari yedeği').setInputFiles(dosya);
+    await yeni.getByLabel('Yedeğin uzun parolası', { exact: true }).fill(parola);
+    await yeni.getByRole('button', { name: 'Yedeği incele', exact: true }).click();
+  };
+  await ekle();
+  const onizleme = yeni.locator('.pos-yedek-onizleme');
+  await expect(onizleme).toContainText('1 yeni cari, 0 yeni kart');
+  await expect(onizleme).toContainText('burada “Yapay Cari A Ltd”, yedekte “Yapay Cari A”');
+  await expect(onizleme).toContainText('farklı telefon');
+  await expect(onizleme).not.toContainText('4242424242424242');
+  await expect(onizleme).not.toContainText('0123456789');
+  const ekleDugmesi = yeni.getByRole('button', { name: 'İnceledim, kayıtları ekle', exact: true });
+  await expect(ekleDugmesi).toBeDisabled();
+  await yeni.getByLabel('Farklı kayıtlarda bu bilgisayardakileri koru; yalnız yeni kayıtları ekle').check();
+  await ekleDugmesi.click();
+  await expect(yeni.locator('.pos-cari')).toHaveCount(2);
+  await expect(yeni.locator('.pos-cari').filter({ hasText: 'Yapay Cari A Ltd' })).toBeVisible();
+  await yeni.locator('.pos-cari').filter({ hasText: 'Yapay Cari A Ltd' }).click();
+  await yeni.locator('.pos-odeme-karti').click();
+  await expect(yeni.locator('.pos-secili-kart')).toContainText('İletişim telefonuEklenmedi');
+  // Aynı yedek ikinci kez: bu kez yedektekiler seçilir.
+  await yeni.locator('summary').filter({ hasText: 'Şifreli yedekten kayıt ekle' }).click();
+  await ekle();
+  await expect(onizleme).toContainText('0 yeni cari, 0 yeni kart');
+  await yeni.getByLabel('Farklı kayıtlarda yedektekileri kullan').check();
+  await ekleDugmesi.click();
+  await expect(yeni.locator('.pos-cari').filter({ hasText: 'Yapay Cari A Ltd' })).toHaveCount(0);
+  await yeni.locator('.pos-cari').filter({ hasText: 'Yapay Cari A' }).first().click();
+  await yeni.locator('.pos-odeme-karti').click();
+  await expect(yeni.locator('.pos-secili-kart')).toContainText('+905000000000');
+  await context.close();
   expect(hatalar).toEqual([]);
 });

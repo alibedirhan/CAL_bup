@@ -4,7 +4,8 @@ import { posNumarasi, type PosCari } from './posCari';
 
 export const POS_KOKENI = 'https://denizpay.bupilic.com.tr';
 export const PROGRAM_KOKENI = 'https://alibedirhan.github.io';
-export const AKTARIM_SURESI = 120_000;
+// Girişten sonra ödeme sayfasına geçmek için gerçekçi süre; kart yalnız yardımcının oturum belleğinde bekler.
+export const AKTARIM_SURESI = 180_000;
 export interface PosAktarimi {
   cariId: string;
   kartId: string;
@@ -97,4 +98,16 @@ export function alanlariDogrula(d: unknown): PosAlanlari {
     seciciler.add(f.secici);
   }
   return a;
+}
+
+/** Sağlayıcının giriş hata yazısı kullanıcıya aktarılırken kısaltılır; 4+ rakam dizisi maskelenir. */
+export function girisMesajiTemizle(d: unknown): string {
+  if (typeof d !== 'string') return '';
+  return d
+    .slice(0, 1000)
+    .replace(/[\p{Cc}\p{Cf}]/gu, ' ')
+    .replace(/\d{4,}/g, '•••')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 120);
 }

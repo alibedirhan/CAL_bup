@@ -5,26 +5,33 @@ import type { IslemSonucu } from '../../../cekirdek/islemSonucu';
 import { useEffect, useRef, useState } from 'react';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
 import type { PosProfilVerisi } from '../../../cekirdek/posProfil';
+import { ozetImzasi, type BirlestirmeOzeti, type BirlestirmeSecimi } from '../../../cekirdek/posBirlestirme';
 import { kartMaskesi } from '../../../cekirdek/posKart';
 import { profilYedeginiAc, EN_BUYUK_PROFIL_YEDEGI } from '../../../platform/posProfilSifreleme';
 import { yedekParolasiDogrula } from '../../../cekirdek/posParola';
+import { Mesaj } from '../../bilesenler/Mesaj';
 import { YedekHazirlama } from './YedekHazirlama';
 
 export function ProfilYedegi({
   mesgul,
+  hatirlatma,
   indir,
+  ozetle,
   ekle,
 }: {
   mesgul: boolean;
+  hatirlatma: string;
   indir: (parola: string) => Promise<IslemSonucu>;
-  ekle: (veri: PosProfilVerisi) => Promise<IslemSonucu>;
+  ozetle: (veri: PosProfilVerisi) => Promise<BirlestirmeOzeti>;
+  ekle: (veri: PosProfilVerisi, secim: BirlestirmeSecimi, ozet: string) => Promise<IslemSonucu>;
 }) {
   const [acik, setAcik] = useState(false);
   const [parola, setParola] = useState('');
   const [hata, setHata] = useState('');
   const islem = useIslem('profil-yedek-inceleme');
   const inceleniyor = islem.mesgul;
-  const [onizleme, setOnizleme] = useState<PosProfilVerisi | null>(null);
+  const [onizleme, setOnizleme] = useState<{ veri: PosProfilVerisi; ozet: BirlestirmeOzeti } | null>(null);
+  const [secim, setSecim] = useState<BirlestirmeSecimi | null>(null);
   const dosya = useRef<HTMLInputElement>(null);
   const bagli = useRef(false);
   useEffect(() => {
@@ -33,6 +40,13 @@ export function ProfilYedegi({
       bagli.current = false;
     };
   }, []);
+  const temizle = () => {
+    setOnizleme(null);
+    setSecim(null);
+  };
+  const catisma = onizleme?.ozet.catismalar.length ?? 0;
+  // Çatışma varsa kullanıcı açıkça seçmeden hiçbir kayıt yazılmaz.
+  const secilen: BirlestirmeSecimi | null = catisma ? secim : 'koru';
   return (
     <section className="kart" aria-labelledby="pos-profil-yedek-baslik">
       <div className="kart-ust">
@@ -50,11 +64,16 @@ export function ProfilYedegi({
         Yedek carileri, kart numaralarını ve iletişim telefonlarını içerir; ayrı uzun parolayla şifrelenir. Bu
         parola günlük açılışta sorulmaz. Tarayıcı verileri silinirse yedekten geri getirebilirsiniz.
       </p>
+      {hatirlatma && <p className="ipucu">{hatirlatma}</p>}
       {acik && (
         <YedekHazirlama mesgul={mesgul || inceleniyor} hazirla={indir} vazgec={() => setAcik(false)} />
       )}
       <details className="pos-bakim">
         <summary>Şifreli yedekten kayıt ekle</summary>
+        <p className="ipucu">
+          Başka bilgisayardaki kayıtları buraya eklemek için kullanın. Mevcut kayıtlar silinmez; aynı bilgiler
+          atlanır, farklı bilgiler eklemeden önce size gösterilir.
+        </p>
         <form
           className="pos-form"
           noValidate
@@ -62,7 +81,7 @@ export function ProfilYedegi({
             e.preventDefault();
             if (mesgul || inceleniyor) return;
             setHata('');
-            setOnizleme(null);
+            temizle();
             const f = dosya.current?.files?.[0];
             if (!f) {
               setHata('Şifreli yedek dosyasını seçin.');
@@ -85,9 +104,11 @@ export function ProfilYedegi({
               try {
                 b = new Uint8Array(await f.arrayBuffer());
                 signal.throwIfAborted();
-                const v = await profilYedeginiAc(b, p);
+                const veri = await profilYedeginiAc(b, p);
                 signal.throwIfAborted();
-                setOnizleme(v);
+                const ozet = await ozetle(veri);
+                signal.throwIfAborted();
+                setOnizleme({ veri, ozet });
               } finally {
                 b?.fill(0);
               }
@@ -102,7 +123,7 @@ export function ProfilYedegi({
             accept=".calpos"
             disabled={mesgul || inceleniyor}
             onChange={() => {
-              setOnizleme(null);
+              temizle();
               setHata('');
             }}
           />
@@ -118,7 +139,7 @@ export function ProfilYedegi({
             disabled={mesgul || inceleniyor}
             onChange={(e) => {
               setParola(e.target.value);
-              setOnizleme(null);
+              temizle();
             }}
           />
           <button className="dugme" type="submit" disabled={mesgul || inceleniyor}>
@@ -129,15 +150,16 @@ export function ProfilYedegi({
           <div className="pos-yedek-onizleme">
             <h3>Eklenmeden önce kontrol edin</h3>
             <p>
-              {onizleme.cariler.length} cari, {onizleme.kartlar.length} kart. Mevcut kayıtlar silinmez;
-              çelişki varsa bütün ekleme durur.
+              Yedekte {onizleme.veri.cariler.length} cari, {onizleme.veri.kartlar.length} kart var. Eklenecek:{' '}
+              {onizleme.ozet.yeniCari} yeni cari, {onizleme.ozet.yeniKart} yeni kart. Burada zaten aynı olan:{' '}
+              {onizleme.ozet.ayniCari} cari, {onizleme.ozet.ayniKart} kart. Mevcut kayıtlar silinmez.
             </p>
             <ul>
-              {onizleme.cariler.map((c) => (
+              {onizleme.veri.cariler.map((c) => (
                 <li key={c.id}>
                   <b>{c.ad}</b>
                   <ul>
-                    {onizleme.kartlar
+                    {onizleme.veri.kartlar
                       .filter((k) => k.cariId === c.id)
                       .map((k) => (
                         <li key={k.id}>
@@ -148,22 +170,54 @@ export function ProfilYedegi({
                 </li>
               ))}
             </ul>
+            {catisma > 0 && (
+              <fieldset className="pos-yedek-catisma">
+                <legend>Bu bilgisayardakinden farklı {catisma} kayıt var</legend>
+                <ul>
+                  {onizleme.ozet.catismalar.map((c, i) => (
+                    <li key={i}>{c.metin}</li>
+                  ))}
+                </ul>
+                <label className="pos-onay">
+                  <input
+                    type="radio"
+                    name="pos-yedek-secim"
+                    checked={secim === 'koru'}
+                    onChange={() => setSecim('koru')}
+                  />
+                  Farklı kayıtlarda bu bilgisayardakileri koru; yalnız yeni kayıtları ekle
+                </label>
+                <label className="pos-onay">
+                  <input
+                    type="radio"
+                    name="pos-yedek-secim"
+                    checked={secim === 'yedek'}
+                    onChange={() => setSecim('yedek')}
+                  />
+                  Farklı kayıtlarda yedektekileri kullan
+                </label>
+              </fieldset>
+            )}
+            {catisma > 0 && !secim && (
+              <Mesaj ton="uyari">Farklı kayıtlar için yukarıdaki iki seçenekten birini işaretleyin.</Mesaj>
+            )}
             <div className="satir-dugmeleri">
               <button
                 className="dugme birincil"
                 type="button"
-                disabled={mesgul}
+                disabled={mesgul || !secilen}
                 onClick={() => {
-                  void ekle(onizleme).then((tamam) => {
+                  if (!secilen) return;
+                  void ekle(onizleme.veri, secilen, ozetImzasi(onizleme.ozet)).then((tamam) => {
                     if (!bagli.current) return;
-                    if (tamam.durum === 'tamam') setOnizleme(null);
+                    if (tamam.durum === 'tamam') temizle();
                     else setHata(tamam.mesaj);
                   });
                 }}
               >
                 İnceledim, kayıtları ekle
               </button>
-              <button className="dugme" type="button" disabled={mesgul} onClick={() => setOnizleme(null)}>
+              <button className="dugme" type="button" disabled={mesgul} onClick={temizle}>
                 Vazgeç
               </button>
             </div>

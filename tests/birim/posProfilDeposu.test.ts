@@ -1,3 +1,4 @@
+import { ozetImzasi } from '../../src/cekirdek/posBirlestirme';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   PosProfilDeposu,
@@ -186,7 +187,7 @@ describe('PIN’siz gerçek şifreli profil deposu', () => {
     await expect(new PosKasasi().ac('0123', true)).rejects.toThrow();
     expect(depo.veri).toEqual(onceki);
   });
-  it('taşınabilir yedek başka cihaza kartlarıyla alınır; çelişkide tüm aktarım durur', async () => {
+  it('taşınabilir yedek başka cihaza kartlarıyla alınır; çelişki açık seçimle çözülür', async () => {
     const a = new PosProfilDeposu();
     await a.ac();
     await a.kaydet(veri);
@@ -198,10 +199,17 @@ describe('PIN’siz gerçek şifreli profil deposu', () => {
     const onceki = new Map(depo.veri);
     const kart = veri.kartlar[0];
     if (!kart) throw new Error('Yapay kart eksik');
-    await expect(
-      b.yedektenEkle({ ...veri, kartlar: [{ ...kart, ad: 'Çelişen Yapay Kart' }] }),
-    ).rejects.toThrow(/çelişen/);
+    const celisen = { ...veri, kartlar: [{ ...kart, ad: 'Çelişen Yapay Kart' }] };
+    const ozet = await b.yedekOzeti(celisen);
+    expect(ozet.catismalar).toEqual([expect.objectContaining({ tur: 'kart' })]);
     expect(depo.veri).toEqual(onceki);
+    // İncelemeden sonra kayıt değişirse onaylanan özet tutmaz; hiçbir şey yazılmaz.
+    await expect(b.yedektenEkle(celisen, 'yedek', '[]')).rejects.toThrow(/yeniden inceleyin/);
+    expect(depo.veri).toEqual(onceki);
+    expect((await b.yedektenEkle(celisen, 'koru', ozetImzasi(ozet))).kartlar[0]?.ad).toBe(kart.ad);
+    expect((await b.yedektenEkle(celisen, 'yedek', ozetImzasi(ozet))).kartlar[0]?.ad).toBe(
+      'Çelişen Yapay Kart',
+    );
   });
   it('eski taşınabilir cari yedeğini okur; yerel anahtar zarfı yedek sayılmaz', async () => {
     const tuz = yeniTuz();

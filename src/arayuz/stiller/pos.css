@@ -271,3 +271,17 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
+
+/* Sekme gizlenince/boşta kalınca açık kart formu kapanmaz; hassas görünüm örtülür. */
+.pos-gizli-girdi {
+  -webkit-text-security: disc;
+}
+.pos-foto-gizli {
+  filter: blur(18px);
+}
+.pos-gizlilik-uyarisi {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}

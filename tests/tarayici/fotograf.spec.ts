@@ -77,6 +77,24 @@ test('boş fotoğraf eski alanları değiştirmez; kısmi aday uygulaması eski 
   await expect(page.getByLabel('Son kullanma yılı', { exact: true })).toHaveValue('');
 });
 
+test('yalnız tarih okunursa elle yazılan kart numarası korunur', async ({ page }) => {
+  await cariHazirla(page);
+  await page.getByRole('button', { name: 'Kart ekle', exact: true }).click();
+  await page.getByLabel('Kart numarası', { exact: true }).fill('5555555555554444');
+  await page.getByLabel('Kart fotoğrafından numara ve tarih oku').setInputFiles({
+    name: 'yapay-tarih.png',
+    mimeType: 'image/png',
+    buffer: await fotoUret(page, { ad: 'yalnız tarih', numara: 'YAPAY KART' }),
+  });
+  await expect(page.getByLabel('Bulunan son kullanma tarihi')).toHaveValue('12/2035', { timeout: 60_000 });
+  await expect(page.getByRole('dialog')).toContainText('formdaki kart numarası korunur');
+  await page.getByLabel('Bulunan numara ve tarihi fotoğrafla karşılaştırdım.').check();
+  await page.getByRole('button', { name: 'Kontrol ettiğim alanları uygula', exact: true }).click();
+  await expect(page.getByLabel('Kart numarası', { exact: true })).toHaveValue('5555555555554444');
+  await expect(page.getByLabel('Son kullanma ayı', { exact: true })).toHaveValue('12');
+  await expect(page.getByLabel('Son kullanma yılı', { exact: true })).toHaveValue('2035');
+});
+
 test('elle değişiklik eski adayları kaldırır; fotoğraf kaldırılınca URL serbest bırakılır', async ({
   page,
 }) => {

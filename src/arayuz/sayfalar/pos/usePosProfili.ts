@@ -10,6 +10,7 @@ export function usePosProfili() {
   const [eski, setEski] = useState(false);
   const [mesgul, setMesgul] = useState(false);
   const [yukleniyor, setYukleniyor] = useState(true);
+  const [yenileniyor, setYenileniyor] = useState(false);
   const [hata, setHata] = useState('');
   const [bilgi, setBilgi] = useState('');
   const [seciliId, setSeciliId] = useState<string | null>(null);
@@ -19,48 +20,71 @@ export function usePosProfili() {
   const nesil = useRef(0);
   const islemNo = useRef(0);
   const kilit = useRef(false);
+  const yenileniyorRef = useRef(false);
+  const seciliRef = useRef<string | null>(null);
   const kanal = useRef<BroadcastChannel | null>(null);
-  const bildir = (m: string, h = false) => {
+  useEffect(() => {
+    seciliRef.current = seciliId;
+  }, [seciliId]);
+  const bildir = useCallback((m: string, h = false) => {
     setHata(h ? m : '');
     setBilgi(h ? '' : m);
-  };
-  const kontrol = useCallback(async () => {
-    const n = ++nesil.current;
-    depo.kapat();
-    setYukleniyor(true);
-    setHata('');
-    setVeri(null);
-    setEski(false);
-    setGizlilikNo((s) => s + 1);
-    try {
-      const s = await depo.ac();
-      if (!bagli.current || n !== nesil.current) return;
-      setEski(s.eski);
-      if (!s.eski) {
-        setVeri(s.veri);
-        setVeriNo((s) => s + 1);
+  }, []);
+  /** `koru`: başka sekmedeki kayıttan sonra ekran ve açık formlar korunarak güncel veri okunur. */
+  const kontrol = useCallback(
+    async (koru = false) => {
+      const n = ++nesil.current;
+      depo.kapat();
+      setHata('');
+      if (koru) {
+        yenileniyorRef.current = true;
+        setYenileniyor(true);
+      } else {
+        setYukleniyor(true);
+        setVeri(null);
+        setEski(false);
+        setGizlilikNo((s) => s + 1);
       }
-    } catch (e) {
-      if (bagli.current && n === nesil.current)
-        setHata(e instanceof KullaniciHatasi ? e.message : 'Profil açılamadı. Yeniden kontrol edin.');
-    } finally {
-      if (bagli.current && n === nesil.current) setYukleniyor(false);
-    }
-  }, [depo]);
+      try {
+        const s = await depo.ac();
+        if (!bagli.current || n !== nesil.current) return;
+        setEski(s.eski);
+        if (s.eski) setVeri(null);
+        else {
+          setVeri(s.veri);
+          setVeriNo((s) => s + 1);
+          const id = seciliRef.current;
+          if (koru && id !== null && !s.veri.cariler.some((c) => c.id === id)) {
+            setSeciliId(null);
+            setBilgi('Seçili cari başka sekmede silindi. Listeden yeniden seçin.');
+          }
+        }
+      } catch (e) {
+        if (bagli.current && n === nesil.current) {
+          setVeri(null);
+          setSeciliId(null);
+          setHata(e instanceof KullaniciHatasi ? e.message : 'Profil açılamadı. Yeniden kontrol edin.');
+        }
+      } finally {
+        if (n === nesil.current) yenileniyorRef.current = false;
+        if (bagli.current && n === nesil.current) {
+          setYukleniyor(false);
+          setYenileniyor(false);
+        }
+      }
+    },
+    [depo],
+  );
   useEffect(() => {
     bagli.current = true;
     let yenileme = window.setTimeout(() => {
       void kontrol();
     }, 0);
+    // Başka sekmedeki kayıt: ekran kapatılmadan yeniden okunur; açık formlar korunur.
     const guncelle = () => {
-      depo.kapat();
-      nesil.current++;
-      setVeri(null);
-      setSeciliId(null);
-      setGizlilikNo((s) => s + 1);
       window.clearTimeout(yenileme);
       yenileme = window.setTimeout(() => {
-        void kontrol();
+        void kontrol(true);
       }, 0);
     };
     const gizle = () => {
@@ -72,6 +96,8 @@ export function usePosProfili() {
     const kapat = () => {
       depo.kapat();
       nesil.current++;
+      yenileniyorRef.current = false;
+      setYenileniyor(false);
       setGizlilikNo((s) => s + 1);
     };
     let sonEtkinlik = Date.now();
@@ -110,8 +136,8 @@ export function usePosProfili() {
     };
   }, [depo, kontrol]);
   const calistir = async (is: () => Promise<PosProfilVerisi>, mesaj: string, yerel = false) => {
-    if (kilit.current)
-      return basarisiz('dogrulama', 'Başka bir işlem sürüyor.', 'MESGUL', {
+    if (kilit.current || yenileniyorRef.current)
+      return basarisiz('dogrulama', 'Başka bir işlem sürüyor veya kayıtlar yenileniyor.', 'MESGUL', {
         kapsam: 'pos',
         islemId: islemNo.current,
       });
@@ -163,6 +189,8 @@ export function usePosProfili() {
   const durdur = () => {
     depo.kapat();
     nesil.current++;
+    yenileniyorRef.current = false;
+    setYenileniyor(false);
     setVeri(null);
     setEski(false);
     setYukleniyor(false);
@@ -206,7 +234,10 @@ export function usePosProfili() {
     depo,
     veri,
     eski,
+    // Arka plan yenilemesi formları kilitlemez (yazarken odak kaybolmasın); bu arada kayıt
+    // girişimi `calistir` içinde açık mesajla reddedilir.
     mesgul,
+    yenileniyor,
     yukleniyor,
     hata,
     bilgi,

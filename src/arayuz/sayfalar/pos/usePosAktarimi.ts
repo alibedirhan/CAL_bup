@@ -4,6 +4,14 @@ import type { PosKart } from '../../../cekirdek/posKart';
 import { AKTARIM_SURESI, kartAktarimi } from '../../../cekirdek/posAktarimi';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
 import { yardimciyaSor } from '../../../platform/posYardimcisi';
+import { SURUM } from '../../../surum';
+
+/** Yardımcı ZIP'i program sürümüyle üretilir; farklı sürüm çalışır ama yeni düzeltmeleri içermeyebilir. */
+export function surumUyarisi(yardimci: string): string {
+  return yardimci === SURUM
+    ? ''
+    : `POS yardımcısının sürümü ${yardimci}, programın sürümü ${SURUM}. Aktarım çalışır ama son düzeltmeler için yardımcıyı yeni kurulum dosyasıyla güncelleyin ve bu sayfayı yenileyin.`;
+}
 function bekle(signal: AbortSignal) {
   return new Promise<void>((coz) => {
     const bitir = () => {
@@ -19,6 +27,7 @@ function bekle(signal: AbortSignal) {
 export function usePosAktarimi(cari: PosCari, kart: PosKart, mesgul: boolean) {
   const [durum, setDurum] = useState('');
   const [hata, setHata] = useState('');
+  const [uyari, setUyari] = useState('');
   const [bekliyor, setBekliyor] = useState(false);
   const islem = useRef<{ id: string; c: AbortController; gonderildi: boolean } | null>(null);
   const iptal = (i: NonNullable<typeof islem.current>) => {
@@ -50,6 +59,7 @@ export function usePosAktarimi(cari: PosCari, kart: PosKart, mesgul: boolean) {
       const bag = await yardimciyaSor('durum', undefined, undefined, i.c.signal);
       i.c.signal.throwIfAborted();
       if (bag.durum !== 'hazir') throw new KullaniciHatasi(bag.mesaj);
+      setUyari(surumUyarisi(bag.surum));
       if (kontrol) {
         setDurum(
           `POS yardımcısı bağlı (${bag.surum}). Kart bilgisi gönderilmedi; aktarımı başlatabilirsiniz.`,
@@ -101,5 +111,5 @@ export function usePosAktarimi(cari: PosCari, kart: PosKart, mesgul: boolean) {
       }
     }
   };
-  return { durum, hata, bekliyor, baslat, durdur };
+  return { durum, hata, uyari, bekliyor, baslat, durdur };
 }

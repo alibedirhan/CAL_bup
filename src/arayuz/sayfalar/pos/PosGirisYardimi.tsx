@@ -30,7 +30,6 @@ export function PosGirisYardimi({
   const kopyalama = useIslem('pos-kopyalama');
   const [gosterNo, setGosterNo] = useState<number | null>(null);
   const goster = gosterNo === gizlilikNo;
-  const [acildi, setAcildi] = useState(false);
   const [onayNo, setOnayNo] = useState<number | null>(null);
   const dogrulandi = firmaDogrulandi ?? onayNo === gizlilikNo;
   const kopyala = (tur: 'numara' | 'sifre') => {
@@ -65,12 +64,12 @@ export function PosGirisYardimi({
             if (!izin()) return;
             try {
               posCariyleGirisYap(cari.numara);
-              setAcildi(true);
               setOnayNo(null);
               firmaKontrolu?.(false);
               girisBasladi?.();
+              // CAL bup sağlayıcının yanıtını okuyamaz; giriş başarılı diye bildirilmez.
               bildir(
-                'Seçtiğiniz carinin giriş bilgileri POS’a gönderildi. Açılan sekmede firma adını ve numarasını kontrol edin. Giriş ekranında kalırsa bilgileri elle yazın.',
+                'Giriş isteği yeni sekmede açıldı. CAL bup girişin sonucunu göremez: açılan sekmede firma adı ve numarayı kontrol edin. Giriş ekranında kalırsanız oradaki uyarıyı okuyun, POS’ta başka cari açıksa önce çıkış yapın; bilgileri “Giriş bilgilerini göster” ile karşılaştırıp elle deneyin.',
               );
             } catch (e) {
               bildir(e instanceof KullaniciHatasi ? e.message : 'POS giriş isteği açılamadı.', true);
@@ -103,7 +102,6 @@ export function PosGirisYardimi({
             e.preventDefault();
             return;
           }
-          setAcildi(true);
           setOnayNo(null);
           firmaKontrolu?.(false);
           girisBasladi?.();
@@ -133,21 +131,19 @@ export function PosGirisYardimi({
           </div>
         </dl>
       )}
-      {acildi && (
-        <label className="pos-onay">
-          <input
-            type="checkbox"
-            checked={dogrulandi}
-            onChange={(e) => {
-              if (izin()) {
-                setOnayNo(e.target.checked ? gizlilikNo : null);
-                firmaKontrolu?.(e.target.checked);
-              }
-            }}
-          />
-          POS’taki firma adı ve numaranın seçtiğim cariyle eşleştiğini kontrol ettim.
-        </label>
-      )}
+      <label className="pos-onay">
+        <input
+          type="checkbox"
+          checked={dogrulandi}
+          onChange={(e) => {
+            if (izin()) {
+              setOnayNo(e.target.checked ? gizlilikNo : null);
+              firmaKontrolu?.(e.target.checked);
+            }
+          }}
+        />
+        POS’taki firma adı ve numaranın seçtiğim cariyle eşleştiğini kontrol ettim.
+      </label>
       <Mesaj ton={dogrulandi ? 'bilgi' : 'uyari'}>
         {dogrulandi
           ? 'Cari kontrolünü siz onayladınız. Kart, CVV, tutar ve banka şifresini POS/banka ekranlarında elle girin.'

@@ -43,7 +43,7 @@ for (const geri of [false, true])
       try {
         await yapayKartliCari(e.p);
         const pos = await kartliPosAc(e.p, e.c);
-        await expect(pos.locator('#cal-bup-pos-yardimcisi')).toContainText('henüz tanıtılmadı');
+        await expect(pos.locator('#cal-bup-pos-yardimcisi')).toContainText('bir kez tanıtın');
         const w = arkaPlan(e.c);
         if (geri)
           await w.evaluate(() => {
@@ -97,15 +97,17 @@ for (const tekrar of [false, true])
           await r.fulfill({
             contentType: 'text/html; charset=utf-8',
             body: tekrar
-              ? '<form id="form1" method="post" action="./login.aspx"><input id="lvergino"><input id="lkullaniciadi"><input id="lsifre" type="password"></form>'
+              ? '<form id="form1" method="post" action="./login.aspx"><input id="lvergino"><input id="lkullaniciadi"><input id="lsifre" type="password"><span id="lblgizleme">Yapay hata 0123456789</span></form>'
               : '<h1>Değişmiş yapay giriş sayfası</h1>',
           });
         });
         await yapayKartliCari(e.p);
         await e.p.getByRole('button', { name: 'Seçili kartla POS’u aç', exact: true }).click();
         await expect(e.p.locator('#pos-aktarim-hatasi')).toContainText(
-          tekrar ? 'ödeme ekranı açılmadı' : 'giriş sayfası',
+          tekrar ? 'POS girişi kabul edilmedi: “Yapay hata •••”' : 'giriş sayfası',
         );
+        // Sağlayıcı yazısındaki uzun rakam dizileri programa taşınmaz.
+        await expect(e.p.locator('#pos-aktarim-hatasi')).not.toContainText('0123456789');
         expect(post).toBe(tekrar ? 1 : 0);
         expect(await kuyruktaPan(arkaPlan(e.c))).toBe(false);
         expect(e.sayac.sms + e.sayac.odeme + e.sayac.dis).toBe(0);

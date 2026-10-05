@@ -1,4 +1,4 @@
-# Sanal POS — 1.6.0
+# Sanal POS — 1.12.0
 
 Cari profili ve isimli kart yönetimi gerçek uygulamanın Sanal POS bölümündedir. Seçilen carinin
 altında “Kayıtlı kartlar / Kart ekle” görünür. Elle kart kaydı, fotoğraftan numara/tarih okuma,
@@ -30,9 +30,9 @@ Mevcut cari giriş formu kart/ödeme API'si değildir. Gerçek ödeme isteği ve
   aktif kart veya başarılı ödeme kanıtı değildir. Telefon Türkiye cep telefonu biçiminde normalize edilir.
 - Kartın cari bağı rastgele kimliğedir; ad/liste sırası kullanılmaz. Aynı caride aynı numara tekrar
   eklenmez. Aynı kart başka cariye açıkça ayrı kayıt olarak eklenebilir; mevcut kart başka cariye taşınmaz.
-- Cari değişimi ve veri yenilenmesi kart seçimini ve firma beyanını sıfırlar. Yeni POS giriş isteği ve
-  farklı kart seçimi firma beyanını sıfırlar. Gizli sekmede ve iki dakika boşta tam numara/form kapanır;
-  bunlar PIN doğrulaması yaratmaz, açık sağlayıcı sekmesini etkilemez.
+- Cari değişimi ve seçili kartın başka sekmede değişmesi kart seçimini sıfırlar. Yeni POS giriş isteği,
+  farklı kart seçimi ve 30 dakika firma beyanını sıfırlar; sekme geçişi sıfırlamaz. Gizli sekmede ve iki
+  dakika boşta açık tam numara gizlenir; açık formlar korunur, kart formunda numara/fotoğraf örtülür (1.12.0).
 - Süresi geçmiş kartlar okunur/düzenlenir/silinir, işlem için seçilemez veya yeni kayıt olarak kaydedilemez.
 - Cari silme bağlı kartlarını aynı veri aktarımında siler; kullanıcıya kart sayısı gösterilir.
 - CVV/CVC, banka PIN’i, OTP/SMS kodu, fotoğraf, ham OCR, serbest not, ödeme tutarı/sonucu kaydı yoktur.
@@ -41,7 +41,8 @@ Mevcut cari giriş formu kart/ödeme API'si değildir. Gerçek ödeme isteği ve
 ## Şifreli yerel depo ve geçiş
 
 - `cekirdek/posKart.ts`: saf numara/telefon/tarih/metin/maskeleme kuralları.
-- `cekirdek/posProfil.ts`: sürüm 2 şema, kimlik ilişkileri, cari/kart CRUD ve çelişkili yedek denetimi.
+- `cekirdek/posProfil.ts`: sürüm 2 şema, kimlik ilişkileri, cari/kart CRUD ve bayat form denetimi.
+- `cekirdek/posBirlestirme.ts`: yedek birleştirme özeti, açık çatışma seçimi ve özet imzası.
 - `platform/posProfilSifreleme.ts`: rastgele dışa aktarılamayan AES-256-GCM cihaz anahtarı; her yazıda
   12 bayt yeni IV ve yeni revizyon, 128 bit doğrulama etiketi. Biçim/sürüm/kip/kimlik/revizyon/IV/KDF/tuz
   AAD’ye bağlıdır. Yeni zarf `cal-bup-pos-profil` biçimiyle eski sürümden açıkça ayrılır.
@@ -75,7 +76,9 @@ Eski yalnızca-cari yedekler de eski uzun parolalarıyla okunur; yeni biçim esk
 
 Geri yükleme önce çözme, şema doğrulama ve maskeli inceleme sunar. Açık “İnceledim, kayıtları ekle”
 düğmesi olmadan yazı yoktur. Numara/adı aynı cari mevcut kimliğe eşlenir; kartları o kimliğe bağlanır.
-Tam aynı kart çoğaltılmaz; farklı bilgi/kimlik çelişkisi tüm işlemi durdurur. Mevcut liste sessizce ezilmez.
+Tam aynı kart çoğaltılmaz. 1.12.0'dan beri farklı bilgiler listelenir; kullanıcı “buradakileri koru” veya
+“yedektekileri kullan” seçmeden yazılmaz. Aynı ad farklı numara/sınır aşımı tüm işlemi durdurur.
+Mevcut liste sessizce ezilmez, hiçbir kayıt silinmez.
 Tarayıcı verisi temizlenirse yedek gerekir. Silme daha önce indirilmiş yedekleri veya kullanıcının özgün
 fotoğrafını silemez. Unutulan yedek/eski kasa parolasını kurtarma servisi yoktur.
 
@@ -140,3 +143,28 @@ Windows kolay kurulum dosyası kendi ZIP'ini hash/sürüm ile doğrular ve klas�
 tarayıcıda “Paketlenmemiş öğe yükle” onayı gerekir. Giriş/TTL/kayıp teslim/saat geri alma ve
 eşzamanlı bekleyen iş sınırları güçlendirildi. Windows/gerçek POS kabulü yapılmış sayılmaz.
 [Detaylı tarama raporu](POS_YARDIMCISI_TARAMA_RAPORU.md).
+
+## 1.12.0 üç aşamalı düzeltme
+
+Derin tarama bulguları ([rapor](SANAL_POS_DERIN_TARAMA_RAPORU.md)) uygulandı. Gerçek sağlayıcı
+adresine hiçbir test isteği gönderilmedi; denemeler ağdan yalıtılmış taklit POS'la yapıldı.
+
+1. **Veri kaybı ve akış.** Gizli sekme/pencere örtülmesi/iki dakika boşta açık formları kapatmaz.
+   Açık tam numara ve giriş bilgileri gizlenir; kart formunda numara (`-webkit-text-security`) ve
+   fotoğraf/adaylar örtülür, “Gizlenen bilgileri göster” ile açılır. Firma beyanı sekme geçişinde
+   korunur; yeni POS girişi, kart değişimi ve 30 dakika sıfırlar; kutu POS'u bu sayfadan açmadan da
+   işaretlenebilir. Başka sekmedeki kayıt ekran kapatılmadan yeniden okunur; düzenleme formu açılırken
+   görülen kayıt (`beklenen`) depoya yazmadan önce karşılaştırılır, değişmiş/silinmiş kayıt ezilmez.
+   Fotoğraftan yalnız tarih uygulanırsa numara korunur.
+2. **Yardımcı.** Doğrudan giriş başarı iddia etmez. Başarısız girişte sağlayıcının `lblgizleme`
+   yazısı maskeli/kısaltılmış aktarılır. Girişten sonraki tanıtılmamış sayfada “ödeme sayfasına geçin”
+   denir. Eşleşmeyen cari için çıkış önerilir. `AAYY`/`AA/YYYY` tek tarih alanları, yaygın ASP.NET alan
+   adları; `pin` alt dizesi yerine PIN alanı kalıpları, `taksit`/`parola` engeli
+   (`eklenti/alanKurallari.ts`). Panel tercihi `storage.local` `panel` anahtarındadır. Bekleme 180 sn.
+   Farklı yardımcı sürümü uyarılır, engellenmez.
+3. **Yedek.** `cekirdek/posBirlestirme.ts`: inceleme özeti (yeni/aynı/çatışan), açık “koru/yedek”
+   seçimi, özet imzasıyla incelemeden sonra değişen kaydı reddetme. Numara ile cari araması, yedek
+   hatırlatması (yalnız tarih, `localStorage`).
+
+Kalan sınırlar değişmedi: gerçek POS girişi/ödeme sayfası, Windows/Edge kurulumu ve gerçek fotoğraf
+kullanıcıyla denenmelidir. Tarayıcı depolamasının kalıcılık isteği bu turda incelenmedi.

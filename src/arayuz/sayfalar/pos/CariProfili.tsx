@@ -1,9 +1,12 @@
 import type { IslemSonucu } from '../../../cekirdek/islemSonucu';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { numaraMaskesi, type PosCari } from '../../../cekirdek/posCari';
 import { kartMaskesi, type PosKart } from '../../../cekirdek/posKart';
 import { CariKartlari } from './CariKartlari';
 import { PosGirisYardimi } from './PosGirisYardimi';
+
+/** Firma beyanı POS oturumuyla ilgilidir; sekme geçişinde korunur, en fazla bu kadar geçerlidir. */
+export const FIRMA_ONAYI_SURESI = 30 * 60_000;
 
 export function CariProfili({
   cari,
@@ -20,13 +23,31 @@ export function CariProfili({
   mesgul: boolean;
   gizlilikNo: number;
   duzenle: () => void;
-  kartKaydet: (k: PosKart) => Promise<IslemSonucu>;
+  kartKaydet: (k: PosKart, beklenen: PosKart | null) => Promise<IslemSonucu>;
   kartSil: (k: PosKart) => Promise<IslemSonucu>;
   bildir: (m: string, h?: boolean) => void;
 }) {
-  const [onayNo, setOnayNo] = useState<number | null>(null);
+  // Sayaç: her onay ayrı bir süre başlatır; eski zamanlayıcı yeni onayı kapatamaz.
+  const [onay, setOnay] = useState(0);
+  const [onayNo, setOnayNo] = useState(0);
   const [aktarimNo, setAktarimNo] = useState(0);
-  const firmaOnay = onayNo === gizlilikNo;
+  const firmaOnay = onay > 0 && onay === onayNo;
+  useEffect(() => {
+    if (!firmaOnay) return;
+    const t = window.setTimeout(() => setOnay(0), FIRMA_ONAYI_SURESI);
+    return () => {
+      window.clearTimeout(t);
+    };
+  }, [firmaOnay, onayNo]);
+  const onayla = (evet: boolean) => {
+    if (!evet) {
+      setOnay(0);
+      return;
+    }
+    const yeni = onayNo + 1;
+    setOnayNo(yeni);
+    setOnay(yeni);
+  };
   return (
     <div className="pos-profil-grid">
       <section className="kart">
@@ -52,7 +73,7 @@ export function CariProfili({
         aktarimNo={aktarimNo}
         firmaOnay={firmaOnay}
         kaydet={kartKaydet}
-        kartDegisti={() => setOnayNo(null)}
+        kartDegisti={() => onayla(false)}
         sil={(k) => {
           if (
             !mesgul &&
@@ -68,9 +89,9 @@ export function CariProfili({
         bildir={bildir}
         gizlilikNo={gizlilikNo}
         firmaDogrulandi={firmaOnay}
-        firmaKontrolu={(onay) => setOnayNo(onay ? gizlilikNo : null)}
+        firmaKontrolu={onayla}
         girisBasladi={() => {
-          setOnayNo(null);
+          onayla(false);
           setAktarimNo((n) => n + 1);
         }}
       />

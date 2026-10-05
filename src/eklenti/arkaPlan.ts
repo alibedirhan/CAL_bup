@@ -1,6 +1,7 @@
 import {
   AKTARIM_SURESI,
   alanlariDogrula,
+  girisMesajiTemizle,
   aktarimiDogrula,
   programAdresi,
   posSayfasi,
@@ -25,7 +26,16 @@ interface Islem {
   kart?: PosAktarimi;
   mesaj: string;
 }
-type Mesaj = { is?: string; id?: string; islemId?: string; veri?: unknown; firma?: string; durum?: string };
+type Mesaj = {
+  is?: string;
+  id?: string;
+  islemId?: string;
+  veri?: unknown;
+  firma?: string;
+  durum?: string;
+  girisMesaji?: unknown;
+  kucuk?: unknown;
+};
 let kuyruk: Promise<unknown> = Promise.resolve();
 const koruma = Promise.all([
   eklenti.storage.session.setAccessLevel({ accessLevel: 'TRUSTED_CONTEXTS' }),
@@ -115,6 +125,14 @@ async function pos(m: Mesaj, tab: number, adres: string): Promise<unknown> {
     await eklenti.storage.local.set({ alanlar: { ...tum, [sayfa]: alanlar } });
     return { durum: 'hazir', mesaj: 'Alanlar tanıtıldı.' };
   }
+  if (m.is === 'panel') {
+    // Yalnız panelin küçük/büyük tercihi; kart veya sayfa bilgisi saklanmaz.
+    const p = await eklenti.storage.local.get('panel');
+    const kucuk =
+      typeof m.kucuk === 'boolean' ? m.kucuk : (p.panel as { kucuk?: unknown } | undefined)?.kucuk === true;
+    if (typeof m.kucuk === 'boolean') await eklenti.storage.local.set({ panel: { kucuk } });
+    return { durum: 'hazir', kucuk };
+  }
   if (m.is === 'kurulumuSil') {
     const kalan = Object.fromEntries(Object.entries(tum).filter(([ad]) => ad !== sayfa));
     await eklenti.storage.local.set({ alanlar: kalan });
@@ -149,10 +167,12 @@ async function pos(m: Mesaj, tab: number, adres: string): Promise<unknown> {
   if (sayfa === POS_KOKENI + '/login.aspx') {
     if (!i?.kart) return { durum: 'bekle' };
     if (i.giris) {
+      // Giriş sayfası yeniden geldiyse giriş kabul edilmemiştir; sağlayıcının yazısı aktarılır.
+      const neden = girisMesajiTemizle(m.girisMesaji);
       bitir(
         i,
         'hata',
-        'POS girişinden sonra ödeme ekranı açılmadı. Kart aktarılmadı; POS girişini kontrol edin.',
+        `POS girişi kabul edilmedi${neden ? `: “${neden}”` : ''}. Kart aktarılmadı. Carinin vergi/TC numarasını ve POS’taki kaydını kontrol edin; gerekirse “Giriş bilgilerini göster” ile elle deneyin.`,
       );
       await yaz(s);
       return ozet(i);
@@ -163,9 +183,16 @@ async function pos(m: Mesaj, tab: number, adres: string): Promise<unknown> {
   }
   const alanlar = tum[sayfa];
   if (!alanlar) {
-    if (i) i.mesaj = 'POS ödeme ekranı henüz tanıtılmadı. Yardımcı panelinden boş alanları bir kez tanıtın.';
+    // Bu sayfa tanıtılmamış: girişten sonraki ana sayfa da olabilir, gerçekten tanıtılmamış ödeme sayfası da.
+    const tanitilmis = Object.keys(tum).length > 0;
+    if (i)
+      i.mesaj = tanitilmis
+        ? i.giris
+          ? 'POS’a giriş yapıldı. POS’ta ödeme sayfasına geçin; kart orada doldurulacak.'
+          : 'POS açık bir oturumla açıldı. Ödeme sayfasına geçin; cari numarası orada karşılaştırılacak.'
+        : 'POS ödeme sayfasını açıp boş alanları yardımcı panelinden bir kez tanıtın.';
     await yaz(s);
-    return { durum: 'kurulum' };
+    return { durum: 'kurulum', tanitilmis, bekleyen: Boolean(i) };
   }
   alanlariDogrula(alanlar);
   if (!i?.kart) return { durum: 'hazir', alanlar };
@@ -175,7 +202,11 @@ async function pos(m: Mesaj, tab: number, adres: string): Promise<unknown> {
     return { durum: 'bekle', alanlar };
   }
   if (m.firma !== i.kart.cariNumarasi) {
-    bitir(i, 'hata', 'POS’taki cari numarası seçtiğiniz cariyle eşleşmiyor. Hiçbir kart alanı doldurulmadı.');
+    bitir(
+      i,
+      'hata',
+      'POS’taki cari numarası seçtiğiniz cariyle eşleşmiyor. Hiçbir kart alanı doldurulmadı. POS’ta başka cari açık olabilir: POS’tan çıkış yapıp yeniden deneyin.',
+    );
     await yaz(s);
     return ozet(i);
   }

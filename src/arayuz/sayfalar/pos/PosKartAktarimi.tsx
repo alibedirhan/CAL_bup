@@ -3,7 +3,7 @@ import { kartSuresiGecti, type PosKart } from '../../../cekirdek/posKart';
 import { usePosAktarimi } from './usePosAktarimi';
 import { FormHatasi } from '../../bilesenler/FormHatasi';
 export function PosKartAktarimi({ cari, kart, mesgul }: { cari: PosCari; kart: PosKart; mesgul: boolean }) {
-  const { durum, hata, bekliyor, baslat, durdur } = usePosAktarimi(cari, kart, mesgul);
+  const { durum, hata, uyari, bekliyor, baslat, durdur } = usePosAktarimi(cari, kart, mesgul);
   return (
     <section aria-label="Seçili kartı POS’a aktar">
       <h3>Seçili kartla POS’a geç</h3>
@@ -36,6 +36,7 @@ export function PosKartAktarimi({ cari, kart, mesgul }: { cari: PosCari; kart: P
       </div>
       <FormHatasi id="pos-aktarim-hatasi" hata={hata} />
       {durum && <p role="status">{durum}</p>}
+      {uyari && <p className="ipucu">{uyari}</p>}
       <details open={Boolean(hata)}>
         <summary>POS yardımcısını bir kez kur</summary>
         <p>

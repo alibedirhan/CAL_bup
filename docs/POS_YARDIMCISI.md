@@ -53,7 +53,7 @@ bilmez. Alanları kontrol eden adaptör saf aktarım sözleşmesini tüketir; su
   ağ yakalama, tüm siteler, dış mesajlaşma veya uzaktan betik yetkisi yoktur.
 - Arka plan ağ çağrısı yapmaz. CSP uzantı sayfalarında `connect-src 'none'` kullanır.
   Normal POS sayfasının kendi ağ bağlantılarını eklenti yönetmez.
-- Kart yalnızca tarayıcı oturum belleği deposunda, en fazla 120 saniyelik işte bekler.
+- Kart yalnızca tarayıcı oturum belleği deposunda, en fazla 180 saniyelik işte bekler (1.12.0; önce 120).
   `storage.local` yalnızca alan yapılandırması içerir. Her iki depoya doğrudan erişim güvenilir
   eklenti bağlamıyla sınırlıdır. Kart URL, pano, günlük, hata, ZIP veya rapora yazılmaz.
 - Kaynak uygulama sekmesi ve yardımcının açtığı hedef POS sekmesi eşleşmelidir. Aynı alan adlı
@@ -130,3 +130,12 @@ inert, aria-hidden veya content-visibility:hidden kapsayıcı içindeki alan/fir
 başlamaz. Devre dışı fieldset içindeki girdi reddedilir. Beş kapalı ağ MV3 regresyonunda alanlar
 boş kalır; ödeme/SMS/dış ağ isteği sıfırdır. Bu kontrol sağlayıcı arka uç ortak oturumunu veya
 kurum sözleşmesini doğrulamaz. Gerçek müşteri kartı/fotoğrafı ile test yasağı sürer.
+
+## 1.12.0 mesaj ve uyumluluk
+
+Kart yalnız oturum belleğinde en fazla 180 saniye bekler (girişten sonra ödeme sayfasına geçiş için).
+`storage.local` alan seçicilerine ek olarak yalnız panelin küçük/büyük tercihini tutar; test bunun
+dışında anahtar ve kart/cari değeri bulunmadığını denetler. Başarısız giriş, girişten sonraki ana sayfa,
+`AAYY`/`AA/YYYY` tarih ve panel tercihi `tests/tarayici/eklentiAkis.spec.ts` ile, kurallar
+`tests/birim/posYardimciKurallari.test.ts` ile sınanır. Yeni ZIP kurulana kadar eski yardımcı çalışmayı
+sürdürür; program farklı sürümü bildirir.

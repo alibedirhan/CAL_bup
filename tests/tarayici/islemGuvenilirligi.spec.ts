@@ -76,7 +76,7 @@ test('React ekran hatası anlaşılır kurtarma ekranı gösterir; profil ve ham
       throw new Error('Yapay ham sır 4242424242424242');
     };
   });
-  await page.getByPlaceholder('Cari adına göre ara…').fill('Yapay');
+  await page.getByPlaceholder('Cari adı veya numarası…').fill('Yapay');
   await expect(page.getByRole('heading', { name: 'Ekran açılamadı' })).toBeVisible();
   await expect(page.getByRole('alert')).not.toContainText('4242');
   expect(gunluk.join(' ')).not.toContain('4242424242424242');

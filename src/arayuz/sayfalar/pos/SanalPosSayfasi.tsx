@@ -17,18 +17,28 @@ import { CariFormu } from './CariFormu';
 import { CariProfili } from './CariProfili';
 import { EskiKasaGecisi } from './EskiKasaGecisi';
 import { ProfilYedegi } from './ProfilYedegi';
+import { yedekHatirlatmasi } from '../../../cekirdek/posYedekHatirlatma';
+import { sonYedekOku, sonYedekYaz } from '../../../platform/posYedekKaydi';
 import { usePosProfili } from './usePosProfili';
 
 type Oturum = ReturnType<typeof usePosProfili>;
 function AcikProfil({ oturum }: { oturum: Oturum }) {
   const { depo, veri, mesgul, calistir, seciliId, setSeciliId, gizlilikNo, veriNo, bildir } = oturum;
   const [arama, setArama] = useState('');
-  const [form, setForm] = useState<{ cari: PosCari | null; no: number } | null>(null);
+  const [form, setForm] = useState<{ cari: PosCari | null } | null>(null);
+  const [sonYedek, setSonYedek] = useState(sonYedekOku);
+  // Başka sekmede silinen carinin açık düzenleme formu kapatılır ve nedeni söylenir.
+  const formCariSilindi = Boolean(veri && form?.cari && !veri.cariler.some((c) => c.id === form.cari?.id));
   if (!veri) return null;
   const cariler = veri.cariler;
   const cari = cariler.find((c) => c.id === seciliId);
-  const gorunen = cariler.filter((c) =>
-    c.ad.toLocaleLowerCase('tr-TR').includes(arama.trim().toLocaleLowerCase('tr-TR')),
+  // Ada veya (en az 3 rakam yazılınca) vergi/TC numarasının bir kısmına göre arar.
+  const aranan = arama.trim().toLocaleLowerCase('tr-TR');
+  const rakamlar = /^[\d\s]+$/.test(aranan) ? aranan.replace(/\s/g, '') : '';
+  const gorunen = cariler.filter(
+    (c) =>
+      c.ad.toLocaleLowerCase('tr-TR').includes(aranan) ||
+      (rakamlar.length >= 3 && c.numara.includes(rakamlar)),
   );
   const guncelle = async (is: () => PosProfilVerisi, mesaj: string, yerel = false) => {
     if (mesgul)
@@ -45,7 +55,7 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
       );
     }
   };
-  const acikForm = form?.no === gizlilikNo ? form : null;
+  const acikForm = formCariSilindi ? null : form;
   return (
     <>
       <div className="pos-yerlesim">
@@ -60,14 +70,14 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
               disabled={mesgul}
               onClick={() => {
                 setSeciliId(null);
-                setForm({ cari: null, no: gizlilikNo });
+                setForm({ cari: null });
               }}
             >
               Yeni cari
             </button>
           </div>
           <label className="gorunmez" htmlFor="pos-cari-ara">
-            Cari adına göre ara
+            Cari adına veya numarasına göre ara
           </label>
           <input
             id="pos-cari-ara"
@@ -75,7 +85,7 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
             type="search"
             autoComplete="off"
             maxLength={120}
-            placeholder="Cari adına göre ara…"
+            placeholder="Cari adı veya numarası…"
             value={arama}
             disabled={mesgul}
             onChange={(e) => setArama(e.target.value)}
@@ -111,7 +121,7 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
                     aria-label={`${c.ad} kaydını düzenle`}
                     onClick={() => {
                       setSeciliId(c.id);
-                      setForm({ cari: c, no: gizlilikNo });
+                      setForm({ cari: c });
                     }}
                   >
                     Düzenle
@@ -121,7 +131,15 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
             </ul>
           )}
         </section>
-        {acikForm ? (
+        {formCariSilindi ? (
+          <div className="bos" role="alert">
+            <h2>Düzenlediğiniz cari başka sekmede silindi</h2>
+            <p>Değişiklik kaydedilmedi. Güncel listeden devam edin.</p>
+            <button className="dugme" type="button" onClick={() => setForm(null)}>
+              Tamam
+            </button>
+          </div>
+        ) : acikForm ? (
           <div className="pos-form-alani">
             <CariFormu
               key={acikForm.cari?.id ?? 'yeni'}
@@ -130,7 +148,7 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
               vazgec={() => setForm(null)}
               kaydet={async (c) => {
                 const tamam = await guncelle(
-                  () => profilCariKaydet(veri, c),
+                  () => profilCariKaydet(veri, c, acikForm.cari),
                   'Cari kaydedildi. Kartlarını profiline ekleyebilirsiniz.',
                   true,
                 );
@@ -172,15 +190,19 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
           </div>
         ) : cari ? (
           <CariProfili
-            key={`${cari.id}-${cari.numara}-${veriNo}`}
+            key={`${cari.id}-${cari.numara}`}
             cari={cari}
             kartlar={veri.kartlar.filter((k) => k.cariId === cari.id)}
             gizlilikNo={gizlilikNo}
             mesgul={mesgul}
             bildir={bildir}
-            duzenle={() => setForm({ cari, no: gizlilikNo })}
-            kartKaydet={(k) =>
-              guncelle(() => profilKartKaydet(veri, k), 'Kart bu carinin profiline kaydedildi.', true)
+            duzenle={() => setForm({ cari })}
+            kartKaydet={(k, beklenen) =>
+              guncelle(
+                () => profilKartKaydet(veri, k, new Date(), beklenen),
+                'Kart bu carinin profiline kaydedildi.',
+                true,
+              )
             }
             kartSil={(k) =>
               guncelle(() => profilKartSil(veri, cari.id, k.id), 'Kart bu carinin profilinden silindi.')
@@ -194,9 +216,17 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
         )}
       </div>
       <ProfilYedegi
-        key={gizlilikNo}
         mesgul={mesgul}
-        ekle={(gelen) => calistir(() => depo.yedektenEkle(gelen), 'Yedekteki cari ve kartlar eklendi.')}
+        hatirlatma={yedekHatirlatmasi(sonYedek, new Date(), cariler.length > 0)}
+        ozetle={(gelen) => depo.yedekOzeti(gelen)}
+        ekle={(gelen, secim, ozet) =>
+          calistir(
+            () => depo.yedektenEkle(gelen, secim, ozet),
+            secim === 'yedek'
+              ? 'Yedekteki yeni kayıtlar eklendi; farklı kayıtlarda yedektekiler kullanıldı.'
+              : 'Yedekteki yeni kayıtlar eklendi; bu bilgisayardaki kayıtlar korundu.',
+          )
+        }
         indir={async (parola) => {
           if (mesgul)
             return basarisiz('dogrulama', 'Başka bir işlem sürüyor.', 'MESGUL', {
@@ -205,12 +235,16 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
             });
           return oturum.dosyaCalistir(
             () => depo.yedekle(parola),
-            (b) =>
+            (b) => {
               indir(
                 b,
                 `CAL-bup-profil-yedegi-${new Date().toISOString().slice(0, 10)}.calpos`,
                 'application/octet-stream',
-              ),
+              );
+              const t = new Date();
+              sonYedekYaz(t);
+              setSonYedek(t.toISOString());
+            },
             'Şifreli cari ve kart yedeğinin indirmesi başlatıldı. Yedek parolasını ayrı saklayın.',
           );
         }}
@@ -251,7 +285,7 @@ export function SanalPosSayfasi() {
           {oturum.yukleniyor ? 'Cari ve kart profili açılıyor…' : 'Şifreli profil işlemi yürütülüyor…'}
         </Mesaj>
       )}
-      {!oturum.yukleniyor && oturum.veri && !oturum.depo.acik && (
+      {!oturum.yukleniyor && !oturum.yenileniyor && oturum.veri && !oturum.depo.acik && (
         <button className="dugme" disabled={oturum.mesgul} onClick={() => void oturum.kontrol()}>
           Profil durumunu yeniden kontrol et
         </button>

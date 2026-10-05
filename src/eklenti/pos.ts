@@ -1,4 +1,10 @@
-import { POS_KOKENI, posSayfasi, type PosAlanlari, type PosAktarimi } from '../cekirdek/posAktarimi';
+import {
+  AKTARIM_SURESI,
+  POS_KOKENI,
+  posSayfasi,
+  type PosAlanlari,
+  type PosAktarimi,
+} from '../cekirdek/posAktarimi';
 import { firmaNumarasi, kartiDoldur } from './alanlar';
 import { yardimciPaneli } from './kurulum';
 import { eklenti } from './chrome';
@@ -10,11 +16,14 @@ type Yanit = {
   kart?: PosAktarimi;
   id?: string;
   mesaj?: string;
+  tanitilmis?: boolean;
+  bekleyen?: boolean;
+  kucuk?: boolean;
 };
+const GIRIS_SAYFASI = POS_KOKENI + '/login.aspx';
 /** Tek izinli sayfada login gönderimi. Ödeme gönderimi veya DOM event üretimi yoktur. */
 function giris(r: Yanit) {
-  if (location.href !== POS_KOKENI + '/login.aspx' || !r.numara || !r.sifre)
-    throw new Error('Giriş sayfası uygun değil.');
+  if (location.href !== GIRIS_SAYFASI || !r.numara || !r.sifre) throw new Error('Giriş sayfası uygun değil.');
   const form = document.getElementById('form1');
   const alanlar = ['lvergino', 'lkullaniciadi', 'lsifre'].map((id) => document.getElementById(id));
   if (
@@ -41,10 +50,21 @@ function giris(r: Yanit) {
   }
 }
 if (window.top === window && posSayfasi(location.href)) {
-  const panel = yardimciPaneli();
+  const panel = yardimciPaneli((kucuk) => {
+    void eklenti.runtime.sendMessage({ is: 'panel', kucuk }).catch(() => undefined);
+  });
+  void eklenti.runtime
+    .sendMessage({ is: 'panel' })
+    .then((r) => {
+      if ((r as Yanit | undefined)?.kucuk === true) panel.kucult(true);
+    })
+    .catch(() => undefined);
   let kapali = false;
   let alanlar: PosAlanlari | undefined;
-  const son = performance.now() + 125_000;
+  const son = performance.now() + AKTARIM_SURESI + 5_000;
+  // Giriş sayfasına geri dönüldüyse sağlayıcının hata yazısı (yalnız metin) arka plana iletilir.
+  const girisMesaji = () =>
+    location.href === GIRIS_SAYFASI ? (document.getElementById('lblgizleme')?.textContent ?? '') : '';
   window.addEventListener(
     'pagehide',
     () => {
@@ -70,7 +90,11 @@ if (window.top === window && posSayfasi(location.href)) {
           return;
         }
       }
-      const r = (await eklenti.runtime.sendMessage({ is: 'posDurum', firma })) as Yanit;
+      const r = (await eklenti.runtime.sendMessage({
+        is: 'posDurum',
+        firma,
+        girisMesaji: girisMesaji(),
+      })) as Yanit;
       if (kapali) return;
       if (r.alanlar) alanlar = r.alanlar;
       if (r.durum === 'giris') {
@@ -107,7 +131,13 @@ if (window.top === window && posSayfasi(location.href)) {
         return;
       }
       if (r.durum === 'kurulum')
-        panel.bildir('Bu ödeme ekranı henüz tanıtılmadı. Boş alanları aşağıdaki düğmeyle bir kez tanıtın.');
+        panel.bildir(
+          r.bekleyen && r.tanitilmis
+            ? 'POS’ta ödeme sayfasına geçin; kart numarası ve son kullanma orada, cari numarası eşleşirse doldurulacak.'
+            : r.bekleyen
+              ? 'Ödeme sayfasını açın ve boş kart alanlarını aşağıdaki düğmeyle bir kez tanıtın.'
+              : 'Bu sayfada tanıtılmış kart alanı yok. Ödeme sayfasındaysanız boş alanları bir kez tanıtın; değilse bir şey yapmanız gerekmez.',
+        );
     } catch {
       panel.bildir(
         dolduruldu

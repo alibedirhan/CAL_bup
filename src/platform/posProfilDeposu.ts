@@ -1,10 +1,11 @@
 import { KullaniciHatasi } from '../cekirdek/hata';
+import { BOS_POS_PROFILI, posProfilDogrula, type PosProfilVerisi } from '../cekirdek/posProfil';
 import {
-  BOS_POS_PROFILI,
-  posProfilDogrula,
   profilBirlestir,
-  type PosProfilVerisi,
-} from '../cekirdek/posProfil';
+  profilBirlestirmeOzeti,
+  type BirlestirmeOzeti,
+  type BirlestirmeSecimi,
+} from '../cekirdek/posBirlestirme';
 import * as idb from './idb';
 import { POS_CIHAZ_ONEKI } from './posCihaz';
 import { POS_DENEME_ONEKI } from './posDeneme';
@@ -204,7 +205,17 @@ export class PosProfilDeposu {
       return b;
     });
   }
-  async yedektenEkle(gelen: PosProfilVerisi): Promise<PosProfilVerisi> {
-    return this.#islem(async (n) => this.#yaz(profilBirlestir(await this.#guncel(n), gelen), n));
+  /** Güncel kayıt yeniden okunur; özet incelemedekinden farklıysa hiçbir şey yazılmaz. */
+  async yedektenEkle(
+    gelen: PosProfilVerisi,
+    secim: BirlestirmeSecimi = 'koru',
+    onaylananOzet?: string,
+  ): Promise<PosProfilVerisi> {
+    return this.#islem(async (n) =>
+      this.#yaz(profilBirlestir(await this.#guncel(n), gelen, secim, onaylananOzet), n),
+    );
+  }
+  async yedekOzeti(gelen: PosProfilVerisi): Promise<BirlestirmeOzeti> {
+    return this.#islem(async (n) => profilBirlestirmeOzeti(await this.#guncel(n), gelen));
   }
 }

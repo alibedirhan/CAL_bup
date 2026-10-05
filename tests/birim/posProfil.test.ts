@@ -8,7 +8,7 @@ import {
 } from '../../src/cekirdek/posKart';
 import {
   posProfilDogrula,
-  profilBirlestir,
+  profilCariKaydet,
   profilCariSil,
   profilKartKaydet,
   profilKartSil,
@@ -73,6 +73,28 @@ describe('Cari profili ve kart kuralları', () => {
     expect(profilKartSil(v, b.id, kart.id).kartlar).toHaveLength(2);
     expect(profilCariSil(v, a.id).kartlar).toEqual([expect.objectContaining({ cariId: b.id })]);
   });
+  it('başka sekmede değişen veya silinen kaydı açık formdan sessizce ezmez', () => {
+    const duzenlenen = { ...kart, ad: 'Yeni Ad' };
+    expect(profilKartKaydet(veri, duzenlenen, simdi, kart).kartlar[0]?.ad).toBe('Yeni Ad');
+    const baskaSekme = profilKartKaydet(veri, { ...kart, telefon: '' }, simdi);
+    expect(() => profilKartKaydet(baskaSekme, duzenlenen, simdi, kart)).toThrow(/başka sekmede/);
+    expect(() => profilKartKaydet(profilKartSil(veri, a.id, kart.id), duzenlenen, simdi, kart)).toThrow(
+      /başka sekmede/,
+    );
+    // Yeni kart formu açıkken aynı kimlik başka yerde oluşmuşsa yeni kayıt sayılmaz.
+    expect(() => profilKartKaydet(veri, duzenlenen, simdi, null)).toThrow(/başka sekmede/);
+    expect(() =>
+      profilKartKaydet(profilCariSil(veri, b.id), { ...kart, id: b.id, cariId: b.id }, simdi, null),
+    ).toThrow(/carisi başka sekmede silinmiş/);
+    expect(profilCariKaydet(veri, { ...a, ad: 'Yapay Cari A2' }, a).cariler.map((c) => c.ad)).toContain(
+      'Yapay Cari A2',
+    );
+    const adiDegismis = profilCariKaydet(veri, { ...a, ad: 'Başka Sekme Adı' });
+    expect(() => profilCariKaydet(adiDegismis, { ...a, ad: 'Yapay Cari A2' }, a)).toThrow(/başka sekmede/);
+    expect(() => profilCariKaydet(profilCariSil(veri, a.id), { ...a, ad: 'Yapay Cari A2' }, a)).toThrow(
+      /başka sekmede/,
+    );
+  });
   it('olmayan cari ve tekrar eden kart kimliği kabul edilmez', () => {
     expect(() => posProfilDogrula({ ...veri, kartlar: [{ ...kart, cariId: kart.id }] })).toThrow();
     expect(() => posProfilDogrula({ ...veri, kartlar: [kart, kart] })).toThrow();
@@ -100,17 +122,6 @@ describe('Cari profili ve kart kuralları', () => {
     if (!onBirinci) throw new Error('Yapay kart eksik');
     expect(() => profilKartKaydet(on, onBirinci, simdi)).toThrow(/en fazla 10/);
     expect(() => posProfilDogrula({ ...veri, kartlar })).toThrow();
-  });
-  it('yedek numarası aynı cariyi mevcut kimliğe bağlar; tam aynı kartı çoğaltmaz', () => {
-    const gelen: PosProfilVerisi = {
-      surum: 2,
-      cariler: [{ ...a, id: b.id }],
-      kartlar: [{ ...kart, cariId: b.id }],
-    };
-    expect(profilBirlestir(veri, gelen)).toEqual(veri);
-    expect(() =>
-      profilBirlestir(veri, { ...gelen, kartlar: [{ ...kart, cariId: b.id, telefon: '' }] }),
-    ).toThrow(/çelişen kart/);
   });
 });
 describe('Yerel fotoğraf alanları ve boyut sınırı', () => {

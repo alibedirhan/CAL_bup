@@ -5,13 +5,7 @@ import {
   type PosAlanlari,
   type PosAktarimi,
 } from '../cekirdek/posAktarimi';
-const engelli = /cvv|cvc|csc|security|guvenlik|tutar|amount|bedel|miktar|sms|otp|sifre|password|pin/i;
-const rolIpucu = {
-  numara: /(?:kart|card).*(?:num|no)|(?:num|no).*(?:kart|card)|\bpan\b|cc-number/i,
-  tarih: /tarih|son\s*kullan|s[.\s_-]*k[.\s_-]*t|expir|valid|cc-exp/i,
-  ay: /(^|[^a-z])ay([^a-z]|$)|month|cc-exp-month/i,
-  yil: /yil|year|cc-exp-year/i,
-};
+import { ENGELLI_ALAN, ipucuUygun, tarihMetni } from './alanKurallari';
 function ipucu(e: Element): string {
   let label =
     e instanceof HTMLInputElement || e instanceof HTMLSelectElement
@@ -55,7 +49,7 @@ export function gorunur(e: Element): boolean {
   return true;
 }
 export function alanUygun(e: Element, rol: AlanRolu): boolean {
-  if (!gorunur(e) || engelli.test(ipucu(e))) return false;
+  if (!gorunur(e) || ENGELLI_ALAN.test(ipucu(e))) return false;
   if (rol === 'firma')
     return (
       ['SPAN', 'DIV', 'P', 'TD', 'DD', 'B', 'STRONG'].includes(e.tagName) &&
@@ -70,11 +64,11 @@ export function alanUygun(e: Element, rol: AlanRolu): boolean {
   )
     return false;
   // Etiketsiz bir tutar alanı yanlışlıkla seçilse de kart/tarih diye yazılmaz.
-  if (!rolIpucu[rol].test(ipucu(e))) return false;
+  if (!ipucuUygun(ipucu(e), rol)) return false;
   if (rol === 'numara')
     return e instanceof HTMLInputElement && e.type !== 'number' && (e.maxLength === -1 || e.maxLength >= 12);
   if (rol === 'tarih')
-    return e instanceof HTMLInputElement && e.type !== 'number' && (e.maxLength === -1 || e.maxLength >= 5);
+    return e instanceof HTMLInputElement && e.type !== 'number' && (e.maxLength === -1 || e.maxLength >= 4);
   return true;
 }
 export function alanTanimi(e: Element, rol: AlanRolu): AlanTanimi {
@@ -138,7 +132,12 @@ export function kartiDoldur(a: PosAlanlari, kart: PosAktarimi): void {
       rol === 'numara'
         ? kart.numara
         : rol === 'tarih'
-          ? kart.ay + '/' + kart.yil.slice(-2)
+          ? tarihMetni(
+              kart.ay,
+              kart.yil,
+              (e as HTMLInputElement).maxLength,
+              e.getAttribute('placeholder') ?? '',
+            )
           : rol === 'ay'
             ? kart.ay
             : yilDegeri(e, kart.yil);

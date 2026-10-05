@@ -3,7 +3,8 @@ import { alanTanimi, firmaNumarasi } from './alanlar';
 import { eklenti } from './chrome';
 import tema from '../arayuz/stiller/tema.css?raw';
 import stil from './stil.css?raw';
-export function yardimciPaneli() {
+/** `degisti`: kullanıcı paneli küçültüp büyüttüğünde tercih arka plana bildirilir. */
+export function yardimciPaneli(degisti: (kucuk: boolean) => void = () => undefined) {
   const kok = document.createElement('aside');
   kok.id = 'cal-bup-pos-yardimcisi';
   const shadow = kok.attachShadow({ mode: 'open' });
@@ -20,8 +21,11 @@ export function yardimciPaneli() {
   panel.append(baslik, durum, eylemler);
   shadow.append(css, panel);
   document.body.append(kok);
+  // Yoklama aynı yazıyı her saniye yineler; panel yalnız yeni bir bildirimde açılır.
   const bildir = (s: string) => {
+    if (durum.textContent === s) return;
     durum.textContent = s;
+    durum.hidden = false;
   };
   let temizle = () => {};
   let nesil = 0;
@@ -141,13 +145,18 @@ export function yardimciPaneli() {
   gorunum.type = 'button';
   gorunum.textContent = 'Paneli küçült';
   gorunum.setAttribute('aria-expanded', 'true');
-  gorunum.addEventListener('click', () => {
+  // Küçük panel ödeme formunu örtmez; yeni bildirim geldiğinde yalnız durum yazısı görünür.
+  const kucult = (gizli: boolean) => {
     nesil++;
     temizle();
-    const gizli = !eylemler.hidden;
     eylemler.hidden = durum.hidden = gizli;
     gorunum.textContent = gizli ? 'Paneli aç' : 'Paneli küçült';
     gorunum.setAttribute('aria-expanded', String(!gizli));
+  };
+  gorunum.addEventListener('click', () => {
+    const gizli = !eylemler.hidden;
+    kucult(gizli);
+    degisti(gizli);
   });
   panel.append(gorunum);
   window.addEventListener(
@@ -158,5 +167,5 @@ export function yardimciPaneli() {
     },
     { once: true },
   );
-  return { bildir, seciliyor: () => !iptal.hidden };
+  return { bildir, kucult, seciliyor: () => !iptal.hidden };
 }

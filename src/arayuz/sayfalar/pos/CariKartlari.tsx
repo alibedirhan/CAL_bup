@@ -8,6 +8,11 @@ import { posBilgisiniKopyala } from '../../../platform/posGiris';
 import { KartFormu } from './KartFormu';
 import { PosKartAktarimi } from './PosKartAktarimi';
 
+/** Seçim ve aktarım, kartın bu sekmede görülen içeriğine bağlanır. */
+function kartImzasi(k: PosKart): string {
+  return JSON.stringify([k.id, k.cariId, k.numara, k.ay, k.yil, k.ad, k.sahibi, k.telefon]);
+}
+
 export function CariKartlari({
   cari,
   kartlar,
@@ -25,16 +30,19 @@ export function CariKartlari({
   firmaOnay: boolean;
   gizlilikNo: number;
   aktarimNo: number;
-  kaydet: (k: PosKart) => Promise<IslemSonucu>;
+  kaydet: (k: PosKart, beklenen: PosKart | null) => Promise<IslemSonucu>;
   sil: (k: PosKart) => void;
   kartDegisti: () => void;
 }) {
   const kopyalama = useIslem('kart-kopyalama');
   const blok = mesgul || kopyalama.mesgul;
-  const [seciliId, setSeciliId] = useState<string | null>(null);
-  const [form, setForm] = useState<{ kart: PosKart | null; no: number } | null>(null);
+  // Seçim kart içeriğine bağlıdır: başka sekmede düzenlenen/silinen kart seçili kalmaz.
+  const [secim, setSecim] = useState<{ id: string; imza: string } | null>(null);
+  const [form, setForm] = useState<{ kart: PosKart | null } | null>(null);
   const [gosterNo, setGosterNo] = useState<number | null>(null);
-  const secili = kartlar.find((k) => k.id === seciliId && k.cariId === cari.id);
+  const secili = kartlar.find(
+    (k) => k.id === secim?.id && k.cariId === cari.id && kartImzasi(k) === secim.imza,
+  );
   const izinli = Boolean(secili && !kartSuresiGecti(secili) && firmaOnay && !blok);
   const acik = izinli && gosterNo === gizlilikNo;
   const kopyala = (tur: 'numara' | 'tarih' | 'sahibi') => {
@@ -57,9 +65,9 @@ export function CariKartlari({
           disabled={blok || kartlar.length >= 10}
           onClick={() => {
             setGosterNo(null);
-            setSeciliId(null);
+            setSecim(null);
             kartDegisti();
-            setForm({ kart: null, no: gizlilikNo });
+            setForm({ kart: null });
           }}
         >
           Kart ekle
@@ -83,10 +91,10 @@ export function CariKartlari({
                   className="pos-odeme-karti"
                   type="button"
                   disabled={blok || eski}
-                  aria-pressed={k.id === seciliId}
+                  aria-pressed={k.id === secili?.id}
                   onClick={() => {
-                    if (seciliId !== k.id) kartDegisti();
-                    setSeciliId(k.id);
+                    if (secili?.id !== k.id) kartDegisti();
+                    setSecim({ id: k.id, imza: kartImzasi(k) });
                     setGosterNo(null);
                   }}
                 >
@@ -106,9 +114,9 @@ export function CariKartlari({
                     aria-label={`${k.ad} kartını düzenle`}
                     onClick={() => {
                       setGosterNo(null);
-                      setSeciliId(null);
+                      setSecim(null);
                       kartDegisti();
-                      setForm({ kart: k, no: gizlilikNo });
+                      setForm({ kart: k });
                     }}
                   >
                     Düzenle
@@ -187,13 +195,14 @@ export function CariKartlari({
         </div>
       )}
       <IslemBildirimi islem={kopyalama} />
-      {form && form.no === gizlilikNo && (
+      {form && (
         <KartFormu
           key={form.kart?.id ?? 'yeni'}
           cari={cari}
           kart={form.kart}
           mesgul={mesgul}
-          kaydet={kaydet}
+          gizlilikNo={gizlilikNo}
+          kaydet={(k) => kaydet(k, form.kart)}
           vazgec={() => setForm(null)}
         />
       )}

@@ -84,7 +84,7 @@ test('tanıtılmamış ekran ve iptal sonrası kart kuyrukta kalmaz', async () =
   try {
     await yapayKartliCari(e.p);
     const pos = await kartliPosAc(e.p, e.c);
-    await expect(pos.locator('#cal-bup-pos-yardimcisi')).toContainText('henüz tanıtılmadı');
+    await expect(pos.locator('#cal-bup-pos-yardimcisi')).toContainText('bir kez tanıtın');
     await e.p.getByRole('button', { name: 'Aktarımı durdur', exact: true }).click();
     await alanlariTanit(pos);
     await expect(pos.locator('#kart')).toHaveValue('');
@@ -174,7 +174,7 @@ test('kart değişikliği ve rota çıkışı eski kartın sonradan doldurulmas�
         await e.p.locator('.pos-odeme-karti').filter({ hasText: 'Yapay Eklenti Kartı' }).click();
       }
       const pos = await kartliPosAc(e.p, e.c);
-      await expect(pos.locator('#cal-bup-pos-yardimcisi')).toContainText('henüz tanıtılmadı');
+      await expect(pos.locator('#cal-bup-pos-yardimcisi')).toContainText('bir kez tanıtın');
       if (rota) await e.p.getByRole('link', { name: 'Ayarlar', exact: true }).click();
       else await e.p.locator('.pos-odeme-karti').filter({ hasText: 'İkinci Yapay Kart' }).click();
       const w = e.c.serviceWorkers()[0];
@@ -263,7 +263,7 @@ test('süresi dolmuş geçici kart kuyruktan silinir ve sonraki kurulumda doldur
     expect(w).toBeTruthy();
     await w?.evaluate(() => {
       const eski = Date.now;
-      Date.now = () => eski() + 130_000;
+      Date.now = () => eski() + 190_000;
     });
     await expect
       .poll(() =>

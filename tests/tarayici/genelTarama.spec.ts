@@ -77,7 +77,7 @@ for (const elle of [false, true])
       try {
         await yapayKartliCari(e.p);
         const pos = await kartliPosAc(e.p, e.c);
-        await expect(pos.locator('#cal-bup-pos-yardimcisi')).toContainText('henüz tanıtılmadı');
+        await expect(pos.locator('#cal-bup-pos-yardimcisi')).toContainText('bir kez tanıtın');
         if (elle) await e.p.getByRole('button', { name: 'POS’u aç', exact: true }).click();
         else
           await e.p.getByRole('button', { name: 'Yapay Eklenti Kartı kartını düzenle', exact: true }).click();

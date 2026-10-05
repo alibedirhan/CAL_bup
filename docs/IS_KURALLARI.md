@@ -231,14 +231,25 @@ eşleşince doldurabilir. Sağlayıcının kart API'si doğrulanmış değildir;
 - Numara 12–19 ASCII rakam ve Luhn; telefon isteğe bağlı Türkiye cep telefonu biçimidir.
   Biçim kontrolü kart/telefon sahipliği doğrulaması değildir.
 - Aynı caride aynı numara tekrar eklenmez; mevcut kartın bağlı carisi değiştirilmez.
-- İlk açılışta kart kendiliğinden seçilmez. Cari veya veri değişiminde kart seçimi/firma beyanı sıfırlanır;
-  yeni POS açılışı ve kart değişimi firma beyanını sıfırlar. Numara varsayılan maskelidir.
+- İlk açılışta kart kendiliğinden seçilmez. Cari değişimi ve seçili kartın içeriğinin değişmesi/silinmesi
+  kart seçimini sıfırlar. Firma beyanı yeni POS açılışı, kart değişimi ve 30 dakika sonunda sıfırlanır;
+  sekme geçişi beyanı sıfırlamaz (1.12.0). Numara varsayılan maskelidir.
 - Tam numara gösterme/kopyalama açık kullanıcı adımı ve firma kontrolü ister. Gizli sekme veya iki dakika
-  boşta açık numara/form kapanır; açık POS sekmesine müdahale edilmez.
+  boşta açık tam numara ve giriş bilgileri gizlenir. Açık cari/kart formları **kapanmaz**, yazılanlar
+  korunur; kart formundaki numara ve fotoğraf örtülür, “Gizlenen bilgileri göster” ile açılır (1.12.0).
+- Başka sekmedeki kayıt bu sekmede ekranı kapatmadan yeniden okunur. Düzenlenen cari/kart o arada
+  başka sekmede değiştiyse veya silindiyse kayıt reddedilir; diğer sekmenin değişikliği ezilmez.
+- Fotoğraftan yalnız tarih okunursa formdaki numara korunur; yeni numara uygulanırsa tarih o fotoğrafın
+  tarihi olur ya da boşaltılır (başka kartın tarihiyle karışmaz).
 - Son kullanma ayı boyunca kart geçerlidir. Süresi geçmiş kart düzenlenebilir/silinebilir;
   işlem için seçilemez ve yeni kayıt olarak kaydedilemez.
 - Cari silme bağlı kartları onayla birlikte atomik siler. Geri yükleme maskeli inceleme ve açık onay
-  ister; çelişkide tüm aktarım durur, mevcut bilgiler sessizce ezilmez.
+  ister. Cari kimliği vergi/TC numarası, kart kimliği (cari, kart numarası) çiftidir. Aynı kayıt atlanır;
+  farklı bilgi (cari adı, kart adı/sahibi/son kullanma/telefon) listelenir ve kullanıcı “buradakileri
+  koru” veya “yedektekileri kullan” seçmeden eklenmez. Aynı ad farklı numarada, sınır aşımı veya
+  inceleme sonrası kayıt değişikliği bütün eklemeyi durdurur. Mevcut kayıt hiçbir durumda silinmez (1.12.0).
+- Cari listesi ada veya en az üç rakamla vergi/TC numarasının bir kısmına göre aranır.
+- Kayıt varken hiç yedek alınmadıysa veya son yedek 30 günden eskiyse hatırlatılır; yalnız tarih saklanır.
 
 Günlük açılışta PIN sorulmaz; dışa aktarılamayan AES-GCM anahtarı bu tarayıcıda saklanır.
 Bu tarayıcıya erişen kişi veriyi açabilir; kullanıcı doğrulaması değildir. Eski kasa mevcut
@@ -262,7 +273,7 @@ yazı kesin geri alınmış sayılmaz; otomatik yeniden yazma yapılmaz. [Kapan�
 
 Aktarım açık kart seçimi ve “Seçili kartla POS’u aç” isteği gerektirir. Kalıcı cari/kart kimlikleri
 ve görünen POS vergi/TC numarası karşılaştırılır; yalnızca bu işin hedef sekmesine teslim yapılır.
-Bekleyen kart 120 saniyeyle sınırlıdır, teslimden önce silinir. Cari/kart/rota/veri değişimi ve sekme
+Bekleyen kart 180 saniyeyle sınırlıdır (1.12.0 öncesi 120), teslimden önce silinir. Cari/kart/rota/veri değişimi ve sekme
 kapanması iptal eder; uygulamadan POS sekmesine geçmek aktarımı iptal etmez. CVV/tutar girilmez,
 ödeme/SMS düğmesine basılmaz ve ödeme ekranında alan değişim olayları gönderilmez.
 Değişmiş/gizli/uygunsuz alan veya başka girilmiş bilgi varsa yazı durur; belirsiz teslim tekrarlanmaz.
@@ -284,6 +295,21 @@ Başka uygulama sekmesinin bekleyen aktarımı varken yeni aktarım açılmaz; �
 POS sekmesi ve sağlayıcının ortak oturumu tamamen kontrol ediliyor sayılmaz.
 Windows hazırlayıcı yalnızca hash/sürümü doğrulanmış kendi paketini hazırlar; tarayıcı yükleme onayı
 kullanıcıdadır. Ayrıntı: [tarama raporu](POS_YARDIMCISI_TARAMA_RAPORU.md).
+
+## POS yardımcısı mesajları ve alan biçimleri (1.12.0)
+
+- Doğrudan “POS’u aç” giriş sonucunu okuyamaz; başarı bildirilmez, sonucu POS sekmesinde kontrol etme
+  ve başka cari oturumundan çıkma söylenir.
+- Yardımcı girişten sonra giriş sayfası yeniden gelirse giriş kabul edilmemiştir; sağlayıcının hata
+  yazısı en fazla 120 karakter, 4+ rakam dizileri maskeli olarak aktarılır.
+- Tanıtılmamış sayfada bekleyen iş varken: bir ödeme sayfası daha önce tanıtıldıysa “ödeme sayfasına
+  geçin”, hiç tanıtılmadıysa “ödeme sayfasını tanıtın” denir. Cari numarası eşleşmezse başka cari
+  oturumundan çıkış önerilir.
+- Tek tarih alanı: en fazla 4 karakterse `AAYY`, 7 karakter veya `YYYY` yer tutucusu varsa `AA/YYYY`,
+  diğerlerinde `AA/YY`. Ay/yıl/numara alan adı ipuçları yaygın ASP.NET öneklerini (`ddlAy`, `txtKKNo`)
+  tanır. CVV/güvenlik/tutar/taksit/SMS/OTP/şifre/parola/PIN alanları hiçbir rolde yazılmaz.
+- Panelin küçük/büyük tercihi yardımcının yerel deposunda saklanır; kart/cari bilgisi saklanmaz.
+- Yardımcı sürümü program sürümünden farklıysa aktarım engellenmez, güncelleme önerilir.
 
 ## Genel tarama kuralları (1.7.0)
 

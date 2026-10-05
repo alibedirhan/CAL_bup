@@ -1,5 +1,5 @@
 import { KullaniciHatasi } from './hata';
-import { cariKaydet, posCarileriBirlestir, posVerisiDogrula, type PosCari } from './posCari';
+import { cariKaydet, posVerisiDogrula, type PosCari } from './posCari';
 import { EN_FAZLA_CARI_KARTI, kartDogrula, kartSuresiGecti, type PosKart } from './posKart';
 
 export interface PosProfilVerisi {
@@ -52,7 +52,33 @@ export function posProfilDogrula(deger: unknown): PosProfilVerisi {
   });
   return { surum: 2, cariler, kartlar };
 }
-export function profilCariKaydet(veri: PosProfilVerisi, cari: PosCari): PosProfilVerisi {
+/** Form açıldığındaki kaydın hâlâ aynı olduğunu denetler; başka sekmedeki değişiklik sessizce ezilmez.
+ * `beklenen` verilmezse denetim yapılmaz; `null` yeni kayıt demektir. */
+function beklenenKayit<T extends { id: string }>(
+  kayitlar: readonly T[],
+  id: string,
+  beklenen: T | null | undefined,
+  ad: string,
+): void {
+  if (beklenen === undefined) return;
+  const guncel = kayitlar.find((k) => k.id === id);
+  const ayni =
+    beklenen === null
+      ? !guncel
+      : Boolean(guncel) &&
+        JSON.stringify(Object.entries(guncel as T).sort()) ===
+          JSON.stringify(Object.entries(beklenen).sort());
+  if (!ayni)
+    throw new KullaniciHatasi(
+      `Bu ${ad} siz düzenlerken başka sekmede değiştirildi veya silindi. Formu kapatıp güncel kaydı yeniden açın.`,
+    );
+}
+export function profilCariKaydet(
+  veri: PosProfilVerisi,
+  cari: PosCari,
+  beklenen?: PosCari | null,
+): PosProfilVerisi {
+  beklenenKayit(veri.cariler, cari.id, beklenen, 'cari');
   const eski = veri.cariler.find((c) => c.id === cari.id);
   if (eski && eski.numara !== cari.numara.trim() && veri.kartlar.some((k) => k.cariId === cari.id))
     throw new KullaniciHatasi(
@@ -67,7 +93,15 @@ export function profilCariSil(veri: PosProfilVerisi, cariId: string): PosProfilV
     kartlar: veri.kartlar.filter((k) => k.cariId !== cariId),
   });
 }
-export function profilKartKaydet(veri: PosProfilVerisi, kart: PosKart, simdi = new Date()): PosProfilVerisi {
+export function profilKartKaydet(
+  veri: PosProfilVerisi,
+  kart: PosKart,
+  simdi = new Date(),
+  beklenen?: PosKart | null,
+): PosProfilVerisi {
+  beklenenKayit(veri.kartlar, kart.id, beklenen, 'kart');
+  if (!veri.cariler.some((c) => c.id === kart.cariId))
+    throw new KullaniciHatasi('Kartın carisi başka sekmede silinmiş. Kart kaydedilmedi.');
   const k = kartDogrula(kart);
   if (kartSuresiGecti(k, simdi)) throw new KullaniciHatasi('Kartın son kullanma tarihi geçmiş.');
   const eski = veri.kartlar.find((x) => x.id === k.id);
@@ -83,28 +117,4 @@ export function profilKartSil(veri: PosProfilVerisi, cariId: string, kartId: str
     ...veri,
     kartlar: veri.kartlar.filter((k) => k.id !== kartId || k.cariId !== cariId),
   });
-}
-export function profilBirlestir(mevcut: PosProfilVerisi, gelen: PosProfilVerisi): PosProfilVerisi {
-  const a = posProfilDogrula(mevcut);
-  const b = posProfilDogrula(gelen);
-  const cariler = posCarileriBirlestir(a.cariler, b.cariler);
-  const kartlar = [...a.kartlar];
-  for (const k of b.kartlar) {
-    const kaynakCari = b.cariler.find((c) => c.id === k.cariId);
-    const hedefCari = cariler.find((c) => c.numara === kaynakCari?.numara);
-    if (!hedefCari) throw new KullaniciHatasi('Yedekte kartın carisi bulunamadı.');
-    const cariId = hedefCari.id;
-    const ayni = kartlar.find((x) => x.cariId === cariId && x.numara === k.numara);
-    if (
-      ayni &&
-      ['ad', 'sahibi', 'ay', 'yil', 'telefon'].every(
-        (alan) => ayni[alan as keyof PosKart] === k[alan as keyof PosKart],
-      )
-    )
-      continue;
-    if (ayni || kartlar.some((x) => x.id === k.id))
-      throw new KullaniciHatasi('Yedekte çelişen kart var. Hiçbir kayıt değiştirilmedi.');
-    kartlar.push({ ...k, cariId });
-  }
-  return posProfilDogrula({ surum: 2, cariler, kartlar });
 }

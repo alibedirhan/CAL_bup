@@ -7,9 +7,11 @@ export function KartFotografi({
   mesgul,
   formNo,
   durum,
+  gizli,
   uygula,
 }: {
   mesgul: boolean;
+  gizli: boolean;
   formNo: number;
   durum: (okunuyor: boolean) => void;
   uygula: (n: string, t?: { ay: string; yil: string }) => void;
@@ -43,7 +45,7 @@ export function KartFotografi({
       </p>
       {f.onizleme && (
         <img
-          className="pos-foto-onizleme"
+          className={gizli ? 'pos-foto-onizleme pos-foto-gizli' : 'pos-foto-onizleme'}
           src={f.onizleme}
           alt="Seçilen kart fotoğrafının geçici önizlemesi"
         />
@@ -130,6 +132,7 @@ export function KartFotografi({
       {f.aday && (
         <FotoAdaylari
           sonuc={f.aday}
+          gizli={gizli}
           uygula={(n, t) => {
             uygula(n, t);
             f.uygulandi();

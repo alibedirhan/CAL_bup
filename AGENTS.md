@@ -109,9 +109,18 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.11.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.12.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-05 Sanal POS üç aşamalı düzeltme (1.12.0):** Kullanıcı Windows'ta kayıtlı cariyle POS'a
+girememe ve kart bilgilerinin yazılmaması sorunlarını bildirdi; derin tarama
+([rapor](docs/SANAL_POS_DERIN_TARAMA_RAPORU.md)) sonrası üç aşamayı istedi: (1) formlar gizlilikte
+kapanmaz, yalnız hassas görünüm örtülür; firma beyanı sekme geçişinde korunur; başka sekme değişikliği
+ezilmez; (2) yardımcı mesajları, giriş hatası nedeni, AAYY/AA/YYYY tarih, alan ipuçları, panel tercihi,
+180 sn; (3) yedek birleştirmede açık çatışma seçimi, numara araması, yedek hatırlatması.
+**Kullanıcı açıkça istedi: Bupiliç'in gerçek sanal POS adresine hiçbir test/istek gönderilmez**;
+bütün denemeler ağdan yalıtılmış taklit POS'la yapılır. Gerçek giriş/ödeme ve Windows kabulü kullanıcıdadır.
 
 **2026-10-04 satış özellik taraması — güncel devam bağlamı:** Kullanıcı kârlılık,
 iskonto ve müşteri takibin masaüstünde olup webde olmayan bütün özelliklerini

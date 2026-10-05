@@ -1,3 +1,48 @@
+# 5 Ekim 2026 — Sanal POS üç aşamalı düzeltme (1.12.0)
+
+**Kullanıcı isteği:** Taramadaki sorunları üç aşamada, sağlam ve eksiksiz gider. Bupiliç'in gerçek
+sanal POS adresine hiçbir şey yapılmasın; güvenli gidilsin. Gerçek sağlayıcıya bu işte hiçbir istek
+gönderilmedi; bütün tarayıcı denemeleri ağdan yalıtılmış taklit POS ve kapalı proxy ile yapıldı.
+
+1. Formlar gizlilik/boşta kapanmaz, hassas görünüm örtülür; firma beyanı korunur; başka sekme
+   değişikliği ezilmez (`profilCariKaydet`/`profilKartKaydet` `beklenen`); tarih-yalnız fotoğraf.
+2. Yardımcı: dürüst giriş mesajı, `lblgizleme` nedeni, ana sayfa yönlendirmesi, AAYY/AA/YYYY,
+   `eklenti/alanKurallari.ts`, panel tercihi, 180 sn, sürüm uyarısı.
+3. `cekirdek/posBirlestirme.ts` açık çatışma seçimi + özet imzası; numara araması; yedek hatırlatması.
+
+Ayrıntı ve uygulanmayanlar: [rapor F bölümü](SANAL_POS_DERIN_TARAMA_RAPORU.md). Kullanıcı yayın
+(main'e push) için ayrıca onay verecek; commit/push yapılmadı. Windows'ta yeni yardımcı ZIP'i/kurulum
+dosyası yeniden kurulmalı. Gerçek POS girişi/ödeme sayfası kabulü kullanıcıdadır.
+
+---
+
+# 5 Ekim 2026 — Sanal POS derin taraması (yalnız rapor)
+
+**Kullanıcı isteği:** Windows'ta (1) kaydedilen cariyle POS'a girilemedi, (2) kart eklerken
+bilgiler otomatik yazılmadı. Sanal POS'un hatalarını, mantıksız durumlarını, mimarisini ve olası
+sorunlarını derinlemesine raporla. Bulguların uygulanması henüz istenmedi.
+
+**Tamamlanan iş:** [Sanal POS derin tarama raporu](SANAL_POS_DERIN_TARAMA_RAPORU.md). En önemli
+kod bulgusu: açık cari/kart formları sekme gizlenince (Windows'ta pencere örtülünce/küçültülünce de)
+veya 2 dakika tıklamasız kalınca uyarısız kapanıyor, yazılanlar ve süren fotoğraf okuması kayboluyor.
+Giriş sorunu için en olası neden carinin sağlayıcıda türetilen bilgilerle kayıtlı olmaması; uygulama
+giriş sonucunu okuyamadığı için yanıltıcı “gönderildi” mesajı veriyor. Gerçek giriş sayfası yalnız
+salt okunur GET ile görüldü; giriş/ödeme denenmedi. Linux'ta POS birim (122) ve tarayıcı (42)
+testleri geçti. Uygulama sürümü **1.11.0** kaldı; kod değişmedi.
+
+**İkinci tarama (aynı gün):** Kullanıcı yeniden tarama istedi. Raporun E bölümü eklendi: form
+kaybolması, firma onayı sıfırlanması, ana sayfada yanıltıcı “tanıtılmadı” mesajı, başarısız girişte
+yanlış neden ve 4 karakterlik tarih alanının tanıtılamaması gerçek Chromium + derlenmiş MV3 ile
+doğrulandı. CSP yönlendirmeyi engellemiyor; OCR okunur kartta 1,9 sn (ilk turdaki yavaşlık
+abartılıydı); ilk turdaki “CSP yok” ifadesi yanlıştı ve düzeltildi. Yeni: iki bilgisayarda küçük
+düzenleme yapılmışsa yedek birleştirme bütünüyle reddediliyor (E1). Kod yine değişmedi.
+
+**Dönüşte devam:** Kullanıcı düzeltme isterse önerilen sıra raporun D bölümündedir (önce form
+kaybolması, sonra giriş sonucu ve ödeme sayfası yönlendirmesi). Kullanıcıdan elle giriş denemesi
+sonucu ve (kart bilgisi olmadan) ödeme sayfasının görüntüsü istenmişti.
+
+---
+
 # 4 Ekim 2026 — satış özellik taraması ve devam kaydı
 
 **En son kullanıcı isteği:** Kârlılık, İskonto ve Müşteri Takipte masaüstünde
