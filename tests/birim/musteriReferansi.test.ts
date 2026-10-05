@@ -1,5 +1,6 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import ExcelJS from 'exceljs';
+import { nodePythonMotoru } from '../yardimci/pythonMotoru';
 import referans from '../yardimci/veriler/musteriReferansi.json';
 import type { HucreDegeri } from '../../src/kaynaklar/kitap';
 import { musteriListeOku } from '../../src/satis/musteriTakip/okuyucu';
@@ -36,6 +37,11 @@ async function hucreler(bayt: Uint8Array) {
     birlesimler: (s.model.merges ?? []).sort(),
   }));
 }
+
+// Python motorunun soğuk açılışı ilk denemenin 5 sn sınırına yüklenmesin (Kârlılık/İskonto ile aynı yöntem).
+beforeAll(async () => {
+  await nodePythonMotoru('musteri');
+}, 60_000);
 
 describe('Müşteri Takip — bağımsız Python okuyucu/facade/Excel başvurusu', () => {
   for (const ornek of referans.senaryolar) {

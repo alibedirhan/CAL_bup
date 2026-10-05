@@ -1,5 +1,6 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import ExcelJS from 'exceljs';
+import { nodePythonMotoru } from '../yardimci/pythonMotoru';
 import JSZip from 'jszip';
 import { musteriMotoru } from '../../src/satis/musteriTakip/motor';
 import { musteriKarsilastirmasi } from '../../src/satis/musteriTakip/servis';
@@ -18,6 +19,11 @@ vi.mock('../../src/platform/python/motor', async (original) => ({
 const eski: MusteriListesi = { depo: null, baslikSatiri: 0, musteriler: ['Yapay Alfa', 'Yapay Beta'] };
 const yeni: MusteriListesi = { depo: null, baslikSatiri: 0, musteriler: ['Yapay Alfa', 'Yapay Gamma'] };
 const dosya = { ad: 'Yapay.xlsx', bayt: new Uint8Array() };
+
+// Python motorunun soğuk açılışı ilk denemenin 5 sn sınırına yüklenmesin (Kârlılık/İskonto ile aynı yöntem).
+beforeAll(async () => {
+  await nodePythonMotoru('musteri');
+}, 60_000);
 
 describe('Müşteri Takip sınırlar ve uygulama servisi', () => {
   it('gerçek XLSX: birleşik cari tekrar edilmez, formülde önbellek kullanılır', async () => {
