@@ -35,8 +35,11 @@ test('Müşteri Takip: 40.000 yapay satır, doğru sonuç ve kullanılabilir ana
     Reflect.set(globalThis, 'yapayMusteriOlcumu', { olcum, zaman });
   });
   await page.getByRole('button', { name: 'Karşılaştır', exact: true }).click();
+  // Bekleme, testin kendi performans ölçütüyle (30 sn) aynıdır; yavaş CI makinesi 10 sn varsayılanını aşabiliyor.
+  // Ana ekranın donmadığı aşağıdaki en uzun bekleme ölçümüyle ayrıca denetlenir.
   await expect(page.getByRole('table', { name: 'Eksik müşteriler', exact: true })).toContainText(
     'Yapay Müşteri 39999',
+    { timeout: 30_000 },
   );
   await expect(page.locator('.musteri-ozet dd').first()).toHaveText('40.000');
   await page.waitForTimeout(20);
