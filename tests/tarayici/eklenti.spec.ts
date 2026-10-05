@@ -69,9 +69,13 @@ test('CVV, tutar ve ödeme düğmesi alan tanıtımında seçilemez; tıklama i�
     await e.p.locator('#firma').click();
     for (const sec of ['#cvv', '#tutar', 'button[type="submit"]']) {
       await e.p.locator(sec).click();
-      await expect(e.p.locator('#cal-bup-pos-yardimcisi')).toContainText(
-        /Bu alan uygun değil|Önce boş kart\/tarih/,
+      await expect(e.p.locator('#cal-bup-pos-yardimcisi').getByRole('status')).toContainText(
+        /CVV, tutar|boş kutuyu|yazı kutusu değil/,
       );
+      // Bu kutular için elle onay seçeneği hiç sunulmaz.
+      await expect(
+        e.p.locator('#cal-bup-pos-yardimcisi').getByRole('button', { name: /^Evet/ }),
+      ).toBeHidden();
     }
     await e.p.getByRole('button', { name: 'Şifre gönder', exact: true }).click();
     expect(e.sayac.sms + e.sayac.odeme + e.sayac.dis).toBe(0);

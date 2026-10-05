@@ -58,6 +58,8 @@ export interface AlanTanimi {
   secici: string;
   etiket: string;
   tur: string;
+  /** Kullanıcı, adı/yazısı tanınmayan kutuyu bu rol için açıkça onayladı. Engelli alan kuralı yine geçerlidir. */
+  elle?: true;
 }
 export interface PosAlanlari {
   sayfa: string;
@@ -84,7 +86,8 @@ export function alanlariDogrula(d: unknown): PosAlanlari {
   for (const [r, f] of Object.entries(a.alanlar)) {
     if (
       !f ||
-      Object.keys(f).sort().join() !== 'etiket,secici,tur' ||
+      !['etiket,secici,tur', 'elle,etiket,secici,tur'].includes(Object.keys(f).sort().join()) ||
+      ('elle' in f && (f.elle !== true || r === 'firma')) ||
       typeof f.secici !== 'string' ||
       !f.secici ||
       f.secici.length > 300 ||

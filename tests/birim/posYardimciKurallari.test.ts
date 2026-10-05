@@ -20,8 +20,12 @@ describe('POS yardımcısı alan kuralları', () => {
     ['numara', 'txtPan'],
     ['numara', 'ccnumber'],
     ['numara', 'ctl00_ContentPlaceHolder1_txtKartNo'],
+    ['numara', 'ctl00$ContentPlaceHolder1$txtKartNo'],
+    ['tarih', 'ctl00$ContentPlaceHolder1$txtSKT'],
     ['tarih', 'txtSKT'],
     ['tarih', 'txtGecerlilik'],
+    ['tarih', 'S.K.T'],
+    ['tarih', 'Son Kullanma Tarihi'],
   ] as const)('%s rolü için yaygın ad kabul edilir: %s', (rol, ad) => {
     expect(ipucuUygun(ad, rol)).toBe(true);
   });
@@ -40,6 +44,11 @@ describe('POS yardımcısı alan kuralları', () => {
       expect(ENGELLI_ALAN.test(ad)).toBe(true);
     for (const ad of ['OdemeTipi_Shopping', 'lblPinar', 'txtKartNo'])
       expect(ENGELLI_ALAN.test(ad)).toBe(false);
+    for (const ad of ['TL', 'Tutar TL', '100 ₺', 'txtAmount USD', '5 €'])
+      expect(ENGELLI_ALAN.test(ad)).toBe(true);
+    // ASP.NET ad alanları `$` içerir; bunlar tutar sayılmaz.
+    for (const ad of ['Kartal', 'txtTitle', 'S.K.T', 'Kredi Kartı Numarası', 'ctl00$Icerik$txtKartNo'])
+      expect(ENGELLI_ALAN.test(ad)).toBe(false);
   });
   it('tek tarih alanının biçimini uzunluk ve yer tutucudan seçer', () => {
     expect(tarihMetni('12', '2035', 4, 'AAYY')).toBe('1235');
@@ -47,6 +56,10 @@ describe('POS yardımcısı alan kuralları', () => {
     expect(tarihMetni('12', '2035', -1, '')).toBe('12/35');
     expect(tarihMetni('12', '2035', 7, '')).toBe('12/2035');
     expect(tarihMetni('12', '2035', -1, 'AA/YYYY')).toBe('12/2035');
+    expect(tarihMetni('12', '2035', -1, 'MM / YY')).toBe('12 / 35');
+    expect(tarihMetni('12', '2035', 7, 'AA / YY')).toBe('12 / 35');
+    expect(tarihMetni('12', '2035', 5, 'MM / YY')).toBe('12/35');
+    expect(tarihMetni('12', '2035', 9, 'MM / YYYY')).toBe('12 / 2035');
   });
 });
 

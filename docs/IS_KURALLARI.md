@@ -308,6 +308,12 @@ kullanıcıdadır. Ayrıntı: [tarama raporu](POS_YARDIMCISI_TARAMA_RAPORU.md).
 - Tek tarih alanı: en fazla 4 karakterse `AAYY`, 7 karakter veya `YYYY` yer tutucusu varsa `AA/YYYY`,
   diğerlerinde `AA/YY`. Ay/yıl/numara alan adı ipuçları yaygın ASP.NET öneklerini (`ddlAy`, `txtKKNo`)
   tanır. CVV/güvenlik/tutar/taksit/SMS/OTP/şifre/parola/PIN alanları hiçbir rolde yazılmaz.
+- (1.12.1) Kutu tanımada kutunun adı, bağlı etiketi, yalnız o kutuyu içeren üst kapsayıcıların (en fazla
+  dört düzey) yazısı ve hemen önündeki başlık öğesi okunur; “TL” gibi birim yazısı üstteki “Tutar”
+  başlığını gizleyemez. Yanında TL/₺/USD/EUR yazan kutu tutar sayılır. Adı/yazısı tanınmayan kutu
+  panelde nedeniyle gösterilir ve yalnız kullanıcının “Evet, bu kutu … kutusu” onayıyla kaydedilir
+  (`elle: true`). Görünürlük, CVV/tutar/şifre engeli, tür ve uzunluk denetimleri onayla da atlanmaz;
+  doldurma anında yeniden uygulanır. Yer tutucu `AA / YY` biçimindeyse tarih boşluklu yazılır.
 - Panelin küçük/büyük tercihi yardımcının yerel deposunda saklanır; kart/cari bilgisi saklanmaz.
 - Yardımcı sürümü program sürümünden farklıysa aktarım engellenmez, güncelleme önerilir.
 

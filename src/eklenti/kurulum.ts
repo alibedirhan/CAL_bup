@@ -1,5 +1,5 @@
 import { alanlariDogrula, posSayfasi, type AlanRolu, type PosAlanlari } from '../cekirdek/posAktarimi';
-import { alanTanimi, firmaNumarasi } from './alanlar';
+import { AlanHatasi, alanTanimi, firmaNumarasi, ROL_ADI } from './alanlar';
 import { eklenti } from './chrome';
 import tema from '../arayuz/stiller/tema.css?raw';
 import stil from './stil.css?raw';
@@ -43,6 +43,22 @@ export function yardimciPaneli(degisti: (kucuk: boolean) => void = () => undefin
     bildir('Alan seçimi iptal edildi.');
   });
   iptal.hidden = true;
+  // Adı/yazısı tanınmayan kutu yalnız kullanıcının açık onayıyla kabul edilir.
+  let onayBekleyen: (() => void) | null = null;
+  const onayDugmesi = dugme('Evet, tıkladığım kutu doğru', () => {
+    const is = onayBekleyen;
+    onayGizle();
+    is?.();
+  });
+  const onayRed = dugme('Hayır, başka kutu seçeceğim', () => {
+    onayGizle();
+    bildir('Doğru kutuya tıklayın.');
+  });
+  const onayGizle = () => {
+    onayBekleyen = null;
+    onayDugmesi.hidden = onayRed.hidden = true;
+  };
+  onayGizle();
   const baslat = (ayri: boolean) => {
     const buNesil = ++nesil;
     temizle();
@@ -60,6 +76,41 @@ export function yardimciPaneli(degisti: (kucuk: boolean) => void = () => undefin
       bildir(
         `${no + 1}/${roller.length}: ${adlar[roller[no] ?? 'firma']} tıklayın. Ödeme düğmeleri bu seçim sırasında çalıştırılmaz.`,
       );
+    const sira = () => `${no + 1}/${roller.length}: ${adlar[roller[no] ?? 'firma']} tıklayın.`;
+    const kabul = (e: Element, rol: AlanRolu, elle: boolean) => {
+      if (rol !== 'firma' && e instanceof HTMLInputElement && e.value)
+        throw new AlanHatasi('Kart bilgisi yazmadan, boş kutuyu seçin.');
+      const tanim = alanTanimi(e, rol, elle);
+      if (rol === 'firma') {
+        const t = e.textContent?.match(/(?<!\d)\d{10,11}(?!\d)/g);
+        if (t?.length !== 1) throw new AlanHatasi('Yalnız bir vergi/TC numarasının göründüğü yazıyı seçin.');
+      }
+      a.alanlar[rol] = tanim;
+      if (no + 1 < roller.length) {
+        no++;
+        talimat();
+        return;
+      }
+      alanlariDogrula(a);
+      firmaNumarasi(a);
+      temizle();
+      void eklenti.runtime
+        .sendMessage({ is: 'kurulum', veri: a })
+        .then((r) => {
+          if (buNesil !== nesil) return;
+          const s = r as { durum: string };
+          bildir(
+            s.durum === 'hazir'
+              ? 'Alanlar tanıtıldı. CAL bup’tan cari ve kart seçerek POS’u açabilirsiniz.'
+              : 'Kurulum kaydedilemedi. Yeniden deneyin.',
+          );
+        })
+        .catch(() => {
+          if (buNesil === nesil) bildir('Kurulum kaydedilemedi.');
+        });
+    };
+    const hataGoster = (e: unknown) =>
+      bildir(`${e instanceof Error ? e.message : 'Alan seçilemedi.'} ${sira()}`);
     const sec = (event: Event) => {
       if (event.composedPath().includes(kok)) return;
       event.preventDefault();
@@ -73,43 +124,28 @@ export function yardimciPaneli(degisti: (kucuk: boolean) => void = () => undefin
       if (event.type !== 'click') return;
       const e = event.target;
       if (!(e instanceof Element)) return;
+      onayGizle();
+      const rol = roller[no] ?? 'firma';
       try {
-        const rol = roller[no] ?? 'firma';
-        if (rol !== 'firma' && e instanceof HTMLInputElement && e.value)
-          throw new Error('Önce boş kart/tarih alanını seçin.');
-        a.alanlar[rol] = alanTanimi(e, rol);
-        if (rol === 'firma') {
-          const t = e.textContent?.match(/(?<!\d)\d{10,11}(?!\d)/g);
-          if (t?.length !== 1) throw new Error('Vergi/TC numarasının tek başına göründüğü yazıyı seçin.');
-        }
-        if (no + 1 < roller.length) {
-          no++;
-          talimat();
+        kabul(e, rol, false);
+      } catch (h) {
+        if (!(h instanceof AlanHatasi && h.onaylanabilir)) {
+          hataGoster(h);
           return;
         }
-        alanlariDogrula(a);
-        firmaNumarasi(a);
-        temizle();
-        void eklenti.runtime
-          .sendMessage({ is: 'kurulum', veri: a })
-          .then((r) => {
-            if (buNesil !== nesil) return;
-            const s = r as { durum: string };
-            bildir(
-              s.durum === 'hazir'
-                ? 'Alanlar tanıtıldı. CAL bup’tan cari ve kart seçerek POS’u açabilirsiniz.'
-                : 'Kurulum kaydedilemedi. Yeniden deneyin.',
-            );
-          })
-          .catch(() => {
-            if (buNesil === nesil) bildir('Kurulum kaydedilemedi.');
-          });
-      } catch (e) {
+        const n = nesil;
+        onayBekleyen = () => {
+          if (n !== nesil) return;
+          try {
+            kabul(e, rol, true);
+          } catch (h2) {
+            hataGoster(h2);
+          }
+        };
+        onayDugmesi.textContent = `Evet, bu kutu ${ROL_ADI[rol]} kutusu`;
+        onayDugmesi.hidden = onayRed.hidden = false;
         bildir(
-          (e instanceof Error ? e.message : 'Alan seçilemedi.') +
-            ' ' +
-            adlar[roller[Math.min(no, roller.length - 1)] ?? 'firma'] +
-            ' seçin.',
+          `${h.message} Tıkladığınız kutu gerçekten ${ROL_ADI[rol]} kutusuysa “Evet” düğmesine basın; değilse doğru kutuya tıklayın. CVV veya tutar kutusunu onaylamayın.`,
         );
       }
     };
@@ -117,6 +153,7 @@ export function yardimciPaneli(degisti: (kucuk: boolean) => void = () => undefin
       for (const t of ['click', 'pointerdown', 'mousedown', 'keydown'])
         window.removeEventListener(t, sec, true);
       iptal.hidden = true;
+      onayGizle();
     };
     for (const t of ['click', 'pointerdown', 'mousedown', 'keydown']) window.addEventListener(t, sec, true);
     iptal.hidden = false;

@@ -1,3 +1,15 @@
+# 5 Ekim 2026 (akşam) — POS kutu tanıma düzeltmesi (1.12.1)
+
+Kullanıcı gerçek ödeme ekranının görüntüsünü paylaştı (müşteri bilgisi içerir; hiçbir dosyaya
+alınmadı). Tanıtmada firma ve kart numarası kabul edildi, S.K.T kutusu “uygun değil” reddedildi.
+Kullanıcı dışarı çıkarken “gerekli tüm işleri yap” dedi. Yapılan: yakındaki başlık yazısını okuma,
+nedenli hata ve yalnız ad tanınmadığında açık “Evet” onayı (`elle: true`), para birimi engeli,
+`AA / YY` biçimi. Test sırasında “TL” yazısının “Tutar” başlığını gizlediği ve `$` engelinin ASP.NET
+adlarını bozacağı yakalanıp düzeltildi. Gerçek POS'a istek gönderilmedi. Gerçek ekranda deneme
+kullanıcıdadır; elle kopyalama yolu alternatif. Ad Soyad doldurma önerildi, yanıt bekleniyor.
+
+---
+
 # 5 Ekim 2026 — Sanal POS üç aşamalı düzeltme (1.12.0)
 
 **Kullanıcı isteği:** Taramadaki sorunları üç aşamada, sağlam ve eksiksiz gider. Bupiliç'in gerçek

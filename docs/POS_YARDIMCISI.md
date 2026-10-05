@@ -139,3 +139,13 @@ dışında anahtar ve kart/cari değeri bulunmadığını denetler. Başarısız
 `AAYY`/`AA/YYYY` tarih ve panel tercihi `tests/tarayici/eklentiAkis.spec.ts` ile, kurallar
 `tests/birim/posYardimciKurallari.test.ts` ile sınanır. Yeni ZIP kurulana kadar eski yardımcı çalışmayı
 sürdürür; program farklı sürümü bildirir.
+
+## 1.12.1 kutu tanıma
+
+Gerçek ödeme ekranında başlıklar (“S.K.T”, “CVV”, “Tutar”) kutuya bağlı etiket olmayabilir. Yardımcı
+artık yalnız o kutuyu içeren üst kapsayıcıların ve hemen önündeki başlık öğesinin yazısını da okur.
+Tanınmayan kutuda panel nedeni yazar; kullanıcı açıkça onaylarsa kutu `elle: true` ile kaydedilir.
+CVV/tutar/şifre/para birimi yazılı, gizli, kapalı, uygunsuz türde veya kısa kutular onaylanamaz; doldurma
+anında da aynı engeller yeniden denetlenir. Elle kopyalama yolu her zaman alternatiftir.
+Denemeler: `tests/tarayici/eklentiTanitma.spec.ts` (yapay düzen, ASP.NET `$` adları, onay/ret, sonradan
+CVV'ye dönen kutu).
