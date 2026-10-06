@@ -3,6 +3,8 @@ import { XLSX_KABUL } from '../../platform/dosya';
 
 interface Ozellikler {
   baslik: string;
+  /** Hangi LED raporunun seçileceğini anlatan kısa not (isteğe bağlı). */
+  not?: string;
   alanAdi: string;
   dosyaAdi: string | null;
   kilitli: boolean;
@@ -10,12 +12,13 @@ interface Ozellikler {
 }
 
 /** Dosya adı React metnidir. Yerel seçim kullanıcı düğmesinden açılır. */
-export function ExcelDosyaSecimi({ baslik, alanAdi, dosyaAdi, kilitli, degisti }: Ozellikler) {
+export function ExcelDosyaSecimi({ baslik, not, alanAdi, dosyaAdi, kilitli, degisti }: Ozellikler) {
   const girdi = useRef<HTMLInputElement>(null);
   const aciklama = useId();
   return (
     <div className="excel-dosya-secimi">
       <b>{baslik}</b>
+      {not && <small>{not}</small>}
       <span id={aciklama} title={dosyaAdi ?? undefined}>
         {dosyaAdi ?? 'Dosya seçilmedi'}
       </span>

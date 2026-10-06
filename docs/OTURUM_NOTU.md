@@ -1,3 +1,23 @@
+# 6 Ekim 2026 — Yaşlandırma, Kârlılık ve İskonto ekranları (1.15.0)
+
+Kullanıcı kalan modüllerin de aynı şekilde iyileştirilmesini, sonra kendisinin kontrol edeceğini
+söyledi. Üç modül yapay başvuru dosyalarıyla 1366×657'de incelendi. Hesap/çıktı (özgün Python ve
+masaüstü eşdeğerliği) değişmedi; yalnız ekran düzeni ve bir kolaylık eklendi.
+
+- Ortak özet kutuları (`.musteri-ozet`) sığmayınca alt satıra geçer; tutar ile “TL” bölünmez
+  (Yaşlandırma'da TL alt satıra kayıyordu).
+- Kârlılık: dosya seçimi ortak `ExcelDosyaSecimi` (isteğe bağlı `not`), Analiz et ekranda görünür;
+  analizden sonra kaynak kartı üstte, sonuç tablosu tam genişlikte (önceden dar sütunda kesiliyordu).
+  Dönem Analizi açılınca kayıtlar bir kez kendiliğinden okunur; düğmeler satır boyu uzamaz.
+- İskonto: tek sütun; PDF'ler ve oran kutuları yan yana, Önizleme oluştur yakın, önizleme tablosu
+  bütün sütunlarıyla tam genişlikte (önceden “İskontolu/Fark” kesiliyordu).
+- Yaşlandırma: Atama zaten araç önerisi sunuyor; başka değişiklik gerekmedi.
+
+Yeni `tests/tarayici/satisKullanim.spec.ts`; Kârlılık testi kendiliğinden yüklemeyi de denetler.
+Bütün sekmelerin UX taraması tamamlandı; iş yeri kontrolü kullanıcıda.
+
+---
+
 # 6 Ekim 2026 — Müşteri Takip ve bildirimler (1.14.2)
 
 Kullanıcı sıradaki sekmeyi seçmeden “sıradaki işi yap” dedi (dışarıda, deneyemedi); liste sırasıyla

@@ -168,3 +168,16 @@
   box-shadow: var(--odak);
   border-radius: var(--yaricap-k);
 }
+
+.karlilik-dosyalar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+}
+.karlilik-sonuclu {
+  grid-template-columns: minmax(0, 1fr);
+}
+/* Dönem bölümündeki düğmeler satır boyu uzamaz */
+.karlilik .kart > .dugme {
+  justify-self: start;
+}

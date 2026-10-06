@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { KarlilikEkrani } from './useKarlilik';
 import { KarlilikUyarisi, para, sayi } from './KarlilikTablosu';
 export function DonemPaneli({ m }: { m: KarlilikEkrani }) {
@@ -6,6 +6,14 @@ export function DonemPaneli({ m }: { m: KarlilikEkrani }) {
     [ilk, setIlk] = useState(''),
     [ikinci, setIkinci] = useState('');
   const c = m.karsilastirma;
+  // Bölüm açılınca kayıtlı dönemler bir kez kendiliğinden okunur.
+  const okundu = useRef(false);
+  const { calistir, mesgul } = m;
+  useEffect(() => {
+    if (okundu.current || mesgul) return;
+    okundu.current = true;
+    void calistir('kayit');
+  }, [calistir, mesgul]);
   return (
     <section className="kart">
       <h2>Dönem analizi</h2>
@@ -66,7 +74,7 @@ export function DonemPaneli({ m }: { m: KarlilikEkrani }) {
             </li>
           ))
         ) : (
-          <li>Kayıtlı dönemleri görmek için Kayıtları yenile’ye basın veya bir analiz kaydedin.</li>
+          <li>Henüz kayıtlı dönem yok. Analiz yaptıktan sonra yukarıda ad verip kaydedin.</li>
         )}
       </ul>
       <div className="karlilik-oranlar">

@@ -175,6 +175,9 @@ test('Kârlılık: iki dönem kaydı, gerçek değişimler, silme/geri alma ve y
   await expect(page.getByRole('button', { name: 'Sil: Yapay İlk', exact: true })).toBeVisible();
   await page.reload();
   await bolum(page, 'Dönem Analizi');
+  // Bölüm açılınca kayıtlar düğmeye basmadan okunur
+  await hazir(page);
+  await expect(page.getByLabel('Kayıtlı kârlılık dönemleri')).toContainText('Yapay İlk');
   await bolum(page, 'Kayıtları yenile');
   await hazir(page);
   await expect(page.getByLabel('Kayıtlı kârlılık dönemleri')).toContainText('Yapay İlk');

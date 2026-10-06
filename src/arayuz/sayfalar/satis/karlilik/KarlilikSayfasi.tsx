@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
+import { ExcelDosyaSecimi } from '../../../bilesenler/ExcelDosyaSecimi';
 import { Bildirim } from '../../../bilesenler/Bildirim';
 import { FormHatasi } from '../../../bilesenler/FormHatasi';
 import { useKarlilik } from './useKarlilik';
@@ -12,8 +13,6 @@ const SEKMELER = ['Analiz', 'Genel Bakış', 'Senaryo', 'Eşleşme Merkezi', 'D�
 export default function KarlilikSayfasi({ aktif }: { aktif: boolean }) {
   const m = useKarlilik(aktif);
   const [sekme, setSekme] = useState<(typeof SEKMELER)[number]>('Analiz');
-  const satis = useRef<HTMLInputElement>(null),
-    fiyat = useRef<HTMLInputElement>(null);
   return (
     <div className="musteri-takip karlilik">
       <header className="baslik">
@@ -44,40 +43,28 @@ export default function KarlilikSayfasi({ aktif }: { aktif: boolean }) {
         </div>
       )}
       {sekme === 'Analiz' && (
-        <div className="musteri-izgara">
+        // Sonuç tablosu geniştir: analizden sonra kaynak kartı üstte, tablo tam genişlikte durur.
+        <div className={m.sonuc ? 'musteri-izgara karlilik-sonuclu' : 'musteri-izgara'}>
           <section className="kart" aria-labelledby="karlilik-kaynak">
             <h2 id="karlilik-kaynak">Kaynak dosyalar</h2>
             <p className="ipucu">İki .xlsx dosyası seçin. Dosyalar bu bilgisayarda işlenir.</p>
-            {(['satis', 'fiyat'] as const).map((tur) => (
-              <div className="karlilik-kaynak" key={tur}>
-                <h3>{tur === 'satis' ? 'Satış raporu' : 'Fiyat raporu'}</h3>
-                <p className="ipucu">
-                  {tur === 'satis'
-                    ? 'S01S Kârlılık Analizi (Stok Dağılımlı)'
-                    : 'Bupiliç Dönemsel İskonto (Şube Alış)'}
-                </p>
-                <input
-                  type="file"
-                  accept=".xlsx"
-                  ref={tur === 'satis' ? satis : fiyat}
-                  hidden
-                  disabled={m.mesgul}
-                  aria-label={tur === 'satis' ? 'Kârlılık satış raporu' : 'Kârlılık fiyat raporu'}
-                  onChange={(e) => {
-                    m.sec(tur, e.target.files?.[0]);
-                    e.target.value = '';
-                  }}
+            <div className="karlilik-dosyalar">
+              {(['satis', 'fiyat'] as const).map((tur) => (
+                <ExcelDosyaSecimi
+                  key={tur}
+                  baslik={tur === 'satis' ? '1. Satış raporu' : '2. Fiyat raporu'}
+                  not={
+                    tur === 'satis'
+                      ? 'S01S Kârlılık Analizi (Stok Dağılımlı)'
+                      : 'Bupiliç Dönemsel İskonto (Şube Alış)'
+                  }
+                  alanAdi={tur === 'satis' ? 'Kârlılık satış raporu' : 'Kârlılık fiyat raporu'}
+                  dosyaAdi={(tur === 'satis' ? m.satis : m.fiyat)?.name ?? null}
+                  kilitli={m.mesgul}
+                  degisti={(d) => m.sec(tur, d ?? undefined)}
                 />
-                <button
-                  className="dugme"
-                  disabled={m.mesgul}
-                  onClick={() => (tur === 'satis' ? satis : fiyat).current?.click()}
-                >
-                  {tur === 'satis' ? 'Satış raporu seç' : 'Fiyat raporu seç'}
-                </button>
-                <p className="karlilik-dosya">{(tur === 'satis' ? m.satis : m.fiyat)?.name ?? 'Seçilmedi'}</p>
-              </div>
-            ))}
+              ))}
+            </div>
             <div className="satir-dugmeleri">
               <button
                 className="dugme birincil"

@@ -88,3 +88,15 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Sonuç tablosu geniştir: kaynak ve oranlar üstte tam genişlikte, önizleme altında durur. */
+.iskonto .musteri-izgara {
+  grid-template-columns: minmax(0, 1fr);
+}
+.iskonto .iskonto-dosyalar {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.iskonto .iskonto-oranlar {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px 24px;
+}
