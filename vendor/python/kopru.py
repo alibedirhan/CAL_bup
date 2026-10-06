@@ -171,6 +171,10 @@ def cal_calistir(text):
             sys.path.insert(0, '/cal')
             from karlilik_kopru import karlilik_calistir
             result = karlilik_calistir(request)
+        elif request['tur'] == 'yaslandirma':
+            sys.path.insert(0, '/cal')
+            from yaslandirma_kopru import yaslandirma_calistir
+            result = yaslandirma_calistir(request)
         elif request['tur'] == 'musteri':
             result = musteri_oku(request)
         else:
@@ -178,7 +182,7 @@ def cal_calistir(text):
         return json.dumps(result, ensure_ascii=False, allow_nan=False)
     except Exception as error:
         # İz/yığın ve veri stdout/stderr/JavaScript konsoluna taşınmaz.
-        known = {'ValueError', 'HeaderNotFoundError', 'CariColumnNotFoundError', 'InvalidCustomerFileError', 'NoPriceListsLoadedError', 'DiscountRateValidationError', 'NoPreviewDataError', 'VisibleExportSelectionError', 'InvalidDiscountExportDataError', 'InvalidVisibleExportDataError', 'InvalidProfitabilityWorkbookError', 'ProfitabilityWorkbookLimitError', 'ProfitabilityHeaderNotFoundError', 'ProfitabilityColumnNotFoundError', 'ProfitabilityWorkbookEmptyError', 'InvalidProfitabilityScenarioError', 'ProfitabilityMatchSelectionError', 'ProfitabilityMatchQualityError', 'PeriodSelectionError', 'InvalidPeriodNameError', 'ProfitabilityPeriodServiceError'}
+        known = {'ValueError', 'HeaderNotFoundError', 'CariColumnNotFoundError', 'InvalidCustomerFileError', 'NoPriceListsLoadedError', 'DiscountRateValidationError', 'NoPreviewDataError', 'VisibleExportSelectionError', 'InvalidDiscountExportDataError', 'InvalidVisibleExportDataError', 'InvalidProfitabilityWorkbookError', 'ProfitabilityWorkbookLimitError', 'ProfitabilityHeaderNotFoundError', 'ProfitabilityColumnNotFoundError', 'ProfitabilityWorkbookEmptyError', 'InvalidProfitabilityScenarioError', 'ProfitabilityMatchSelectionError', 'ProfitabilityMatchQualityError', 'PeriodSelectionError', 'InvalidPeriodNameError', 'ProfitabilityPeriodServiceError', 'InvalidAgingWorkbookError', 'AgingWorkbookLimitError', 'AgingHeaderNotFoundError', 'AgingColumnNotFoundError', 'AgingWorkbookEmptyError', 'AgingNotAnalyzedError', 'InvalidAgingExportPathError', 'AgingExportWriteError', 'InvalidVehicleAssignmentError', 'VehicleAssignmentServiceError'}
         message = str(error) if type(error).__name__ in known else 'Dosya işlemi tamamlanamadı. Dosyayı kontrol edip yeniden deneyin.'
         return json.dumps({'tur': 'hata', 'mesaj': message}, ensure_ascii=False)
     finally:

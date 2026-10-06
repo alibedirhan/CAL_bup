@@ -119,3 +119,12 @@ Dönem Analizi) ayrı bağımsız masaüstü başvurusuyla CAL bup'a taşındı.
 Yeni JS hesap yoktur. Ayrı F2.11 Satış Şefi Raporu bu dilime dahil değildir;
 kaynak uygulamada bulunan bu ek modülün aktarımı sonraki ayrı iştir.
 Sıradaki ana satış modülü Yaşlandırma'dır. Detay ve kabul [KARLILIK.md](KARLILIK.md).
+
+## Kalan modül — Yaşlandırma (1.13.0)
+
+Kullanıcı masaüstündeki kalan Satış modülünün plana göre taşınmasını istedi.
+Plan: (1) bağımsız başvuru + özgün kodla Analiz sekmesi, (2) Araç Detayı,
+Raporlar, Grafikler, (3) Atama ve kabul. Dört katalog modülü (İskonto, Müşteri
+Takip, Kârlılık, Yaşlandırma) artık CAL'dedir. Masaüstünün Satış dışı bölümleri
+(Tahsilat, Envanter Mutabakatı, Kaynak Haritası, Ofis Araçları, CAL asistanı) ve
+Kârlılık'a bağlı Satış Şefi Raporu ayrı işlerdir. [YASLANDIRMA.md](YASLANDIRMA.md).

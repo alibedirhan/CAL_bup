@@ -16,6 +16,11 @@ export const SATIS_MODULLERI = [
     aciklama: 'PDF fiyat listelerine kategori iskontosu uygulayın; Excel ve PDF çıktısı hazırlayın.',
   },
   {
+    id: 'yaslandirma',
+    ad: 'Yaşlandırma',
+    aciklama: 'Cari yaşlandırma raporundan araç bazlı bakiye, açık hesap ve vade kovalarını inceleyin.',
+  },
+  {
     id: 'musteri-takip',
     ad: 'Müşteri Takip',
     aciklama: 'Eski ve yeni müşteri listelerini karşılaştırın; eksik ve yeni müşterileri inceleyin.',

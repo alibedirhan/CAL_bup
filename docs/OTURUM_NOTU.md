@@ -1,3 +1,15 @@
+# 5 Ekim 2026 (gece) — Yaşlandırma modülü (1.13.0)
+
+Kullanıcı BUP Yönetim'deki kalan Satış modülünün (Yaşlandırma) taşınmasını, önce tarama ve
+plan, sonra plana göre uygulamayı istedi; planı “tamamdır” diyerek onayladı. Codex'in yöntemi
+(özgün Python + SHA-256 + bağımsız başvuru + CAL ekranı) aynen izlendi. Masaüstü projesi salt
+okunur kaldı (başvuru üretimi öncesi/sonrası `git status` aynı). Sonuç ve kapsam:
+[YASLANDIRMA.md](YASLANDIRMA.md). Gerçek LED raporuyla Windows denemesi kullanıcıdadır.
+Sonraki istek (kullanıcı söyledi): CAL bup'ın bütün sekmelerini kullanıcı deneyimi ve mantık
+hataları açısından taramak — ayrı iş, henüz başlanmadı.
+
+---
+
 # 5 Ekim 2026 (akşam) — POS kutu tanıma düzeltmesi (1.12.1)
 
 Kullanıcı gerçek ödeme ekranının görüntüsünü paylaştı (müşteri bilgisi içerir; hiçbir dosyaya

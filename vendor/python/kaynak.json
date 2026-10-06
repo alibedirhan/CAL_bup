@@ -46,6 +46,23 @@
     "infrastructure/export/profitability_exporter.py": "515648f5f8f1f2c354025553ae54d7294dc6e076c66d62bf1f6ec514902aa690",
     "infrastructure/export/profitability_scenario_exporter.py": "196f6d164759199f9e3dd8f04ae7cfe1a77c3b1a595d8ec634438ba2bd53d731",
     "infrastructure/persistence/profitability_matches.py": "6431dbfd606b36d990d1d67a32d8c8d9ada9a6cb9226d3688442d506780d6232",
-    "infrastructure/persistence/profitability_periods.py": "bfd96c51c0e24fd929b8a667eb8d83ef80fc8c91f91f4d28ea0d3651013ca73a"
+    "infrastructure/persistence/profitability_periods.py": "bfd96c51c0e24fd929b8a667eb8d83ef80fc8c91f91f4d28ea0d3651013ca73a",
+    "domain/yaslandirma/__init__.py": "31ca8d4ed884f6a479df03dc38964e9e0029a8e236e683b7acae097a11d1e586",
+    "domain/yaslandirma/models.py": "a18b4078bec948dd460042c77c51363b366cf12259562097aadb18774f54d0de",
+    "domain/yaslandirma/analysis.py": "9340cf781e913732b177a61afe41ec1aae2494fdf6beeb6eaf613dd10c62b6c7",
+    "domain/yaslandirma/buckets.py": "95f8a62fbeff14b9d7e0f7c7bc893316dbf0f6a52040c9dd70d1e516131db4b0",
+    "domain/yaslandirma/numbers.py": "09f7bfe0b7ba039f44c32d5b7b8e4f6eedd3c35febbeb5c108370d398d86a7bb",
+    "domain/yaslandirma/vehicles.py": "087ad1a463fcd5066e58cc5a498f6c8490c588bf39bebc47b609fd00ac1414a6",
+    "domain/yaslandirma/reports.py": "9de710c6b16a78aa8fdcab7a0b92473d2a04d46b73da06920783970cd49d48a1",
+    "domain/yaslandirma/assignments.py": "026c0ad2ec820eed1e3e050d509ab78bf50e812a20877b949acfca059a0da80d",
+    "application/aging_analysis/__init__.py": "55c93106919e8e2223da9880bc46b1eeb5b52d3fd8a1fcbc5f1a912e9d0d8e15",
+    "application/aging_analysis/dto.py": "ff6920a201e747f027110d66a8112cf1507283f087244eee01ab95145036d9f9",
+    "application/aging_analysis/facade.py": "b287123646509bac6b7d5e178c719173b3c543837ff873a1593c433e1dab8c3e",
+    "application/aging_analysis/ports.py": "7d7289f6ee7d676a260e31e0bbf43562b27b7e91971c6fecb691687323b40ee5",
+    "application/aging_analysis/reports.py": "dd6ca3ad32f975253b19b1124cd0aa408821618e14d252ff4858a996e2da1d78",
+    "application/aging_analysis/assignments.py": "f441c4a2082e6174094492a8cfd81a3c5262196e99dd07e998267d0b52cffbc2",
+    "infrastructure/excel/aging_workbook_reader.py": "8fec38f49905776a9f41606ac40b6283c486265e16c5f564a38492ec819b6fa7",
+    "infrastructure/export/aging_exporter.py": "723b808fc3198d1d6aae79854849e48d71f24f1417abf8d0d9527b7c99cb999a",
+    "infrastructure/persistence/vehicle_assignments.py": "33cf5f063d29f2c411833d3503add75b4776c427996b833957541cfc3c0c7fd3"
   }
 }

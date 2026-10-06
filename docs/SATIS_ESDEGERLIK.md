@@ -125,3 +125,9 @@ Bu modül yalnız saf openpyxl/et-xmlfile/defusedxml yükler; PDF motorundaki
 Pillow/cryptography açıklarını kapattığı iddia edilmez. Eşdeğerlik kapsamı,
 Excel sayı serileştirmesi ve ayrı Satış Şefi Raporu sınırı
 [KARLILIK.md](KARLILIK.md) içinde; son kabul [OTURUM_NOTU.md](OTURUM_NOTU.md).
+
+## Yaşlandırma — 1.13.0
+
+8 okuma/analiz/rapor/Excel senaryosu, 9 hata ve 10 atama adımı özgün Python ile
+karşılaştırılır; 17 kaynak dosya aynı SHA-256'dadır. Yalnız saf openpyxl/
+et-xmlfile/defusedxml yüklenir. Kapsam ve platform farkları [YASLANDIRMA.md](YASLANDIRMA.md).

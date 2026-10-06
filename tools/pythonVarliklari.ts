@@ -27,6 +27,7 @@ export function pythonVarliklari(): Plugin {
   ekle('vendor/python/bup');
   dosyalar.set('kopru.py', 'vendor/python/kopru.py');
   dosyalar.set('karlilik_kopru.py', 'vendor/python/karlilik_kopru.py');
+  dosyalar.set('yaslandirma_kopru.py', 'vendor/python/yaslandirma_kopru.py');
   dosyalar.set('font.ttf', 'vendor/python/font.ttf');
   dosyalar.set('font-kalin.ttf', 'vendor/python/font-kalin.ttf');
   dosyalar.set('FONT-LICENSE', 'vendor/python/FONT-LICENSE');

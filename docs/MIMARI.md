@@ -284,6 +284,14 @@ merkez boyut beyanından bağımsız kesin ölçülmüş sayılmaz. Büyük dosy
 getirmez. Tarayıcı testi dağıtılacak ZIP → gerçek uygulama → indirilen Excel zincirini sınar.
 POS görünürlük uygunluğu üst kapsayıcıları da denetler; kapalı proxy sınırı korunur.
 
+## Yaşlandırma dikey dilimi (1.13.0)
+
+Kârlılık ile aynı kalıp: `cekirdek/yaslandirma` tür/validasyon ve yalnız
+görünüm için kova sırası; `satis/yaslandirma` servis + ayrı Pyodide işçisi;
+`vendor/python/yaslandirma_kopru.py` composition portu; özgün okuyucu/domain/
+facade/Excel/atama deposu SHA-256 ile aynıdır. `platform/yaslandirmaDeposu`
+atama zarfını nesil CAS ile saklar. Ayrıntı [YASLANDIRMA.md](YASLANDIRMA.md).
+
 ## Kârlılık dikey dilimi (1.11.0)
 
 `cekirdek/karlilik` yalnız tür/validasyon, `satis/karlilik` enjekte edilmiş

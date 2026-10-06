@@ -108,3 +108,63 @@
 .karlilik-ilerleme {
   margin: 1rem 0;
 }
+
+/* Yaşlandırma: kova durum tonu metinle birlikte verilir (yalnız renk değil). */
+.yaslandirma .yas-uyari td:first-child,
+.yaslandirma .yas-etiket.yas-uyari {
+  color: var(--uyari);
+}
+.yaslandirma .yas-kritik td:first-child,
+.yaslandirma .yas-etiket.yas-kritik {
+  color: var(--hata);
+}
+.yaslandirma .yas-cubuk-negatif {
+  background: var(--soluk);
+}
+.yaslandirma .yas-secim {
+  display: grid;
+  gap: 0.375rem;
+  max-width: 20rem;
+  margin-bottom: 1rem;
+}
+.yaslandirma .yas-grafikler {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 1.5rem;
+}
+.yaslandirma .yas-grafik {
+  margin: 0;
+  min-width: 0;
+}
+.yaslandirma .yas-grafik figcaption {
+  font-weight: 600;
+}
+.yaslandirma .tablo-siralama {
+  font: inherit;
+  font-weight: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.yaslandirma .tablo-siralama:focus-visible {
+  outline: none;
+  box-shadow: var(--odak);
+  border-radius: var(--yaricap-k);
+}
+.yaslandirma .yas-arac-dugme {
+  font: inherit;
+  color: var(--vurgu);
+  background: none;
+  border: 0;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+.yaslandirma .yas-arac-dugme:focus-visible {
+  outline: none;
+  box-shadow: var(--odak);
+  border-radius: var(--yaricap-k);
+}

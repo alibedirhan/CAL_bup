@@ -5,7 +5,7 @@ import paketler from '../../vendor/python/paketler.json';
 
 const motorlar = new Map<string, Promise<PyodideInterface>>();
 export function nodePythonMotoru(
-  tur: 'musteri' | 'iskonto' | 'karlilik' = 'musteri',
+  tur: 'musteri' | 'iskonto' | 'karlilik' | 'yaslandirma' = 'musteri',
 ): Promise<PyodideInterface> {
   const onceki = motorlar.get(tur);
   if (onceki) return onceki;
@@ -42,6 +42,10 @@ export function nodePythonMotoru(
     ekle('vendor/python/bup');
     p.FS.writeFile('/cal/kopru.py', new Uint8Array(readFileSync('vendor/python/kopru.py')));
     p.FS.writeFile('/cal/karlilik_kopru.py', new Uint8Array(readFileSync('vendor/python/karlilik_kopru.py')));
+    p.FS.writeFile(
+      '/cal/yaslandirma_kopru.py',
+      new Uint8Array(readFileSync('vendor/python/yaslandirma_kopru.py')),
+    );
     p.FS.mkdirTree('/usr/share/fonts/truetype/dejavu');
     for (const [ad, hedef] of [
       ['font.ttf', 'DejaVuSans.ttf'],

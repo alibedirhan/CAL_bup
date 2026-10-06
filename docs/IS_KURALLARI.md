@@ -384,3 +384,12 @@ kullanılır. Senaryo −100…500 oranları, marj/başabaş/Pareto ve dönem
 karşılaştırması özgün Python kuralıdır. Tam/görünen/senaryo Excel kapsamı
 masaüstüyle aynı; görünür çıktı bütün filtreli sonuç sayfalarını içerir.
 Ayrıntı, depo sınırları ve Satış Şefi Raporu ayrımı [KARLILIK.md](KARLILIK.md).
+
+## Satış — Yaşlandırma (1.13.0)
+
+İlk sayfa, ilk beş satırda ayrı hücrelerde araç/cari/kova başlıkları. Araç 1–99,
+depo/merkez/genel/kesimhane araç değildir. Bakiye ve kova hesabı, Türkçe sayı
+ayrıştırma, raporlar ve tam/görünen Excel özgün Python kodudur. Görünen Excel
+ekrandaki arama, 29+ gün süzgeci ve sıralamayı izler. Atamalar yalnız bu
+tarayıcıda, kaynak şeması ve yedek/geri al davranışıyla saklanır.
+Ayrıntı [YASLANDIRMA.md](YASLANDIRMA.md).

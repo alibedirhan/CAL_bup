@@ -4,6 +4,7 @@ import { satisModuluBul, type SatisModuluId } from '../../../satis/kayit';
 const EKRANLAR = {
   karlilik: lazy(() => import('./karlilik/KarlilikSayfasi')),
   iskonto: lazy(() => import('./iskonto/IskontoSayfasi')),
+  yaslandirma: lazy(() => import('./yaslandirma/YaslandirmaSayfasi')),
   'musteri-takip': lazy(() => import('./musteriTakip/MusteriTakipSayfasi')),
 } satisfies Record<SatisModuluId, ComponentType<{ aktif: boolean }>>;
 

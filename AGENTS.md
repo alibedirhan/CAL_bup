@@ -109,9 +109,15 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.12.1. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.13.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-05 Yaşlandırma (1.13.0):** Kullanıcı masaüstündeki kalan Satış modülünü plana göre
+taşımayı istedi. Özgün 17 Python dosyası SHA-256 ile aynı; `tools/yaslandirmaReferansi.py`
+masaüstü `.venv` ile yalnız yapay Excel'den başvuru üretir (masaüstüne yazmaz). Beş bölüm
+(Analiz, Araç Detayı, Grafikler, Raporlar, Atama); atamalar yalnız tarayıcıda.
+[YASLANDIRMA.md](docs/YASLANDIRMA.md). Satış dışı masaüstü bölümleri ayrı işlerdir.
 
 **2026-10-05 Sanal POS üç aşamalı düzeltme (1.12.0):** Kullanıcı Windows'ta kayıtlı cariyle POS'a
 girememe ve kart bilgilerinin yazılmaması sorunlarını bildirdi; derin tarama
