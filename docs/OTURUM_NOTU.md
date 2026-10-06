@@ -1,3 +1,23 @@
+# 6 Ekim 2026 — Sanal POS ekran sadeleştirmesi (1.14.1)
+
+Kullanıcı sekme taramasında ikinci olarak Sanal POS'u seçti ve dışarıdayken gerekli işleri yapmayı
+istedi. Bölüm 5 Ekim'de derin taranmıştı (1.12.0); bu tur yalnız kullanım/görünüm ele alındı,
+güvenlik kuralları ve akış değişmedi. Gerçek POS adresine hiçbir istek gönderilmedi; ekran denemeleri
+yerel sunucu dışındaki bütün istekleri kesen yapay cari/kartla yapıldı.
+
+- Cari başlığına üç adımlık işlem sırası (kart seç → seçili kartla POS'u aç → tutar/CVV POS'ta).
+- Seçili kart paneli iki başlığa ayrıldı: yardımcıyla POS'a geçiş ve “Kart bilgilerini elle kopyala”;
+  maske ve son kullanma başlıkta. Sıkışık başlıklar ve tekrarlı uyarı metinleri düzeltildi.
+- “Elle POS’a giriş” kartının üst etiketi “Yardımcı kurulu değilse”; uzun açıklamalar “Ayrıntılar”
+  altında; “Giriş sayfasını elle aç / Giriş bilgilerini göster” normal düğme satırı. Bağlantı düğmelerinin
+  alt çizgisi kaldırıldı. Geniş ekranda cari listesi kaydırırken yerinde kalır.
+- Kartın otomatik seçilmemesi bilinçli karar olarak korundu (SANAL_POS.md: kart açıkça seçilir).
+
+Yeni `tests/tarayici/posKullanim.spec.ts` dış isteğin sıfır olduğunu da denetler. POS ile ilgili
+99 Chromium senaryosu geçti. Windows'ta gerçek kullanım kullanıcıdadır.
+
+---
+
 # 6 Ekim 2026 — Günlük depo kontrol kullanım kolaylığı (1.14.0)
 
 Kullanıcı bütün sekmelerin UX/mantık taramasına Günlük depo kontrolden başlamayı, kullanımı zor

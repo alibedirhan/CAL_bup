@@ -6,10 +6,9 @@ export function PosKartAktarimi({ cari, kart, mesgul }: { cari: PosCari; kart: P
   const { durum, hata, uyari, bekliyor, baslat, durdur } = usePosAktarimi(cari, kart, mesgul);
   return (
     <section aria-label="Seçili kartı POS’a aktar">
-      <h3>Seçili kartla POS’a geç</h3>
       <p className="ipucu">
-        Yardımcı cari numarasını karşılaştırır; yalnızca kart numarası ve son kullanmayı doldurur. CVV, tutar
-        ve şifre gönderme işlemi sizde kalır.
+        POS yardımcısı cari numarasını karşılaştırır, yalnız kart numarası ve son kullanmayı doldurur. CVV,
+        tutar ve onay sizde kalır.
       </p>
       <div className="satir-dugmeleri">
         <button

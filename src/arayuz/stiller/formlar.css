@@ -280,3 +280,7 @@
 .dosya-satiri b {
   overflow-wrap: anywhere;
 }
+
+a.dugme {
+  text-decoration: none;
+}

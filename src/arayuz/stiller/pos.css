@@ -285,3 +285,49 @@
   align-items: center;
   gap: 8px;
 }
+
+/* Seçili kart paneli: başlıklar arasında nefes payı, iki alt bölüm */
+.pos-secili-kart {
+  display: grid;
+  gap: 14px;
+}
+.pos-secili-ust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+.pos-secili-ust .rakam {
+  color: var(--soluk);
+  font-size: 13px;
+}
+.pos-secili-kart section {
+  display: grid;
+  gap: 10px;
+}
+.pos-elle-kopya {
+  padding-top: 14px;
+  border-top: 1px dashed var(--cizgi);
+}
+.pos-sira {
+  margin-top: 12px;
+  font-size: 14px;
+}
+.pos-ayrinti summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13.5px;
+}
+.pos-ayrinti[open] {
+  display: grid;
+  gap: 8px;
+}
+
+/* Geniş ekranda cari listesi kaydırırken yerinde kalır */
+@media (min-width: 961px) {
+  .pos-yerlesim > .kart:first-child {
+    position: sticky;
+    top: 16px;
+  }
+}

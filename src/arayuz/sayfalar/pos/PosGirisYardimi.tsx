@@ -48,7 +48,7 @@ export function PosGirisYardimi({
 
   return (
     <section className="kart one-cikan" aria-labelledby="pos-giris-baslik">
-      <span className="etiket">Seçilen cari</span>
+      <span className="etiket">{baslik ? 'Yardımcı kurulu değilse' : 'Seçilen cari'}</span>
       <h2 id="pos-giris-baslik">{baslik ?? cari.ad}</h2>
       <p className="rakam">{numaraMaskesi(cari.numara)}</p>
       <ol className="pos-adimlar">
@@ -86,39 +86,35 @@ export function PosGirisYardimi({
         </button>
       </div>
       <IslemBildirimi islem={kopyalama} />
-      <p className="ipucu">
-        Kart bilgileri dolsun istiyorsanız seçili kartın yanındaki “Seçili kartla POS’u aç” düğmesini
-        kullanın. Buradaki “POS’u aç” yalnızca seçilen carinin numarasını ve giriş şifresini POS’a gönderir.
-        Giriş kabul edilirse cari hesabı açılır; CAL bup sonucu okuyamaz. Açılan sekmeyi göremiyorsanız
-        tarayıcının açılır pencere iznini kontrol edin.
-      </p>
-      <a
-        className="dugme hayalet"
-        href={POS_GIRIS_ADRESI}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e) => {
-          if (!izin()) {
-            e.preventDefault();
-            return;
-          }
-          setOnayNo(null);
-          firmaKontrolu?.(false);
-          girisBasladi?.();
-        }}
-      >
-        Giriş sayfasını elle aç
-      </a>
-      <button
-        className="dugme hayalet"
-        type="button"
-        aria-expanded={goster}
-        onClick={() => {
-          if (izin()) setGosterNo(goster ? null : gizlilikNo);
-        }}
-      >
-        {goster ? 'Giriş bilgilerini gizle' : 'Giriş bilgilerini göster'}
-      </button>
+      <div className="satir-dugmeleri">
+        <a
+          className="dugme kucuk"
+          href={POS_GIRIS_ADRESI}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => {
+            if (!izin()) {
+              e.preventDefault();
+              return;
+            }
+            setOnayNo(null);
+            firmaKontrolu?.(false);
+            girisBasladi?.();
+          }}
+        >
+          Giriş sayfasını elle aç
+        </a>
+        <button
+          className="dugme kucuk"
+          type="button"
+          aria-expanded={goster}
+          onClick={() => {
+            if (izin()) setGosterNo(goster ? null : gizlilikNo);
+          }}
+        >
+          {goster ? 'Giriş bilgilerini gizle' : 'Giriş bilgilerini göster'}
+        </button>
+      </div>
       {goster && (
         <dl className="bilgi-satirlari">
           <div>
@@ -149,11 +145,21 @@ export function PosGirisYardimi({
           ? 'Cari kontrolünü siz onayladınız. Kart, CVV, tutar ve banka şifresini POS/banka ekranlarında elle girin.'
           : 'Elle girişte doğru cari açıldığını kendiniz kontrol edin. Bu giriş yöntemi POS oturumunu otomatik doğrulamaz.'}
       </Mesaj>
-      <p className="ipucu">POS’taki bakiye ödeme tutarı değildir; tutarı kendiniz belirleyip kontrol edin.</p>
-      <p className="ipucu">
-        Kopyalanan bilgi bilgisayarın panosuna geçer. İşiniz bitince panoyu temizleyin; bu düğmeler pano
-        geçmişini temizleyemez.
-      </p>
+      <details className="pos-ayrinti">
+        <summary>Ayrıntılar</summary>
+        <p className="ipucu">
+          Buradaki “POS’u aç” yalnız seçilen carinin numarasını ve giriş şifresini POS’a gönderir; kart
+          bilgisi doldurmaz. Giriş kabul edilirse cari hesabı açılır; CAL bup sonucu okuyamaz. Açılan sekmeyi
+          göremiyorsanız tarayıcının açılır pencere iznini kontrol edin.
+        </p>
+        <p className="ipucu">
+          POS’taki bakiye ödeme tutarı değildir; tutarı kendiniz belirleyip kontrol edin.
+        </p>
+        <p className="ipucu">
+          Kopyalanan bilgi bilgisayarın panosuna geçer. İşiniz bitince panoyu temizleyin; bu düğmeler pano
+          geçmişini temizleyemez.
+        </p>
+      </details>
     </section>
   );
 }

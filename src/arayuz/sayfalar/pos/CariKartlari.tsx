@@ -138,60 +138,66 @@ export function CariKartlari({
       )}
       {secili && (
         <div className="pos-secili-kart">
-          <h3>Seçilen kart: {secili.ad}</h3>
-          <PosKartAktarimi key={`${secili.id}-${aktarimNo}`} cari={cari} kart={secili} mesgul={blok} />
-          <dl className="bilgi-satirlari">
-            <div>
-              <dt>Kart sahibi</dt>
-              <dd>{secili.sahibi || 'Eklenmedi'}</dd>
-            </div>
-            <div>
-              <dt>İletişim telefonu</dt>
-              <dd className="rakam">{secili.telefon || 'Eklenmedi'}</dd>
-            </div>
-            <div>
-              <dt>Son kullanma</dt>
-              <dd className="rakam">
-                {secili.ay}/{secili.yil}
-              </dd>
-            </div>
-          </dl>
-          <p className="ipucu">İletişim telefonu bankanın SMS hedefini değiştirmez.</p>
-          {!firmaOnay && (
-            <p className="ipucu">
-              Kart numarasını göstermek/kopyalamak için aşağıdan POS’u açın ve açılan firma adı ile numarayı
-              kontrol ettiğinizi işaretleyin.
-            </p>
-          )}
-          <div className="satir-dugmeleri">
-            <button
-              className="dugme"
-              type="button"
-              disabled={!izinli}
-              aria-expanded={acik}
-              onClick={() => setGosterNo(acik ? null : gizlilikNo)}
-            >
-              {acik ? 'Kart numarasını gizle' : 'Kart numarasını göster'}
-            </button>
-            <button className="dugme" type="button" disabled={!izinli} onClick={() => kopyala('numara')}>
-              Kart numarasını kopyala
-            </button>
-            <button className="dugme" type="button" disabled={!izinli} onClick={() => kopyala('tarih')}>
-              Son kullanmayı kopyala
-            </button>
-            {secili.sahibi && (
-              <button className="dugme" type="button" disabled={!izinli} onClick={() => kopyala('sahibi')}>
-                Kart sahibini kopyala
-              </button>
-            )}
+          <div className="pos-secili-ust">
+            <h3>Seçilen kart: {secili.ad}</h3>
+            <span className="rakam">
+              {kartMaskesi(secili)} · {secili.ay}/{secili.yil}
+            </span>
           </div>
-          {acik && (
-            <p className="rakam pos-acik-kart-numarasi">{secili.numara.replace(/(.{4})(?=.)/g, '$1 ')}</p>
-          )}
-          <p className="ipucu">
-            Kart seçmek ödeme veya SMS başlatmaz. Tutarı, CVV’yi ve banka doğrulamasını POS/banka ekranında
-            tamamlayın.
-          </p>
+          <PosKartAktarimi key={`${secili.id}-${aktarimNo}`} cari={cari} kart={secili} mesgul={blok} />
+          <section className="pos-elle-kopya" aria-labelledby="pos-elle-kopya-baslik">
+            <h3 id="pos-elle-kopya-baslik">Kart bilgilerini elle kopyala</h3>
+            <dl className="bilgi-satirlari">
+              <div>
+                <dt>Kart sahibi</dt>
+                <dd>{secili.sahibi || 'Eklenmedi'}</dd>
+              </div>
+              <div>
+                <dt>İletişim telefonu</dt>
+                <dd className="rakam">{secili.telefon || 'Eklenmedi'}</dd>
+              </div>
+              <div>
+                <dt>Son kullanma</dt>
+                <dd className="rakam">
+                  {secili.ay}/{secili.yil}
+                </dd>
+              </div>
+            </dl>
+            {!firmaOnay && (
+              <p className="ipucu">
+                Numarayı göstermek veya kopyalamak için önce aşağıdaki “Elle POS’a giriş” bölümünden POS’u
+                açın ve firma adı ile numarayı kontrol ettiğinizi işaretleyin.
+              </p>
+            )}
+            <div className="satir-dugmeleri">
+              <button
+                className="dugme"
+                type="button"
+                disabled={!izinli}
+                aria-expanded={acik}
+                onClick={() => setGosterNo(acik ? null : gizlilikNo)}
+              >
+                {acik ? 'Kart numarasını gizle' : 'Kart numarasını göster'}
+              </button>
+              <button className="dugme" type="button" disabled={!izinli} onClick={() => kopyala('numara')}>
+                Kart numarasını kopyala
+              </button>
+              <button className="dugme" type="button" disabled={!izinli} onClick={() => kopyala('tarih')}>
+                Son kullanmayı kopyala
+              </button>
+              {secili.sahibi && (
+                <button className="dugme" type="button" disabled={!izinli} onClick={() => kopyala('sahibi')}>
+                  Kart sahibini kopyala
+                </button>
+              )}
+            </div>
+            {acik && (
+              <p className="rakam pos-acik-kart-numarasi">{secili.numara.replace(/(.{4})(?=.)/g, '$1 ')}</p>
+            )}
+            <p className="ipucu">
+              Kart seçmek ödeme veya SMS başlatmaz. İletişim telefonu bankanın SMS hedefini değiştirmez.
+            </p>
+          </section>
         </div>
       )}
       <IslemBildirimi islem={kopyalama} />

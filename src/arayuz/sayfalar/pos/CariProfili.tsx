@@ -61,9 +61,15 @@ export function CariProfili({
             Cariyi düzenle
           </button>
         </div>
-        <p className="ipucu">
-          Kart bilgileri bu carinin altında saklanır. Tutarı POS’ta kendiniz gireceksiniz.
-        </p>
+        <ol className="pos-adimlar pos-sira">
+          <li>Aşağıdan kullanacağınız kartı seçin.</li>
+          <li>
+            <b>Seçili kartla POS’u aç</b> düğmesine basın. POS yardımcısı kuruluysa kart numarası ve son
+            kullanma POS’a kendiliğinden yazılır.
+          </li>
+          <li>Tutarı, CVV’yi ve banka onayını POS ekranında siz girin.</li>
+        </ol>
+        <p className="ipucu">Yardımcı kurulu değilse en alttaki “Elle POS’a giriş” bölümünü kullanın.</p>
       </section>
       <CariKartlari
         cari={cari}

@@ -264,8 +264,8 @@ export function SanalPosSayfasi() {
         Carinizi seçin, kartını hazırlayın ve tutarı POS’ta kendiniz girin.
       </SayfaBasligi>
       <Mesaj ton="bilgi">
-        Cari ve kart bilgileri bu tarayıcıda şifreli tutulur. Günlük PIN sorulmaz; bu tarayıcıyı kullanan
-        kişiler kayıtlara erişebilir. CVV ve banka doğrulama kodları kaydedilmez.
+        Cari ve kart bilgileri yalnız bu tarayıcıda şifreli saklanır; bu tarayıcıyı kullanan herkes görebilir.
+        CVV ve banka doğrulama kodları kaydedilmez.
       </Mesaj>
       {oturum.hata && (
         <div ref={hataKutusu} tabIndex={-1}>
