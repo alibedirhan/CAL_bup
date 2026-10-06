@@ -3,7 +3,7 @@ import { adAnahtari } from '../../../cekirdek/metin';
 import { sayiMetni, yuvarla3 } from '../../../cekirdek/sayi';
 import type { DepoKontrolPlani, PlanSatiri } from '../../../raporlar/depoKontrol/hesapla';
 
-type Suzgec = 'tumu' | 'eklenen' | 'fark' | 'donuk' | 'tekrar';
+export type Suzgec = 'tumu' | 'eklenen' | 'fark' | 'donuk' | 'tekrar';
 
 const SUZGECLER: { id: Suzgec; ad: string; uyar: (s: PlanSatiri) => boolean }[] = [
   { id: 'tumu', ad: 'Tümü', uyar: () => true },
@@ -14,8 +14,15 @@ const SUZGECLER: { id: Suzgec; ad: string; uyar: (s: PlanSatiri) => boolean }[] 
 ];
 
 /** Gün sayfasına yazılacak satırların önizlemesi. */
-export function SatirTablosu({ plan }: { plan: DepoKontrolPlani }) {
-  const [suzgec, setSuzgec] = useState<Suzgec>('tumu');
+export function SatirTablosu({
+  plan,
+  suzgec: secilen,
+  suzgecSec,
+}: {
+  plan: DepoKontrolPlani;
+  suzgec: Suzgec;
+  suzgecSec: (s: Suzgec) => void;
+}) {
   const [arama, setArama] = useState('');
   const geciktirilmis = useDeferredValue(arama);
 
@@ -23,10 +30,15 @@ export function SatirTablosu({ plan }: { plan: DepoKontrolPlani }) {
     () => Object.fromEntries(SUZGECLER.map((f) => [f.id, plan.satirlar.filter(f.uyar).length])),
     [plan],
   );
+  // Seçilen süzgeçte satır kalmadıysa (yeni dosyalar bırakıldı) tümü gösterilir.
+  const suzgec = secilen !== 'tumu' && !sayilar[secilen] ? 'tumu' : secilen;
   const satirlar = useMemo(() => {
     const f = SUZGECLER.find((x) => x.id === suzgec)?.uyar ?? (() => true);
     const a = adAnahtari(geciktirilmis.trim());
-    return plan.satirlar.filter((s) => f(s) && (!a || adAnahtari(s.ad).includes(a)));
+    const sonuc = plan.satirlar.filter((s) => f(s) && (!a || adAnahtari(s.ad).includes(a)));
+    // Farklar en büyükten küçüğe: önce bakılması gereken ürünler üstte
+    if (suzgec === 'fark') sonuc.sort((x, y) => Math.abs(y.b - y.d) - Math.abs(x.b - x.d));
+    return sonuc;
   }, [plan, suzgec, geciktirilmis]);
 
   return (
@@ -49,12 +61,13 @@ export function SatirTablosu({ plan }: { plan: DepoKontrolPlani }) {
             type="button"
             className="suzgec"
             aria-pressed={suzgec === f.id}
-            onClick={() => setSuzgec(f.id)}
+            onClick={() => suzgecSec(f.id)}
           >
             {f.ad} <span className="rakam">{sayilar[f.id]}</span>
           </button>
         ))}
       </div>
+      {suzgec === 'fark' && <p className="ipucu">Farkı en büyük olan ürünler en üstte.</p>}
       <div className="tablo-kap">
         <table className="tablo">
           <thead>

@@ -8,7 +8,7 @@ import { girilenTarih, yilOf, type Tarih } from '../../cekirdek/tarih';
 import type { AcikKitap } from '../../kaynaklar/excel';
 import type { Kitap } from '../../kaynaklar/kitap';
 import { d01Oku, sayimOku, subeAlisOku } from '../../kaynaklar/led';
-import { gunSec, tarihOnerisi, type GunSecimi } from './gunSecimi';
+import { atlananGunler, gunSec, tarihOnerisi, type GunSecimi } from './gunSecimi';
 import type { DepoKontrolPlani } from './hesapla';
 import type { HedefBilgisi } from './islem';
 import { tarihleriDenetle, type TarihDenetimi } from './tarihDenetimi';
@@ -179,12 +179,16 @@ export interface Gorunum {
   oneri: Tarih | null;
   tarihHatasi: string | null;
   secim: GunSecimi | null;
+  /** Önceki sayfa ile seçilen gün arasında sayfası olmayan iş günleri. */
+  atlananGunler: Tarih[];
   mevcutOnayiGerekli: boolean;
   yilOnayiGerekli: boolean;
   okunan: Partial<Record<KaynakTuru, KaynakVeri>>;
   okumaHatalari: Partial<Record<KaynakTuru, string>>;
   denetimler: TarihDenetimi[];
   onayBekleyenler: TarihDenetimi[];
+  /** Tarih uyuşmazlığında D01 ve sayım fişinin ortak günü; seçilebilir bir günse önerilir. */
+  dosyaGunu: Tarih | null;
   plan: DepoKontrolPlani | null;
   planHatasi: string | null;
   kaydedilebilir: boolean;
@@ -204,6 +208,24 @@ function mesaj(e: unknown): string {
     : 'Rapor hazırlanamadı. Dosya düzenini ve ayarları kontrol edin.';
 }
 
+/** D01 ve sayım fişi aynı günü gösteriyor ve o gün seçilebiliyorsa o gün; yoksa null. */
+function dosyaGunu(
+  gunler: HedefBilgisi['gunler'],
+  secilen: Tarih,
+  d01: KaynakVeri,
+  sayim: KaynakVeri,
+): Tarih | null {
+  const tarihler = [...new Set([d01.tarih, sayim.tarih].filter((t): t is Tarih => t !== null))];
+  const [aday] = tarihler;
+  if (tarihler.length !== 1 || !aday || aday === secilen) return null;
+  try {
+    gunSec(gunler, aday);
+    return aday;
+  } catch {
+    return null;
+  }
+}
+
 /** Ekranın gösterdiği her şey. `planla` motor yüklenmeden önce verilmeyebilir. */
 export function turet(o: Oturum, ayarlar: Ayarlar, bugun: Tarih, planla?: Planlayici): Gorunum {
   const g: Gorunum = {
@@ -212,12 +234,14 @@ export function turet(o: Oturum, ayarlar: Ayarlar, bugun: Tarih, planla?: Planla
     oneri: null,
     tarihHatasi: null,
     secim: null,
+    atlananGunler: [],
     mevcutOnayiGerekli: false,
     yilOnayiGerekli: false,
     okunan: {},
     okumaHatalari: {},
     denetimler: [],
     onayBekleyenler: [],
+    dosyaGunu: null,
     plan: null,
     planHatasi: null,
     kaydedilebilir: false,
@@ -267,6 +291,7 @@ export function turet(o: Oturum, ayarlar: Ayarlar, bugun: Tarih, planla?: Planla
     g.tarihHatasi = mesaj(e);
     return g;
   }
+  g.atlananGunler = atlananGunler(g.secim.onceki.tarih, g.secim.tarih, ayarlar.pazarAtla);
   g.mevcutOnayiGerekli = g.secim.tur === 'mevcut' && !o.mevcutOnayi;
   if (g.mevcutOnayiGerekli) return g;
   g.adim = 3;
@@ -278,6 +303,7 @@ export function turet(o: Oturum, ayarlar: Ayarlar, bugun: Tarih, planla?: Planla
   g.onayBekleyenler = g.denetimler.filter(
     (d) => d.durum === 'uyusmuyor' && !o.onaylananTarihler.includes(d.kaynak),
   );
+  if (g.onayBekleyenler.length > 0) g.dosyaGunu = dosyaGunu(gunler, g.secim.tarih, d01, sayim);
   if (g.onayBekleyenler.length > 0 || !planla) return g;
   g.adim = 4;
 

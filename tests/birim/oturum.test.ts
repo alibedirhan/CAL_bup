@@ -121,3 +121,37 @@ it('ayar değişince mevcut sayfa ve farklı dosya tarihi onayları yenilenir', 
   expect(o.onaylananTarihler).toEqual([]);
   expect(gor(o).mevcutOnayiGerekli).toBe(true);
 });
+
+describe('kullanıcıya kolaylık', () => {
+  it('dosya tarihleri başka bir günü gösteriyorsa o gün önerilir', () => {
+    let o = kaynaklarla(azalt(BOS_OTURUM, { tur: 'hedefYuklendi', hedef }));
+    o = azalt(o, { tur: 'tarihDegisti', girdi: '01.10' });
+    const g = gor(o);
+    expect(g.onayBekleyenler.map((d) => d.kaynak)).toContain('D01');
+    expect(g.dosyaGunu).toBe(tarih(2026, 9, 30));
+    expect(g.atlananGunler).toEqual([tarih(2026, 9, 30)]);
+    // Öneriye geçilince soru kalmaz ve atlanan gün yoktur
+    const g2 = gor(azalt(o, { tur: 'tarihDegisti', girdi: '30.09.2026' }));
+    expect(g2.onayBekleyenler).toEqual([]);
+    expect(g2.atlananGunler).toEqual([]);
+    expect(g2.kaydedilebilir).toBe(true);
+  });
+
+  it('dosyalar seçilen günle uyuşuyorsa gün önerilmez', () => {
+    const g = gor(kaynaklarla(azalt(BOS_OTURUM, { tur: 'hedefYuklendi', hedef })));
+    expect(g.dosyaGunu).toBeNull();
+  });
+
+  it('D01 ile sayım fişi farklı günleri gösteriyorsa gün önerilmez', () => {
+    const o = kaynaklarla(azalt(BOS_OTURUM, { tur: 'hedefYuklendi', hedef }), 'SAYIM_29_09.xlsx');
+    expect(gor(azalt(o, { tur: 'tarihDegisti', girdi: '01.10' })).dosyaGunu).toBeNull();
+  });
+
+  it('arada gün atlanınca plan uyarısı oluşur', () => {
+    let o = kaynaklarla(azalt(BOS_OTURUM, { tur: 'hedefYuklendi', hedef }));
+    o = azalt(o, { tur: 'tarihDegisti', girdi: '01.10' });
+    for (const d of gor(o).onayBekleyenler) o = azalt(o, { tur: 'tarihOnaylandi', kaynak: d.kaynak });
+    const g = gor(o);
+    expect(g.plan?.uyarilar.some((u) => u.startsWith('Arada gün sayfası açılmamış: 30.09.2026'))).toBe(true);
+  });
+});

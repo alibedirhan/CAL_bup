@@ -52,6 +52,83 @@
   overflow-wrap: anywhere;
 }
 
+/* Uzun dosya adı tek satırda kalır; tamamı üzerine gelince görünür */
+.dosya-satiri .dosya-adi,
+.yuva .dosya-adi {
+  overflow: hidden;
+  overflow-wrap: normal;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.yuva .yuva-not {
+  margin-top: 2px;
+  color: var(--uyari);
+}
+
+.tarih-alani .uyari-not {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--uyari-yumusak);
+  color: var(--murekkep);
+  font-size: 13px;
+}
+
+.tarih-alani > .dugme {
+  justify-self: start;
+}
+
+.reddedilenler {
+  display: grid;
+  gap: 6px;
+  font-size: 13.5px;
+}
+
+.reddedilenler:focus {
+  outline: none;
+}
+
+/* ---- Sıradaki adım (kontrol hazır olmadan sağ taraf) ---- */
+.siradaki.uyari {
+  border-style: solid;
+  border-color: var(--uyari);
+}
+
+.siradaki.uyari > svg {
+  color: var(--uyari);
+}
+
+.eksik-listesi {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+}
+
+.eksik-listesi span {
+  color: var(--soluk);
+}
+
+.eksik-listesi .alan-hatasi {
+  display: block;
+  margin-top: 4px;
+}
+
+.sonraki-adimlar {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 12px 14px 12px 32px;
+  border-radius: var(--yaricap);
+  background: var(--uyari-yumusak);
+  font-size: 14px;
+}
+
+.sonuc-ozeti {
+  margin: 0;
+}
+
 .dosya-simge {
   width: 36px;
   height: 36px;
@@ -282,6 +359,24 @@
   box-shadow: var(--golge);
 }
 
+.kayit-cubugu.hatali {
+  border-color: var(--hata);
+}
+
+.hata-onayi {
+  flex: 1 1 100%;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: var(--hata);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.hata-onayi input {
+  margin-top: 2px;
+}
+
 .kayit-cubugu p {
   flex: 1 1 260px;
   font-size: 13.5px;
@@ -365,4 +460,21 @@
 .surukle-ortu span {
   color: var(--soluk);
   font-size: 14px;
+}
+
+.kontrol .bilgi-satirlari > div,
+.sonuc-ozeti > div {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.kontrol .bilgi-satirlari dd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.kontrol .bilgi-satirlari dd .dugme {
+  font-family: var(--yazi-govde);
 }

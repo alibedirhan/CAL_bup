@@ -13,7 +13,7 @@ import type { AcikKitap } from '../../kaynaklar/excel';
 import type { Kitap } from '../../kaynaklar/kitap';
 import { d01Oku, sayimOku, subeAlisOku } from '../../kaynaklar/led';
 import { depoKontrolMu } from '../../kaynaklar/tani';
-import { tarihOnerisi, type GunSayfasi, type GunSecimi } from './gunSecimi';
+import { atlananGunler, tarihOnerisi, type GunSayfasi, type GunSecimi } from './gunSecimi';
 import { hedefTarihleri } from './hedefTarihleri';
 import { hesapla, type DepoKontrolPlani } from './hesapla';
 import type { TarihDenetimi } from './tarihDenetimi';
@@ -74,7 +74,14 @@ export function planla(
   const ws = hedef.excel.getWorksheet(ad);
   if (!ws) throw new KullaniciHatasi(`'${ad}' sayfası bulunamadı.`);
   yapiDogrula(ws, ayarlar);
-  const plan = hesapla({ listeAdlari: listeOku(ws, ayarlar), ...kaynaklar, ayarlar, tarihDenetimleri });
+  const plan = hesapla({
+    listeAdlari: listeOku(ws, ayarlar),
+    ...kaynaklar,
+    ayarlar,
+    tarihDenetimleri,
+    atlananGunler: atlananGunler(secim.onceki.tarih, secim.tarih, ayarlar.pazarAtla),
+    oncekiSayfa: secim.onceki.ad,
+  });
   if (plan.eklenenler.length) satirEklemeyiDogrula(ws, Math.min(...plan.eklenenler.map((e) => e.satir)));
   return plan;
 }

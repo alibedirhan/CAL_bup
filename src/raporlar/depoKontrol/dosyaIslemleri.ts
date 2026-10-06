@@ -91,6 +91,8 @@ export interface KayitSonucu {
   oncekiBayt: Uint8Array;
   ledDosyalari: { ad: string; bayt: Uint8Array }[];
   uyari: string | null;
+  /** Kaydedilen planın özeti sonuç ekranında gösterilir. */
+  plan: DepoKontrolPlani;
 }
 
 /**
@@ -200,6 +202,7 @@ export async function kaydet(
     yedekId,
     oncekiBayt: hedef.bayt,
     ledDosyalari: [],
+    plan,
     uyari: gecmisYazildi
       ? yenidenAcUyarisi
       : 'Dosya hazır ancak geçmiş bu tarayıcıda saklanamadı. Site verisi iznini kontrol edin.',

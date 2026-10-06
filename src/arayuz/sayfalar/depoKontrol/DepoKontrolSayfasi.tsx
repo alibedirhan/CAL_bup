@@ -2,8 +2,7 @@ import { IslemBildirimi } from '../../bilesenler/IslemBildirimi';
 import { useRef, useState, type DragEvent } from 'react';
 import type { Ayarlar } from '../../../cekirdek/ayarlar';
 import type { RaporTanimi } from '../../../raporlar/kayit';
-import { KAYNAK_TURLERI } from '../../../raporlar/depoKontrol/oturum';
-import { DOSYA_TURU_ADLARI } from '../../../kaynaklar/tani';
+import { XLSX_KABUL } from '../../../platform/dosya';
 import { Adimlar } from '../../bilesenler/Adimlar';
 import { Mesaj } from '../../bilesenler/Mesaj';
 import { SayfaBasligi } from '../../bilesenler/SayfaBasligi';
@@ -12,8 +11,9 @@ import { HedefBolumu } from './HedefBolumu';
 import { KaynakBolumu } from './KaynakBolumu';
 import { KayitCubugu, SonucKarti } from './KayitBolumu';
 import { KontrolPaneli } from './KontrolPaneli';
-import { SatirTablosu } from './SatirTablosu';
-import { useDepoKontrol, type DepoKontrol } from './useDepoKontrol';
+import { SatirTablosu, type Suzgec } from './SatirTablosu';
+import { SiradakiAdim } from './SiradakiAdim';
+import { useDepoKontrol } from './useDepoKontrol';
 
 const ADIMLAR = ['Depo kontrol dosyası', 'Gün', 'LED dosyaları', 'Kontrol', 'Kaydet'] as const;
 
@@ -23,42 +23,21 @@ const MESGUL_METNI = {
   kaydediliyor: 'Kaydediliyor…',
 } as const;
 
-/** Kontrol hazır olmadan sağ tarafta ne eksik olduğunu söyler. */
-function Bekleme({ dk }: { dk: DepoKontrol }) {
-  const g = dk.gorunum;
-  let baslik = 'Kontrol burada görünecek';
-  let metin = 'Depo kontrol dosyasını seçin, sonra üç LED dosyasını bırakın.';
-  if (dk.oturum.hedef) {
-    const eksik = KAYNAK_TURLERI.filter((t) => !g.okunan[t]).map((t) => DOSYA_TURU_ADLARI[t]);
-    if (g.yilOnayiGerekli) {
-      baslik = 'Dosya yılı kontrolü bekleniyor';
-      metin = 'Soldaki dosya yılını kontrol edip onaylayın.';
-    } else if (g.tarihHatasi || g.mevcutOnayiGerekli) {
-      baslik = 'Gün seçimi bekleniyor';
-      metin = 'Soldaki gün alanına bakın.';
-    } else if (eksik.length > 0) {
-      baslik = `${eksik.length} LED dosyası bekleniyor`;
-      metin = eksik.join(', ');
-    } else if (g.onayBekleyenler.length > 0) {
-      baslik = 'Tarih onayı bekleniyor';
-      metin =
-        'Bir ya da daha fazla dosyanın tarihi seçilen günle uyuşmuyor. Soldan onaylayın ya da doğru dosyayı bırakın.';
-    }
-  }
-  return (
-    <div className="bos">
-      <Simge ad="depo" boyut={28} />
-      <h2>{baslik}</h2>
-      <p>{metin}</p>
-    </div>
-  );
-}
-
 export function DepoKontrolSayfasi({ rapor, ayarlar }: { rapor: RaporTanimi; ayarlar: Ayarlar }) {
   const dk = useDepoKontrol(ayarlar);
   const [surukleniyor, setSurukleniyor] = useState(false);
+  const [suzgec, setSuzgec] = useState<Suzgec>('tumu');
   const derinlik = useRef(0);
+  const ledGirdisi = useRef<HTMLInputElement>(null);
+  const tablo = useRef<HTMLDivElement>(null);
   const g = dk.gorunum;
+  const ledSec = () => {
+    if (!dk.mesgul) ledGirdisi.current?.click();
+  };
+  const farklariGoster = () => {
+    setSuzgec('fark');
+    tablo.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const dosyaVar = (e: DragEvent) => [...e.dataTransfer.types].includes('Files');
   const surukle = {
@@ -101,26 +80,42 @@ export function DepoKontrolSayfasi({ rapor, ayarlar }: { rapor: RaporTanimi; aya
       <div className="dk-izgara">
         <div className="dk-sol">
           <HedefBolumu dk={dk} />
-          <KaynakBolumu dk={dk} />
+          <KaynakBolumu dk={dk} ledSec={ledSec} />
         </div>
         <div className="dk-sag">
           {dk.sonuc ? (
             <SonucKarti dk={dk} />
           ) : g.plan && g.secim ? (
             <>
-              <KontrolPaneli plan={g.plan} secim={g.secim} />
+              <KontrolPaneli plan={g.plan} secim={g.secim} farklariGoster={farklariGoster} />
               <KayitCubugu dk={dk} />
-              <SatirTablosu plan={g.plan} />
+              <div ref={tablo}>
+                <SatirTablosu plan={g.plan} suzgec={suzgec} suzgecSec={setSuzgec} />
+              </div>
             </>
           ) : g.planHatasi ? (
             <Mesaj ton="hata" baslik="Sayfa hazırlanamadı">
               {g.planHatasi}
             </Mesaj>
           ) : (
-            <Bekleme dk={dk} />
+            <SiradakiAdim dk={dk} ledSec={ledSec} />
           )}
         </div>
       </div>
+
+      <input
+        ref={ledGirdisi}
+        type="file"
+        accept={XLSX_KABUL}
+        multiple
+        hidden
+        aria-label="LED dosyalarını seç"
+        onChange={(e) => {
+          const dosyalar = [...(e.target.files ?? [])];
+          e.target.value = '';
+          if (dosyalar.length > 0) void dk.dosyalarGeldi(dosyalar);
+        }}
+      />
 
       {surukleniyor && (
         <div className="surukle-ortu" aria-hidden="true">

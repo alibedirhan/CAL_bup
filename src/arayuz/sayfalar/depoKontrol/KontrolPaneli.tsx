@@ -1,4 +1,4 @@
-import { sayiMetni } from '../../../cekirdek/sayi';
+import { sayiMetni, yuvarla3 } from '../../../cekirdek/sayi';
 import { gunAdi, tarihMetni } from '../../../cekirdek/tarih';
 import type { Kontrol } from '../../../cekirdek/kontrol';
 import type { DepoKontrolPlani } from '../../../raporlar/depoKontrol/hesapla';
@@ -25,7 +25,7 @@ function Metrik({ baslik, aciklama, k }: { baslik: string; aciklama: string; k: 
         <small>kg</small>
       </span>
       <span className={`metrik-kontrol ${tamam ? 'tamam' : 'hata'}`}>
-        <Simge ad={tamam ? 'tik' : 'dosya'} boyut={14} />
+        <Simge ad={tamam ? 'tik' : 'uyari'} boyut={14} />
         {tamam
           ? `${aciklama} aynı`
           : `${aciklama} tutmuyor: beklenen ${sayiMetni(k.beklenen ?? 0)}, fark ${sayiMetni(k.fark ?? 0)}`}
@@ -34,8 +34,17 @@ function Metrik({ baslik, aciklama, k }: { baslik: string; aciklama: string; k: 
   );
 }
 
-export function KontrolPaneli({ plan, secim }: { plan: DepoKontrolPlani; secim: GunSecimi }) {
+export function KontrolPaneli({
+  plan,
+  secim,
+  farklariGoster,
+}: {
+  plan: DepoKontrolPlani;
+  secim: GunSecimi;
+  farklariGoster: () => void;
+}) {
   const bilgiler = plan.kontroller.filter((k) => k.durum === 'Bilgi');
+  const farkli = plan.satirlar.filter((s) => yuvarla3(s.b - s.d) !== 0).length;
   return (
     <section className="kart one-cikan kontrol" aria-labelledby="kontrol-baslik">
       <div className="kart-ust">
@@ -69,6 +78,17 @@ export function KontrolPaneli({ plan, secim }: { plan: DepoKontrolPlani; secim: 
             <dd className="rakam">{sayiMetni(k.bulunan)}</dd>
           </div>
         ))}
+        <div>
+          <dt>LED ile sayımı farklı ürün</dt>
+          <dd className="rakam">
+            {farkli}
+            {farkli > 0 && (
+              <button type="button" className="dugme hayalet kucuk" onClick={farklariGoster}>
+                Göster
+              </button>
+            )}
+          </dd>
+        </div>
       </dl>
 
       {(plan.uyarilar.length > 0 || plan.notlar.length > 0) && (

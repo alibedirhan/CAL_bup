@@ -1,3 +1,32 @@
+# 6 Ekim 2026 — Günlük depo kontrol kullanım kolaylığı (1.14.0)
+
+Kullanıcı bütün sekmelerin UX/mantık taramasına Günlük depo kontrolden başlamayı, kullanımı zor
+geldiği için buna yoğunlaşmayı ve stok kontrolü için gerekli diğer işleri yapmayı istedi. Ekran yapay
+deneme paketiyle 1366×657 (iş yeri dizüstü), 390 px ve koyu temada adım adım incelendi.
+
+Bulunan ve düzeltilenler:
+
+1. Sorular dağınıktı: var olan sayfa onayı solda, tarih uyuşmazlıkları her dosyanın içinde dar
+   kutulardaydı; sağ taraf yalnız “soldan onaylayın” diyordu. Artık sağdaki “sıradaki adım” kutusu
+   soruyu düğmeleriyle sorar (`SiradakiAdim.tsx`): eksik LED dosyaları beklenen tarihleriyle ve
+   “LED dosyalarını seç” düğmesiyle; var olan sayfa için “Evet, yeniden doldur / Hayır, yeni gün”;
+   tarih uyuşmazlıkları tek listede, tek “bu dosyalarla devam et” onayıyla.
+2. D01 ve sayım fişi aynı günü gösteriyorsa “Günü GG.AA yap” önerisi (`Gorunum.dosyaGunu`).
+3. Mantık: arada sayfası açılmamış iş günü sessizce atlanıyordu. Gün alanında gösterilir ve plana
+   uyarı olarak yazılır (`atlananGunler`); hesap değişmedi.
+4. Mantık: genel durum Hata iken de tek tıkla kaydediliyordu. Artık plana bağlı açık onay gerekir.
+5. Farklı ürün sayısı kontrol panelinde; “Göster” süzgeci açar, farklar büyükten küçüğe sıralanır.
+6. Sonuç ekranında genel durum/toplamlar/uyarı özeti; indirme kipinde dosyayı eskisinin yerine koyma
+   adımları. Uzun dosya adları ortadan kırılmıyor; reddedilen dosya hatası bir kez yazılıyor;
+   yazılan gün öneriden farklıysa “Önerilen güne dön”; metinler sol/sağ konumuna dayanmıyor.
+
+Doğrulama: `npm run kontrol` (950 birim+altın test, gerçek 30.09 dosyalarıyla altın testler dahil)
+ve tam Chromium paketi; yeni `tests/tarayici/depoKontrolKullanim.spec.ts` dört senaryo.
+Commit/push yapılmadı; yayın için kullanıcı onayı beklenir. Windows'ta gerçek dosyayla deneme
+kullanıcıdadır. Sıradaki: diğer sekmelerin UX/mantık taraması (kullanıcı sırayı söyleyecek).
+
+---
+
 # 5 Ekim 2026 (gece) — Yaşlandırma modülü (1.13.0)
 
 Kullanıcı BUP Yönetim'deki kalan Satış modülünün (Yaşlandırma) taşınmasını, önce tarama ve

@@ -7,6 +7,7 @@ import {
   sayfaTarihi,
   sayfaTarihiYilli,
   sonrakiGun,
+  tarihMetni,
   yilOf,
   type Tarih,
 } from '../../cekirdek/tarih';
@@ -73,4 +74,28 @@ export function gunSec(gunler: readonly GunSayfasi[], tarih: Tarih): GunSecimi {
     );
   }
   return { tur: 'yeni', tarih, ad: sayfaAdi(tarih), onceki: son };
+}
+
+/**
+ * Önceki gün sayfasıyla seçilen gün arasında kalan, sayfası olmayan iş günleri.
+ * Ayara göre pazar sayılmaz. Uzun boşluklarda liste ilk 400 günle sınırlanır.
+ */
+export function atlananGunler(onceki: Tarih, secilen: Tarih, pazarAtla: boolean): Tarih[] {
+  const gunler: Tarih[] = [];
+  for (
+    let g = sonrakiGun(onceki, pazarAtla);
+    g < secilen && gunler.length < 400;
+    g = sonrakiGun(g, pazarAtla)
+  )
+    gunler.push(g);
+  return gunler;
+}
+
+/** Atlanan günlerin kısa metni: üç güne kadar tek tek, fazlası aralık olarak. */
+export function atlananGunMetni(gunler: readonly Tarih[]): string {
+  const ilk = gunler[0];
+  const son = gunler.at(-1);
+  if (!ilk || !son) return '';
+  if (gunler.length <= 3) return gunler.map(tarihMetni).join(', ');
+  return `${gunler.length} iş günü (${tarihMetni(ilk)} – ${tarihMetni(son)})`;
 }

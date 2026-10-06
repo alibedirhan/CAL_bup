@@ -182,6 +182,18 @@ gün. Uymazsa sorulur, onaylanırsa uyarı olarak kayda geçer. Tarih bulunamazs
 5. İç tutarlılık: her kaynağın satır toplamı kendi dip toplamını tutmalı (tutmazsa uyarı). Şube alış
    birden fazla günü kapsıyorsa ya da dip toplamı yoksa uyarı.
 
+**Atlanan gün (1.14.0):** Önceki gün sayfası ile seçilen gün arasında sayfası olmayan iş günü varsa
+(pazar ayara göre sayılmaz) gün alanında gösterilir ve kayda uyarı olarak geçer. Hesap değişmez; yeni gün
+yine önceki sayfanın devamıdır.
+
+**Dosya günü önerisi (1.14.0):** Tarihi uymayan dosyalar sağdaki tek soruda listelenir. D01 ile sayım
+fişi aynı günü gösteriyor ve o gün seçilebiliyorsa “Günü GG.AA yap” önerilir; “bu dosyalarla devam et”
+bütün uyuşmazlıkları birlikte onaylar ve uyarı olarak kayda geçer.
+
+**Hatalı kontrolle kayıt (1.14.0):** Genel durum Hata ise (üç toplam kontrolünden biri tutmuyorsa)
+kaydetme/indirme düğmeleri, kullanıcı “yine de kaydet” onayını işaretleyene kadar kapalıdır. Onay yalnız o
+plana aittir; dosya, gün veya ayar değişince yeniden istenir.
+
 Karşılaştırma toleransı Ayarlar'dadır (varsayılan 0,001 kg). **Genel durum:** herhangi bir kontrol
 tutmazsa Hata; tutuyor ama uyarı varsa Uyarı; yoksa Tamam.
 

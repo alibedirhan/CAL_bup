@@ -17,6 +17,7 @@ const YOLLAR = {
   ekran: 'M3 5h18v12H3zM8 21h8M12 17v4',
   dosya: 'M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5M9 13h6M9 17h6',
   tik: 'M5 12.5 10 17 19 7.5',
+  uyari: 'M12 3.5 2.5 20h19zM12 10v4.5M12 17.5v.01',
   bulut: 'M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8z',
 } as const;
 

@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { atlananGunMetni } from '../../../raporlar/depoKontrol/gunSecimi';
 import { gunAdi, sayfaAdi, tarihMetni } from '../../../cekirdek/tarih';
 import { dogrudanKayitVar, XLSX_KABUL } from '../../../platform/dosya';
 import { DriveRaporunuAc } from '../drive/DriveRaporu';
@@ -36,7 +37,9 @@ export function HedefBolumu({ dk }: { dk: DepoKontrol }) {
             <Simge ad="tik" />
           </span>
           <div>
-            <b>{hedef.ad}</b>
+            <b className="dosya-adi" title={hedef.ad}>
+              {hedef.ad}
+            </b>
             <span>
               {hedef.bilgi.gunler.length} gün sayfası · son sayfa {hedef.bilgi.son.ad}
               {!hedef.tanitici && ' · kaydedince yeni dosya olarak iner'}
@@ -54,8 +57,10 @@ export function HedefBolumu({ dk }: { dk: DepoKontrol }) {
                 <Simge ad="depo" />
               </span>
               <div>
-                <b>{dk.hatirlanan.name}</b>
-                <span>Son kullandığınız dosya</span>
+                <b className="dosya-adi" title={dk.hatirlanan.name}>
+                  {dk.hatirlanan.name}
+                </b>
+                <span>Son kullandığınız dosya · devam etmek için Aç’a basın</span>
               </div>
               <div className="satir-dugmeleri">
                 <button
@@ -145,31 +150,30 @@ export function HedefBolumu({ dk }: { dk: DepoKontrol }) {
               </span>
             )}
           </div>
-          {!dk.oturum.tarihGirdisi && (
+          {g.secim && g.atlananGunler.length > 0 && !g.tarihHatasi && (
+            <p className="yuva-not uyari-not">
+              Arada gün sayfası açılmamış: {atlananGunMetni(g.atlananGunler)}. Bu gün {g.secim.onceki.ad}{' '}
+              sayfasının devamı olarak hazırlanır.
+            </p>
+          )}
+          {dk.oturum.tarihGirdisi ? (
+            <button
+              type="button"
+              className="dugme hayalet kucuk"
+              disabled={dk.mesgul !== null}
+              onClick={dk.oneriyeDon}
+            >
+              Önerilen güne dön ({sayfaAdi(g.oneri ?? hedef.bilgi.oneri)})
+            </button>
+          ) : (
             <p className="ipucu">
-              Son sayfadan sonraki iş günü önerildi. Başka bir gün için yazın (ör. 30.09).
+              Son sayfadan sonraki iş günü önerildi. Başka bir gün için kutuya yazın (ör. 30.09).
             </p>
           )}
           {g.tarihHatasi && (
             <p id="gun-hatasi" className="alan-hatasi">
               {g.tarihHatasi}
             </p>
-          )}
-          {g.mevcutOnayiGerekli && g.secim && (
-            <div className="onay">
-              <p>
-                <b>'{g.secim.ad}' sayfası zaten var.</b> Kaynak dosyalardan yeniden doldurulsun mu? Miktarlar,
-                tarihler ve formüller yeniden yazılır; eksik ürünler listeye eklenebilir.
-              </p>
-              <button
-                type="button"
-                className="dugme kucuk"
-                disabled={dk.mesgul !== null}
-                onClick={dk.mevcutOnayla}
-              >
-                Evet, yeniden doldur
-              </button>
-            </div>
           )}
         </div>
       )}

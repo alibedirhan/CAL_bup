@@ -109,9 +109,14 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.13.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.14.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-06 Günlük depo kontrol kullanım kolaylığı (1.14.0):** Kullanıcı bütün sekmelerin
+UX/mantık taramasına depo kontrolden başladı. Sorular sağdaki “sıradaki adım” kutusunda düğmeleriyle;
+dosya günü önerisi; atlanan iş günü uyarısı; Hata durumunda açık kayıt onayı; fark süzgeci ve sonuç
+özeti. Ayrıntı oturum notunda. Diğer sekmelerin taraması sıradadır.
 
 **2026-10-05 Yaşlandırma (1.13.0):** Kullanıcı masaüstündeki kalan Satış modülünü plana göre
 taşımayı istedi. Özgün 17 Python dosyası SHA-256 ile aynı; `tools/yaslandirmaReferansi.py`

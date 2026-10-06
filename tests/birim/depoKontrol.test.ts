@@ -155,3 +155,26 @@ describe('tarih denetimi', () => {
     expect(p.notlar[0]).toBe('Sayım fişi: dosyada tarih bulunamadı, tarih kontrolü yapılamadı.');
   });
 });
+
+describe('atlanan gün uyarısı', () => {
+  it('arada sayfası açılmamış gün varsa uyarı olarak kayda geçer', () => {
+    const k = kaynaklar();
+    const p = hesapla({
+      listeAdlari: LISTE,
+      ...k,
+      ayarlar: AYAR,
+      atlananGunler: [tarih(2026, 9, 29)],
+      oncekiSayfa: '28.09',
+    });
+    expect(p.uyarilar).toContain(
+      'Arada gün sayfası açılmamış: 29.09.2026. Bu gün 28.09 sayfasının devamı olarak hazırlandı.',
+    );
+    expect(p.genelDurum).not.toBe('Tamam');
+  });
+
+  it('atlanan gün yoksa uyarı eklenmez', () => {
+    const k = kaynaklar();
+    const p = hesapla({ listeAdlari: LISTE, ...k, ayarlar: AYAR, atlananGunler: [] });
+    expect(p.uyarilar.some((u) => u.startsWith('Arada gün sayfası'))).toBe(false);
+  });
+});

@@ -7,6 +7,8 @@ import type { KaynakVeri } from '../../cekirdek/kaynakVeri';
 import { bilgi, genelDurum, karsilastir, type Kontrol } from '../../cekirdek/kontrol';
 import { adAnahtari, adNormal, sonraGelirMi } from '../../cekirdek/metin';
 import { esitMi, sayiMetni, yuvarla3 } from '../../cekirdek/sayi';
+import type { Tarih } from '../../cekirdek/tarih';
+import { atlananGunMetni } from './gunSecimi';
 import type { TarihDenetimi } from './tarihDenetimi';
 import { tarihKayitlari } from './tarihDenetimi';
 
@@ -52,6 +54,10 @@ export interface HesapGirdisi {
   sube: KaynakVeri;
   ayarlar: Ayarlar;
   tarihDenetimleri?: readonly TarihDenetimi[];
+  /** Önceki sayfa ile yeni gün arasında sayfası olmayan iş günleri. */
+  atlananGunler?: readonly Tarih[];
+  /** Yeni günün kopyalandığı (önceki) sayfanın adı. */
+  oncekiSayfa?: string;
 }
 
 export function hesapla(g: HesapGirdisi): DepoKontrolPlani {
@@ -60,6 +66,12 @@ export function hesapla(g: HesapGirdisi): DepoKontrolPlani {
   const tarihler = tarihKayitlari(g.tarihDenetimleri ?? []);
   const uyarilar = [...tarihler.uyarilar];
   const notlar = [...tarihler.notlar];
+  if (g.atlananGunler?.length) {
+    uyarilar.push(
+      `Arada gün sayfası açılmamış: ${atlananGunMetni(g.atlananGunler)}. ` +
+        `Bu gün${g.oncekiSayfa ? ` ${g.oncekiSayfa} sayfasının` : ' önceki sayfanın'} devamı olarak hazırlandı.`,
+    );
+  }
 
   if (sube.baslangicTarihi && sube.tarih && sube.baslangicTarihi !== sube.tarih) {
     uyarilar.push('Şube alış raporu birden fazla günü kapsıyor.');
