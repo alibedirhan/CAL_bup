@@ -70,14 +70,20 @@ export default function MusteriTakipSayfasi({ aktif }: { aktif: boolean }) {
           />
         </section>
         {m.oturum ? (
-          <MusteriSonuclari sonuc={m.oturum.sonuc} mesgul={m.mesgul} aktar={m.disaAktar} />
+          <MusteriSonuclari
+            sonuc={m.oturum.sonuc}
+            plasiyerler={m.kayit?.plasiyerler ?? {}}
+            mesgul={m.mesgul}
+            aktar={m.disaAktar}
+          />
         ) : (
           <section className="bos" aria-label="Karşılaştırma bekleniyor">
             <Simge ad="musteriler" boyut={32} />
             <h2>İki liste, net bir karşılaştırma</h2>
             <p>
-              Dosyaları seçip Karşılaştır’a basın. Eski listede olup yeni listede bulunmayan müşteriler ve
-              yeni eklenen müşteriler burada gösterilir.
+              {m.eski && m.yeni
+                ? 'İki dosya da seçildi. Soldaki Karşılaştır düğmesine basın.'
+                : 'Soldan eski ve yeni tarihli müşteri listesini seçin, sonra Karşılaştır’a basın. Eski listede olup yeni listede bulunmayan müşteriler ve yeni eklenen müşteriler burada gösterilir.'}
             </p>
             <p className="ipucu">
               Müşteri dosyaları bu bilgisayarda işlenir. Liste içeriği tarayıcının kalıcı deposuna

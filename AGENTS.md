@@ -109,9 +109,13 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.14.1. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.14.2. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-06 Müşteri Takip ve bildirimler (1.14.2):** Sekme taramasının üçüncü adımı. Başarı
+bildirimleri 12 sn sonra kapanır, hata kalır; Müşteri Takip'te tek satır dosya seçimi, depo/Excel başlığı
+ve plasiyer ayarı açıklaması. Masaüstü eşdeğerliği değişmedi.
 
 **2026-10-06 Sanal POS sadeleştirmesi (1.14.1):** Sekme taramasının ikinci adımı. Yalnız görünüm:
 işlem sırası, seçili kart panelinde iki ayrı yol, elle girişte açıklamalar “Ayrıntılar” altında.

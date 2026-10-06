@@ -1,16 +1,20 @@
 import { useMemo, useState } from 'react';
 import { harfKatla, kenarlariTemizle } from '../../../../cekirdek/musteriTakip/metin';
-import type { ListeYonu, MusteriSonucu } from '../../../../cekirdek/musteriTakip/turler';
+import { ciktiBasligi } from '../../../../cekirdek/musteriTakip/adlandirma';
+import type { ListeYonu, MusteriSonucu, Plasiyerler } from '../../../../cekirdek/musteriTakip/turler';
 
 interface Ozellikler {
   sonuc: MusteriSonucu;
+  /** Güncel araç/plasiyer eşleştirmesi: çıktı başlığı dışa aktarma anında buna göre yazılır. */
+  plasiyerler: Plasiyerler;
   mesgul: boolean;
   aktar: (tur: 'excel' | 'resim', secim?: { yon: ListeYonu; satirlar: readonly string[] }) => Promise<void>;
 }
 
 const SAYFA_BOYU = 50;
 
-export function MusteriSonuclari({ sonuc, mesgul, aktar }: Ozellikler) {
+export function MusteriSonuclari({ sonuc, plasiyerler, mesgul, aktar }: Ozellikler) {
+  const baslik = ciktiBasligi(sonuc.depo, plasiyerler);
   const [yon, setYon] = useState<ListeYonu>('eksik');
   const [arama, setArama] = useState('');
   const [sirala, setSirala] = useState('kaynak');
@@ -32,6 +36,17 @@ export function MusteriSonuclari({ sonuc, mesgul, aktar }: Ozellikler) {
         <span className="rozet durum bilgi">Karşılaştırıldı</span>
       </div>
       <p>{sonuc.mesaj}</p>
+      <p className="musteri-kaynak-ozet">
+        {sonuc.depo ? (
+          <>
+            Depo: <b>{sonuc.depo}</b> · Excel başlığı: <b>{baslik}</b>
+            {baslik === sonuc.depo &&
+              ' · Başlıkta plasiyer adı görünsün isterseniz soldaki “Araç/plasiyer ayarları”na bu aracı ekleyin.'}
+          </>
+        ) : (
+          'Dosyada depo/araç bilgisi bulunamadı; Excel çıktısı başlıksız olur.'
+        )}
+      </p>
       <dl className="musteri-ozet">
         {(
           [

@@ -1,3 +1,19 @@
+# 6 Ekim 2026 — Müşteri Takip ve bildirimler (1.14.2)
+
+Kullanıcı sıradaki sekmeyi seçmeden “sıradaki işi yap” dedi (dışarıda, deneyemedi); liste sırasıyla
+Müşteri Takip ele alındı. Masaüstü eşdeğerliği (karşılaştırma, çıktı, adlandırma) değişmedi.
+
+- Bütün sekmeler: başarı bildirimi 12 sn sonra kendiliğinden kapanır (üzerindeyken bekler); hata
+  bildirimi kullanıcı kapatana kadar kalır. Kapatılan bildirim sayfa geçişinde geri gelmez. Önceden
+  sağ alttaki bildirim Excel/kart düğmelerini örtüyordu.
+- Dosya seçme kutuları tek satır: 1366×657 ekranda Karşılaştır düğmesi görünür; uzun ad kısaltılır.
+- Sonuçta depo ve güncel Excel başlığı (`ciktiBasligi`); eşleştirme yoksa ayarlara yönlendirme.
+- Araç/plasiyer ayarları ne işe yaradığını söyler; hiç eşleştirme yokken boş bir satırla açılır.
+
+Yeni `tests/tarayici/musteriKullanim.spec.ts`. Sıradaki sekmeler: Yaşlandırma, Kârlılık, İskonto.
+
+---
+
 # 6 Ekim 2026 — Sanal POS ekran sadeleştirmesi (1.14.1)
 
 Kullanıcı sekme taramasında ikinci olarak Sanal POS'u seçti ve dışarıdayken gerekli işleri yapmayı

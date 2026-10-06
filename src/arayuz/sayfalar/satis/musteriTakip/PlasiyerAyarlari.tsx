@@ -26,11 +26,11 @@ export function PlasiyerAyarlari({ kayit, hata, kilitli, degisti, yenile, mesgul
     try {
       const taze = await yenile();
       setDuzenleniyor(true);
-      setSatirlar(
-        Object.entries(taze?.plasiyerler ?? {})
-          .sort()
-          .map(([no, ad]) => ({ no, ad })),
-      );
+      const kayitli = Object.entries(taze?.plasiyerler ?? {})
+        .sort()
+        .map(([no, ad]) => ({ no, ad }));
+      // Hiç eşleştirme yoksa boş bir satırla açılır; boş satır kaydedilmez.
+      setSatirlar(kayitli.length ? kayitli : [{ no: '', ad: '' }]);
       setAlanHatasi('');
       setMesaj('');
     } finally {
@@ -83,7 +83,8 @@ export function PlasiyerAyarlari({ kayit, hata, kilitli, degisti, yenile, mesgul
       {duzenleniyor && (
         <div className="musteri-ayar-duzen">
           <p className="ipucu">
-            Eşleştirme çıktı başlığını ve dosya adını belirler. Ayarlar bu tarayıcıda saklanır.
+            Araç numarasını (ör. 06) plasiyer adıyla eşleştirirseniz Excel/resim çıktısının başlığında ve
+            dosya adında “Araç 06 - Plasiyer adı” yazar. Ayarlar yalnız bu tarayıcıda saklanır.
           </p>
           <div className="satir-dugmeleri">
             <button

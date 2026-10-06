@@ -16,7 +16,9 @@ export function ExcelDosyaSecimi({ baslik, alanAdi, dosyaAdi, kilitli, degisti }
   return (
     <div className="excel-dosya-secimi">
       <b>{baslik}</b>
-      <span id={aciklama}>{dosyaAdi ?? 'Dosya seçilmedi'}</span>
+      <span id={aciklama} title={dosyaAdi ?? undefined}>
+        {dosyaAdi ?? 'Dosya seçilmedi'}
+      </span>
       <button
         className="dugme kucuk"
         type="button"

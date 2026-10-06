@@ -10,22 +10,34 @@
 }
 .excel-dosya-secimi {
   display: grid;
-  gap: 12px;
-  padding: 14px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 12px;
+  padding: 10px 14px;
   border: 1px solid var(--cizgi);
   border-radius: var(--yaricap);
   background: var(--yuzey-2);
 }
-.excel-dosya-secimi span {
-  display: block;
-  overflow-wrap: anywhere;
+.excel-dosya-secimi b {
+  grid-column: 1;
 }
+/* Uzun dosya adı tek satırda kalır; tamamı üzerine gelince görünür */
 .excel-dosya-secimi span {
+  grid-column: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   color: var(--soluk);
-  margin-top: 6px;
+  font-size: 13px;
 }
 .excel-dosya-secimi .dugme {
-  justify-self: start;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+.musteri-kaynak-ozet {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--soluk);
 }
 .musteri-harf {
   display: flex;
