@@ -4,12 +4,14 @@ $ErrorActionPreference = 'Stop'
 $testLocalRoot = Join-Path ([IO.Path]::GetTempPath()) ('CALbupWinTest-' + [Guid]::NewGuid())
 $testZip = (Resolve-Path 'dist/pos-yardimcisi.zip').Path
 $testManifest = Get-Content 'dist/pos-yardimcisi/manifest.json' -Raw | ConvertFrom-Json
+# Önbellek kırıcı: yardımcı sürümü ve ZIP özetinin ilk 12 karakteri.
+$testVersionKey = $testManifest.version + '-' + (Get-FileHash -LiteralPath $testZip -Algorithm SHA256).Hash.ToLowerInvariant().Substring(0, 12)
 $script:browserOpened = $false
 $script:clipboardPath = ''
 function Read-Host { return '1' }
 function Invoke-WebRequest {
     param($Uri, [switch]$UseBasicParsing, $MaximumRedirection, $TimeoutSec, $OutFile)
-    if ($Uri -ne ('https://alibedirhan.github.io/CAL_bup/pos-yardimcisi.zip?v=' + $testManifest.version) -or $MaximumRedirection -ne 0 -or $TimeoutSec -ne 45) { throw 'İzin kapsamı değişmiş.' }
+    if ($Uri -ne ('https://alibedirhan.github.io/CAL_bup/pos-yardimcisi.zip?v=' + $testVersionKey) -or $MaximumRedirection -ne 0 -or $TimeoutSec -ne 45) { throw 'İzin kapsamı değişmiş.' }
     Copy-Item -LiteralPath $testZip -Destination $OutFile
 }
 function Start-Process {

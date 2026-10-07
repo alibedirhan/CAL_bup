@@ -31,7 +31,7 @@ test('Windows kurulum dosyası tam bu yayının ZIP özetini ve sürümünü den
   const hash = createHash('sha256').update(zip).digest('hex');
   const m = JSON.parse(await readFile('dist/pos-yardimcisi/manifest.json', 'utf8'));
   expect(cmd).toContain(hash);
-  expect(cmd).toContain('?v=' + m.version);
+  expect(cmd).toContain('?v=' + m.version + '-' + hash.slice(0, 12) + "'");
   expect(cmd).toContain("$manifest.version -ne '" + m.version + "'");
   expect(cmd).toContain('Get-FileHash');
   expect(cmd).toContain('ReparsePoint');
