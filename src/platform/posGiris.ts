@@ -1,12 +1,12 @@
 import { KullaniciHatasi } from '../cekirdek/hata';
-import { posGirisSifresi, posNumarasi } from '../cekirdek/posCari';
+import { posGirisBilgisi, type PosCari } from '../cekirdek/posCari';
 
 // Kullanıcı verisi, sorgu parametresi veya oturum belirteci bu adrese eklenmez.
 export const POS_GIRIS_ADRESI = 'https://denizpay.bupilic.com.tr/login.aspx';
 
 /** Yalnızca kullanıcı tıklamasında çağrılır; POS yanıtı/ödeme sonucu okunmaz. */
-export function posCariyleGirisYap(numara: string): void {
-  const n = posNumarasi(numara);
+export function posCariyleGirisYap(cari: Pick<PosCari, 'numara' | 'girisKullanici' | 'girisSifresi'>): void {
+  const g = posGirisBilgisi(cari);
   const form = document.createElement('form');
   form.method = 'post';
   form.action = POS_GIRIS_ADRESI;
@@ -19,9 +19,9 @@ export function posCariyleGirisYap(numara: string): void {
     // ASP.NET'in isteği giriş formu gönderimi olarak işlemesi için boş durum alanı.
     // Sağlayıcının imzalı sayfa/oturum değerleri kopyalanmaz veya sabitlenmez.
     __VIEWSTATE: '',
-    lvergino: n,
-    lkullaniciadi: n,
-    lsifre: posGirisSifresi(n),
+    lvergino: g.vergiNo,
+    lkullaniciadi: g.kullanici,
+    lsifre: g.sifre,
     btngiris: 'Giriş Yap',
   })) {
     const alan = document.createElement('input');

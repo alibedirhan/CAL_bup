@@ -1,43 +1,74 @@
 import { KullaniciHatasi } from './hata';
-import { POS_KIMLIK, kartNumarasi, kartSuresiGecti, type PosKart } from './posKart';
-import { posNumarasi, type PosCari } from './posCari';
+import { POS_KIMLIK, kartMetni, kartNumarasi, kartSuresiGecti, type PosKart } from './posKart';
+import { posGirisBilgisi, posGirisKullanicisi, posNumarasi, posOzelSifre, type PosCari } from './posCari';
 
 export const POS_KOKENI = 'https://denizpay.bupilic.com.tr';
 export const PROGRAM_KOKENI = 'https://alibedirhan.github.io';
 // Girişten sonra ödeme sayfasına geçmek için gerçekçi süre; kart yalnız yardımcının oturum belleğinde bekler.
 export const AKTARIM_SURESI = 180_000;
+/** Tek ödeme için yardımcıya bir kez giden veri. CVV ödeme anında yazılır, hiçbir yerde saklanmaz;
+ * boş metin “CVV'yi POS'ta kendim yazacağım” demektir. */
 export interface PosAktarimi {
   cariId: string;
   kartId: string;
   cariNumarasi: string;
+  kullanici: string;
+  sifre: string;
   numara: string;
   ay: string;
   yil: string;
+  sahibi: string;
+  cvv: string;
+}
+const AKTARIM_ANAHTARLARI = 'ay,cariId,cariNumarasi,cvv,kartId,kullanici,numara,sahibi,sifre,yil';
+
+/** CVV/CVC 3 veya 4 rakamdır; boşsa doldurulmaz. */
+export function cvvDogrula(deger: string): string {
+  if (deger === '') return '';
+  if (!/^\d{3,4}$/.test(deger)) throw new KullaniciHatasi('CVV 3 veya 4 rakam olmalı.');
+  return deger;
 }
 export function aktarimiDogrula(d: unknown): PosAktarimi {
   const k = d as PosAktarimi | null;
+  const hata = () => new KullaniciHatasi('Seçili cari ve kartı kontrol edin.');
   if (
     !k ||
-    Object.keys(k).sort().join() !== 'ay,cariId,cariNumarasi,kartId,numara,yil' ||
+    typeof k !== 'object' ||
+    Object.keys(k).sort().join() !== AKTARIM_ANAHTARLARI ||
     !Object.values(k).every((v) => typeof v === 'string') ||
     !POS_KIMLIK.test(k.cariId) ||
     !POS_KIMLIK.test(k.kartId) ||
     !/^(0[1-9]|1[0-2])$/.test(k.ay) ||
     !/^20\d{2}$/.test(k.yil) ||
+    !k.kullanici ||
+    !k.sifre ||
     kartSuresiGecti(k)
   )
-    throw new KullaniciHatasi('Seçili cari ve kartı kontrol edin.');
-  return { ...k, cariNumarasi: posNumarasi(k.cariNumarasi), numara: kartNumarasi(k.numara) };
+    throw hata();
+  return {
+    ...k,
+    cariNumarasi: posNumarasi(k.cariNumarasi),
+    kullanici: posGirisKullanicisi(k.kullanici),
+    sifre: posOzelSifre(k.sifre),
+    numara: kartNumarasi(k.numara),
+    sahibi: kartMetni(k.sahibi, 0, 120),
+    cvv: cvvDogrula(k.cvv),
+  };
 }
-export function kartAktarimi(cari: PosCari, kart: PosKart): PosAktarimi {
+export function kartAktarimi(cari: PosCari, kart: PosKart, cvv = ''): PosAktarimi {
   if (kart.cariId !== cari.id) throw new KullaniciHatasi('Kart seçilen cariye ait değil.');
+  const giris = posGirisBilgisi(cari);
   return aktarimiDogrula({
     cariId: cari.id,
     kartId: kart.id,
-    cariNumarasi: cari.numara,
+    cariNumarasi: giris.vergiNo,
+    kullanici: giris.kullanici,
+    sifre: giris.sifre,
     numara: kart.numara,
     ay: kart.ay,
     yil: kart.yil,
+    sahibi: kart.sahibi,
+    cvv: cvvDogrula(cvv),
   });
 }
 export function programAdresi(adres: string): boolean {
@@ -53,56 +84,17 @@ export function posSayfasi(adres: string): string {
   if (u.origin !== POS_KOKENI || u.username || u.password) throw new Error('POS adresi uygun değil.');
   return u.origin + u.pathname;
 }
-export type AlanRolu = 'firma' | 'numara' | 'tarih' | 'ay' | 'yil';
-export interface AlanTanimi {
-  secici: string;
-  etiket: string;
-  tur: string;
-  /** Kullanıcı, adı/yazısı tanınmayan kutuyu bu rol için açıkça onayladı. Engelli alan kuralı yine geçerlidir. */
-  elle?: true;
-}
-export interface PosAlanlari {
-  sayfa: string;
-  alanlar: Partial<Record<AlanRolu, AlanTanimi>>;
-}
-export function alanlariDogrula(d: unknown): PosAlanlari {
-  const a = d as PosAlanlari | null;
-  if (
-    !a ||
-    Object.keys(a).sort().join() !== 'alanlar,sayfa' ||
-    posSayfasi(a.sayfa) !== a.sayfa ||
-    new URL(a.sayfa).pathname.toLowerCase() === '/login.aspx'
-  )
-    throw new Error('Ödeme sayfasını tanıtın.');
-  const roller = Object.keys(a.alanlar);
-  if (
-    !a.alanlar.firma ||
-    !a.alanlar.numara ||
-    (a.alanlar.tarih ? a.alanlar.ay || a.alanlar.yil : !a.alanlar.ay || !a.alanlar.yil) ||
-    roller.some((r) => !['firma', 'numara', 'tarih', 'ay', 'yil'].includes(r))
-  )
-    throw new Error('Alan seçimi eksik.');
-  const seciciler = new Set<string>();
-  for (const [r, f] of Object.entries(a.alanlar)) {
-    if (
-      !f ||
-      !['etiket,secici,tur', 'elle,etiket,secici,tur'].includes(Object.keys(f).sort().join()) ||
-      ('elle' in f && (f.elle !== true || r === 'firma')) ||
-      typeof f.secici !== 'string' ||
-      !f.secici ||
-      f.secici.length > 300 ||
-      /\d{6}/.test(f.secici) ||
-      seciciler.has(f.secici) ||
-      !/^(INPUT|SELECT|SPAN|DIV|P|TD|DD|B|STRONG)$/.test(f.etiket) ||
-      !['', 'text', 'tel', 'number'].includes(f.tur) ||
-      (r !== 'firma' && !['INPUT', 'SELECT'].includes(f.etiket))
-    )
-      throw new Error('Alan seçimi uygun değil.');
-    seciciler.add(f.secici);
+/** Giriş sayfası büyük/küçük harf ve oturum düşünce eklenen `?ReturnUrl=` ile de tanınır. */
+export function girisSayfasi(adres: string): boolean {
+  try {
+    const u = new URL(adres);
+    return (
+      u.origin === POS_KOKENI && !u.username && !u.password && u.pathname.toLowerCase() === '/login.aspx'
+    );
+  } catch {
+    return false;
   }
-  return a;
 }
-
 /** Sağlayıcının giriş hata yazısı kullanıcıya aktarılırken kısaltılır; 4+ rakam dizisi maskelenir. */
 export function girisMesajiTemizle(d: unknown): string {
   if (typeof d !== 'string') return '';

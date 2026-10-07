@@ -239,6 +239,19 @@ Telefon bankanın SMS hedefini değiştirmez. Tutar ve banka doğrulaması POS/b
 1.6.0'da ayrı MV3 yardımcı, kullanıcı tarafından tanıtılmış boş numara/S.K.T alanlarını cari numarası
 eşleşince doldurabilir. Sağlayıcının kart API'si doğrulanmış değildir; SMS/ödeme otomasyonu yoktur.
 
+**1.16.0 (saha testi):**
+
+- Kartlı carinin numarası yalnız “aynı kişinin numarasını düzeltiyorum” onayıyla değişir; kartlar cari
+  kimliğine bağlı olduğundan yerinde kalır. Onaysız değişiklik reddedilir.
+- POS girişi varsayılan olarak vergi no = lisans no = numara, şifre = numaranın ilk 2 + son 2 hanesidir.
+  Cari kaydında isteğe bağlı `girisKullanici` / `girisSifresi` bu kuralın yerine geçer (şifreli kasada,
+  boşsa kayda yazılmaz). Kural tek yerde: `cekirdek/posCari.ts → posGirisBilgisi`.
+- CVV **kaydedilmez**. Kullanıcı isterse ödeme anında programdaki CVV kutusuna yazar; yalnız o aktarımda
+  yardımcıya gider, teslimden önce yardımcının oturum belleğinden silinir. Kullanıcı kararı (2026-10-07):
+  CVV'nin saklanması kart kuralları (PCI DSS) gereği seçilmedi.
+- Yardımcı Ad Soyad kutusunu kartın “Kart üzerindeki ad” bilgisiyle doldurur (tanıtıldıysa). Tutar
+  kutusuna hiçbir durumda yazılmaz; POS'un yazdığı bakiye ödeme tutarı değildir.
+
 - 500 cari, cari başına 10 kart; şifreli zarf/yedek toplamı 2 MiB’yi geçemez.
 - Numara 12–19 ASCII rakam ve Luhn; telefon isteğe bağlı Türkiye cep telefonu biçimidir.
   Biçim kontrolü kart/telefon sahipliği doğrulaması değildir.

@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
 const SURUM: string = JSON.parse(
-  readFileSync(new URL('../../package.json', import.meta.url), 'utf8'),
-).version;
+  readFileSync(new URL('../../src/cekirdek/posYardimciSurumu.json', import.meta.url), 'utf8'),
+).surum;
 import { test, expect, type Worker, type BrowserContext } from '@playwright/test';
-import { eklentiOrtami, yapayKartliCari, kartliPosAc, APP, POS } from './eklentiYardimci';
+import { eklentiOrtami, alanlariTanit, yapayKartliCari, kartliPosAc, APP, POS } from './eklentiYardimci';
 function arkaPlan(c: BrowserContext): Worker {
   const w = c.serviceWorkers()[0];
   if (!w) throw new Error('Yapay testte yardımcı arka planı açılmadı.');
@@ -136,11 +136,11 @@ test('iki uygulama sekmesi aynı anda POS aktarımı başlatamaz', async () => {
   }
 });
 // Bu dosyada gerçek müşteri verisi veya sağlayıcı ağı kullanılmaz.
-test('alan seçimi silinemediğinde hata görünür, işlenmemiş söz reddi oluşmaz', async () => {
+test('kurulum silinemediğinde hata görünür, işlenmemiş söz reddi oluşmaz; silme onay ister', async () => {
   const e = await eklentiOrtami();
   try {
-    await e.p.goto(POS + '/yapay-odeme.aspx');
-    await expect(e.p.locator('#cal-bup-pos-yardimcisi')).toBeVisible();
+    await alanlariTanit(e.p);
+    const panel = e.p.locator('#cal-bup-pos-yardimcisi');
     const hatalar: string[] = [];
     e.p.on('pageerror', (err) => hatalar.push(err.message));
     await arkaPlan(e.c).evaluate(() => {
@@ -151,19 +151,25 @@ test('alan seçimi silinemediğinde hata görünür, işlenmemiş söz reddi olu
         throw new Error('Yapay depo arızası');
       };
     });
-    await e.p.getByRole('button', { name: 'Bu sayfanın kurulumunu sil', exact: true }).click();
-    await expect(e.p.locator('#cal-bup-pos-yardimcisi')).toContainText('Alan seçimi silinemedi');
+    await panel.getByRole('button', { name: 'Kurulumu sil', exact: true }).click();
+    await expect(panel.getByRole('status')).toContainText('silinsin mi');
+    await panel.getByRole('button', { name: 'Vazgeç', exact: true }).click();
+    await expect(panel).toContainText('Kurulum tamam');
+    await panel.getByRole('button', { name: 'Kurulumu sil', exact: true }).click();
+    await panel.getByRole('button', { name: 'Evet, kurulumu sil', exact: true }).click();
+    await expect(panel).toContainText('Kurulum silinemedi');
     expect(hatalar).toEqual([]);
     expect(e.sayac.sms + e.sayac.odeme + e.sayac.dis).toBe(0);
   } finally {
     await e.kapat();
   }
 });
-test('önceki alan kaydının geç yanıtı yeni seçim talimatını değiştirmez', async () => {
+test('kurulum kaydedilirken yeni tanıtma başlatılamaz; geç yanıt sonrası kurulum tamam görünür', async () => {
   const e = await eklentiOrtami();
   try {
     await e.p.goto(POS + '/yapay-odeme.aspx');
-    await expect(e.p.locator('#cal-bup-pos-yardimcisi')).toBeVisible();
+    const panel = e.p.locator('#cal-bup-pos-yardimcisi');
+    await expect(panel).toBeVisible();
     await arkaPlan(e.c).evaluate(() => {
       const ch = (
         globalThis as unknown as { chrome: { storage: { local: { set(d: unknown): Promise<void> } } } }
@@ -174,15 +180,16 @@ test('önceki alan kaydının geç yanıtı yeni seçim talimatını değiştirm
         await eski(d);
       };
     });
-    const b = e.p.getByRole('button', { name: 'Numara ve tek tarih alanını tanıt', exact: true });
-    await b.click();
-    await e.p.locator('#firma').click();
+    await panel.getByRole('button', { name: 'Alanları tanıt', exact: true }).click();
     await e.p.locator('#kart').click();
     await e.p.locator('#tarih').click();
-    await b.click();
-    await expect(e.p.locator('#cal-bup-pos-yardimcisi')).toContainText('1/3:');
-    await e.p.waitForTimeout(2500);
-    await expect(e.p.locator('#cal-bup-pos-yardimcisi')).toContainText('1/3:');
+    await panel.getByRole('button', { name: 'Bu adımı atla', exact: true }).click();
+    await panel.getByRole('button', { name: 'Bu adımı atla', exact: true }).click();
+    await e.p.locator('#firma').click();
+    await expect(panel.getByRole('status')).toContainText('kaydediliyor');
+    await expect(panel.getByRole('button', { name: /tanıt|Kurulumu yenile/ })).toHaveCount(0);
+    await expect(panel.getByRole('status')).toContainText('Alanlar tanıtıldı', { timeout: 5000 });
+    await expect(panel).toContainText('Kurulum tamam');
     expect(e.sayac.sms + e.sayac.odeme + e.sayac.dis).toBe(0);
   } finally {
     await e.kapat();

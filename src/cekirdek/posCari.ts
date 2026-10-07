@@ -1,9 +1,13 @@
 import { KullaniciHatasi } from './hata';
 
+/** `girisKullanici`/`girisSifresi` yalnız POS'ta varsayılan kurala (kullanıcı = numara, şifre = ilk 2 +
+ * son 2 hane) uymayan cariler içindir; boşsa kayda hiç yazılmaz. */
 export interface PosCari {
   id: string;
   ad: string;
   numara: string;
+  girisKullanici?: string;
+  girisSifresi?: string;
 }
 
 export interface PosVerisi {
@@ -12,6 +16,12 @@ export interface PosVerisi {
 }
 
 export const EN_FAZLA_POS_CARI = 500;
+const CARI_ANAHTARLARI = new Set([
+  'ad,id,numara',
+  'ad,girisKullanici,id,numara',
+  'ad,girisSifresi,id,numara',
+  'ad,girisKullanici,girisSifresi,id,numara',
+]);
 
 function nesne(deger: unknown): deger is Record<string, unknown> {
   return typeof deger === 'object' && deger !== null && !Array.isArray(deger);
@@ -38,6 +48,46 @@ export function posGirisSifresi(numara: string): string {
   return n.slice(0, 2) + n.slice(-2);
 }
 
+/** POS giriş sayfasının “lisans numarası” (kullanıcı) alanı; boş metin varsayılan kural demektir. */
+export function posGirisKullanicisi(deger: string): string {
+  const s = deger.trim();
+  if (!s) return '';
+  if (!/^[\x21-\x7e]{1,40}$/.test(s))
+    throw new KullaniciHatasi('POS lisans/kullanıcı numarasını boşluksuz, en fazla 40 karakter yazın.');
+  return s;
+}
+
+/** Elle girilen POS şifresi olduğu gibi korunur (kırpılmaz); boş metin varsayılan kural demektir. */
+export function posOzelSifre(deger: string): string {
+  if (!deger) return '';
+  if (deger.length > 64 || deger !== deger.trim() || /[\p{Cc}\p{Cf}]/u.test(deger))
+    throw new KullaniciHatasi('POS şifresi en fazla 64 karakter olmalı; başında/sonunda boşluk olmamalı.');
+  return deger;
+}
+
+export interface PosGirisBilgisi {
+  vergiNo: string;
+  kullanici: string;
+  sifre: string;
+  /** Kullanıcı veya şifre carinin kaydından geliyor (varsayılan kural değil). */
+  ozel: boolean;
+}
+
+/** POS giriş formunun üç alanı. Kural tek yerde: yardımcı da program da buradan alır. */
+export function posGirisBilgisi(
+  c: Pick<PosCari, 'numara' | 'girisKullanici' | 'girisSifresi'>,
+): PosGirisBilgisi {
+  const vergiNo = posNumarasi(c.numara);
+  const kullanici = posGirisKullanicisi(c.girisKullanici ?? '');
+  const sifre = posOzelSifre(c.girisSifresi ?? '');
+  return {
+    vergiNo,
+    kullanici: kullanici || vergiNo,
+    sifre: sifre || posGirisSifresi(vergiNo),
+    ozel: Boolean(kullanici || sifre),
+  };
+}
+
 export function numaraMaskesi(numara: string): string {
   const n = posNumarasi(numara);
   return '•'.repeat(n.length - 4) + n.slice(-4);
@@ -47,8 +97,21 @@ function adAnahtari(ad: string): string {
   return cariAdi(ad).toLocaleLowerCase('tr-TR');
 }
 
+/** Kaydın tek biçimi: boş isteğe bağlı alanlar yazılmaz. */
+export function cariBicimi(c: PosCari): PosCari {
+  const girisKullanici = posGirisKullanicisi(c.girisKullanici ?? '');
+  const girisSifresi = posOzelSifre(c.girisSifresi ?? '');
+  return {
+    id: c.id,
+    ad: cariAdi(c.ad),
+    numara: posNumarasi(c.numara),
+    ...(girisKullanici ? { girisKullanici } : {}),
+    ...(girisSifresi ? { girisSifresi } : {}),
+  };
+}
+
 export function cariKaydet(cariler: readonly PosCari[], yeni: PosCari): PosCari[] {
-  const kayit = { id: yeni.id, ad: cariAdi(yeni.ad), numara: posNumarasi(yeni.numara) };
+  const kayit = cariBicimi(yeni);
   if (!/^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(kayit.id))
     throw new KullaniciHatasi('Cari kaydı geçersiz.');
   if (cariler.some((c) => c.id !== kayit.id && c.numara === kayit.numara)) {
@@ -78,15 +141,15 @@ export function posVerisiDogrula(deger: unknown): PosVerisi {
   for (const c of deger.cariler) {
     if (
       !nesne(c) ||
-      Object.keys(c).sort().join() !== 'ad,id,numara' ||
-      typeof c.id !== 'string' ||
-      typeof c.ad !== 'string' ||
-      typeof c.numara !== 'string' ||
-      kimlikler.has(c.id)
+      !CARI_ANAHTARLARI.has(Object.keys(c).sort().join()) ||
+      !Object.values(c).every((v) => typeof v === 'string') ||
+      c.girisKullanici === '' ||
+      c.girisSifresi === '' ||
+      kimlikler.has(c.id as string)
     )
       throw hata();
-    kimlikler.add(c.id);
-    cariler = cariKaydet(cariler, { id: c.id, ad: c.ad, numara: c.numara });
+    kimlikler.add(c.id as string);
+    cariler = cariKaydet(cariler, c as unknown as PosCari);
   }
   return { surum: 1, cariler };
 }

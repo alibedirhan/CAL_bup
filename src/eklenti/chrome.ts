@@ -2,8 +2,9 @@
 type Gonderen = { url?: string; tab?: { id?: number }; frameId?: number; id?: string };
 type Dinleyici = (m: unknown, s: Gonderen, yanit: (r: unknown) => void) => boolean | undefined;
 interface Depo {
-  get(k: string): Promise<Record<string, unknown>>;
+  get(k: string | string[]): Promise<Record<string, unknown>>;
   set(d: Record<string, unknown>): Promise<void>;
+  remove(k: string | string[]): Promise<void>;
   setAccessLevel(d: { accessLevel: 'TRUSTED_CONTEXTS' }): Promise<void>;
 }
 export interface EklentiApi {
@@ -16,6 +17,8 @@ export interface EklentiApi {
   storage: { session: Depo; local: Depo };
   tabs: {
     create(d: { url: string }): Promise<{ id?: number }>;
+    /** İçerik betiğine mesaj; `tabs` izni gerektirmez. */
+    sendMessage(id: number, m: unknown): Promise<unknown>;
     onRemoved: { addListener(f: (id: number) => void): void };
     onUpdated: { addListener(f: (id: number, d: { url?: string }) => void): void };
   };

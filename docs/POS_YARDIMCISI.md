@@ -149,3 +149,45 @@ CVV/tutar/şifre/para birimi yazılı, gizli, kapalı, uygunsuz türde veya kıs
 anında da aynı engeller yeniden denetlenir. Elle kopyalama yolu her zaman alternatiftir.
 Denemeler: `tests/tarayici/eklentiTanitma.spec.ts` (yapay düzen, ASP.NET `$` adları, onay/ret, sonradan
 CVV'ye dönen kutu).
+
+## 2.0.0 — tek seferlik kurulum
+
+Saha testinde alanlar her caride yeniden tanıtılmak zorunda kalıyordu: kimliği olmayan kutular sayfadaki
+sırasıyla saklanıyor, carinin ekranındaki tek satır fark bu sırayı kaydırıyordu; kurulum da sayfa adresine
+(büyük/küçük harf dahil) bağlıydı. 2.0.0'da:
+
+- **Site geneli kurulum** (`cekirdek/posKurulumu.ts`, `storage.local` `kurulum`): bir kez tanıtılır, bütün
+  cariler ve POS adresleri için geçerlidir. Eski sayfa adresli `alanlar` kaydı ilk okumada dönüştürülür.
+  Bilerek silme `kurulum: null` olarak kalır.
+- **Sağlam kutu bulma** (`eklenti/alanlar.ts`): kimlik → `name` → sayfadaki sıra ile saklanır; bulunurken
+  seçici kaydıysa `name`, sonra rakamsız başlık yazısıyla (“kredi karti numarasi”, “s.k.t”) tek aday
+  aranır. Her adayda görünürlük/engelli alan/tür/uzunluk denetimi yinelenir.
+- **Firma numarası kendiliğinden** (`eklenti/firma.ts`): içinde “firma” geçen ve tek 10–11 haneli numara
+  taşıyan en küçük görünür yazı(lar); farklı numaralar varsa okunmuş sayılmaz. Okunamazsa tanıtmada
+  kullanıcıya sorulur. Seçilen cariyle birebir eşleşmeyen numarada hiçbir şey yazılmaz (değişmedi).
+- **Tek “Alanları tanıt” akışı** (`eklenti/tanitma.ts`): kart numarası → S.K.T (liste veya 2 karakterlik
+  kutuysa ayrıca yıl) → Ad Soyad (atlanabilir) → CVV (atlanabilir). Aynı kutu ikinci kez seçilirse
+  “zaten … olarak seçtiniz” denir. Güvenlik nedeni boşluk uyarısından önce gösterilir.
+- **Panel** (`eklenti/panel.ts`): kurulum varsa “Kurulum tamam … yeniden tanıtmanız gerekmez”;
+  “Kurulumu yenile”, onaylı “Kurulumu sil”, “Ekran yapısı raporu” (`eklenti/tanilama.ts`: tür/kimlik/ad/
+  uzunluk/başlık; değer yok, rakamlar `#`, e-posta gizli). Giriş sayfasında tanıtma düğmesi yoktur.
+- **Roller:** CVV yalnız `cvv` rolüne yazılır, diğer rollerde engellidir; tutar/şifre/SMS/PIN/para birimi
+  her rolde engellidir (`eklenti/alanKurallari.ts`). Ad Soyad kutusunda başka ad yazılıysa yalnız o kutu
+  atlanır; numara/tarih/CVV'de farklı bilgi varsa hiçbir şey yazılmaz. Olay üretilmez (değişmedi).
+- **Eski sekme uyarısı:** Yeni aktarım başlarken yardımcı, gördüğü diğer POS sekmelerine (`tabs.sendMessage`,
+  ek izin gerekmez) “bu sekme önceki cariye ait olabilir, buradan ödeme yapmayın” uyarısı gösterir.
+- **Giriş:** lisans no/şifre programdan gelir (cariye özel olabilir). `/Login.aspx?ReturnUrl=…` de giriş
+  sayfasıdır. Ret mesajı 10 haneli numarada TC ipucu ve `neden: 'giris'` taşır; cari farkı `neden: 'cari'`
+  ve her iki numaranın son dört hanesiyle bildirilir.
+- **Protokol 3, ayrı sürüm:** Yardımcının sürümü `src/cekirdek/posYardimciSurumu.json`'dadır ve programın
+  sürümünden bağımsızdır. Derleme, yardımcı kodunun SHA-256 özetini `tools/posYardimciOzeti.json` ile
+  karşılaştırır; eklenti kodu değişip sürüm artırılmadıysa derleme durur. Yardımcı kodu değişince:
+  sürümü artırın, `npm run yardimci:ozet` çalıştırın. Windows kurulum adresi `?v=sürüm-özet` taşır.
+- **Güncelleme:** Kaldırmadan aynı klasöre çıkarıp “Yeniden yükle”; kurulum korunur. Kaldırılırsa program
+  kendi kopyasını geri verir.
+
+Testler: `tests/tarayici/eklentiSaha.spec.ts` (iki cari tek kurulum: kimliksiz kutular, fazladan satır,
+eksik e-posta, `/Index.aspx`; eski sekme uyarısı; CVV'nin hiçbir depoda kalmaması; ret → düzeltme;
+özel giriş; yeniden kurulumda geri yükleme ve bilerek silmede geri yüklememe), `eklentiTanitma.spec.ts`
+(tanıtma, CVV/tutar engeli, aynı kutu, ekran raporu). Gerçek POS ekranı ve Windows/Edge kabulü
+kullanıcıdadır; sayfa olaylarına bağlı doğrulama (kart görseli) bilinçli olarak tetiklenmez.

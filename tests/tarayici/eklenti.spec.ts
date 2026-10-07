@@ -16,7 +16,9 @@ for (const ayri of [false, true])
           await expect(pos.locator('#ay')).toHaveValue('12');
           await expect(pos.locator('#yil')).toHaveValue('35');
         } else await expect(pos.locator('#tarih')).toHaveValue('12/35');
-        await expect(e.p.getByRole('status').filter({ hasText: 'Cari eşleşti; numara' })).toBeVisible();
+        await expect(
+          e.p.getByRole('status').filter({ hasText: 'Cari eşleşti; kart numarası, son kullanma dolduruldu' }),
+        ).toBeVisible();
         await expect(pos.locator('#cvv')).toHaveValue('');
         await expect(pos.locator('#tutar')).toHaveValue('777');
         expect(await pos.evaluate(() => Reflect.get(window, 'yapayOlay'))).toBe(0);
@@ -53,7 +55,9 @@ test('yanlış cari numarası kart aktarımını tamamen durdurur', async () => 
     await kur.close();
     await yapayKartliCari(e.p);
     const pos = await kartliPosAc(e.p, e.c);
-    await expect(e.p.locator('#pos-aktarim-hatasi')).toContainText('eşleşmiyor');
+    await expect(e.p.locator('#pos-aktarim-hatasi')).toContainText(
+      'seçilen carinin numarasıyla (•••6789) aynı değil',
+    );
     await expect(pos.locator('#kart')).toHaveValue('');
     await expect(pos.locator('#tarih')).toHaveValue('');
     expect(e.sayac.sms + e.sayac.odeme + e.sayac.dis).toBe(0);
@@ -65,8 +69,7 @@ test('CVV, tutar ve ödeme düğmesi alan tanıtımında seçilemez; tıklama i�
   const e = await eklentiOrtami();
   try {
     await e.p.goto(POS + '/yapay-odeme.aspx');
-    await e.p.getByRole('button', { name: 'Numara ve tek tarih alanını tanıt', exact: true }).click();
-    await e.p.locator('#firma').click();
+    await e.p.getByRole('button', { name: 'Alanları tanıt', exact: true }).click();
     for (const sec of ['#cvv', '#tutar', 'button[type="submit"]']) {
       await e.p.locator(sec).click();
       await expect(e.p.locator('#cal-bup-pos-yardimcisi').getByRole('status')).toContainText(
@@ -304,7 +307,7 @@ test('cari alanı kaybolunca kart gönderilmez ve hata uygulamada da görünür'
       }),
     );
     const pos = await kartliPosAc(e.p, e.c);
-    await expect(e.p.locator('#pos-aktarim-hatasi')).toContainText('cari alanı okunamadı');
+    await expect(e.p.locator('#pos-aktarim-hatasi')).toContainText('firma numarası okunamadı');
     await expect(pos.locator('#kart')).toHaveValue('');
     await expect(pos.locator('#tarih')).toHaveValue('');
     expect(e.sayac.sms + e.sayac.odeme + e.sayac.dis).toBe(0);

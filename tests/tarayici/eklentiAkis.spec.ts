@@ -26,7 +26,7 @@ test('girişten sonra ana sayfada “ödeme sayfasına geçin” denir; ödeme s
     await e.p.getByRole('button', { name: 'Seçili kartla POS’u aç', exact: true }).click();
     const pos = await yeni;
     await pos.waitForURL(POS + '/yapay-ana.aspx');
-    await expect(pos.locator('#cal-bup-pos-yardimcisi')).toContainText('ödeme sayfasına geçin');
+    await expect(pos.locator('#cal-bup-pos-yardimcisi')).toContainText('Ödeme formunun olduğu sayfaya geçin');
     await expect(e.p.getByRole('status').filter({ hasText: 'POS’a giriş yapıldı' })).toBeVisible();
     await pos.goto(POS + '/yapay-odeme.aspx');
     await expect(pos.locator('#kart')).toHaveValue('4242424242424242');
@@ -42,7 +42,7 @@ test('girişten sonra ana sayfada “ödeme sayfasına geçin” denir; ödeme s
       ).chrome;
       return JSON.stringify(await ch.storage.local.get(null));
     });
-    expect(Object.keys(JSON.parse(yerel ?? '{}')).sort()).toEqual(['alanlar', 'panel']);
+    expect(Object.keys(JSON.parse(yerel ?? '{}')).sort()).toEqual(['kurulum', 'panel']);
     expect(yerel).not.toMatch(/4242|0123456789/);
     expect(e.sayac.sms + e.sayac.odeme + e.sayac.dis).toBe(0);
   } finally {
@@ -84,13 +84,13 @@ test('yardımcı paneli küçültme tercihi sayfa yenilenince korunur, yeni bild
     await e.p.goto(POS + '/yapay-odeme.aspx');
     const panel = e.p.locator('#cal-bup-pos-yardimcisi');
     await panel.getByRole('button', { name: 'Paneli küçült', exact: true }).click();
-    await expect(panel.getByRole('button', { name: 'Numara ve tek tarih alanını tanıt' })).toBeHidden();
+    await expect(panel.getByRole('button', { name: 'Alanları tanıt' })).toBeHidden();
     await e.p.reload();
     await expect(panel.getByRole('button', { name: 'Paneli aç', exact: true })).toBeVisible();
-    await expect(panel.getByRole('button', { name: 'Numara ve tek tarih alanını tanıt' })).toBeHidden();
+    await expect(panel.getByRole('button', { name: 'Alanları tanıt' })).toBeHidden();
     await expect(panel.getByRole('status')).toContainText('bir kez tanıtın');
     await panel.getByRole('button', { name: 'Paneli aç', exact: true }).click();
-    await expect(panel.getByRole('button', { name: 'Numara ve tek tarih alanını tanıt' })).toBeVisible();
+    await expect(panel.getByRole('button', { name: 'Alanları tanıt' })).toBeVisible();
   } finally {
     await e.kapat();
   }

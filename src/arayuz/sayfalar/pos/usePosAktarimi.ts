@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PosCari } from '../../../cekirdek/posCari';
 import type { PosKart } from '../../../cekirdek/posKart';
-import { AKTARIM_SURESI, kartAktarimi } from '../../../cekirdek/posAktarimi';
+import { AKTARIM_SURESI, cvvDogrula, kartAktarimi } from '../../../cekirdek/posAktarimi';
+import { YARDIMCI_SURUMU, type YardimciSonucu } from '../../../cekirdek/posBaglantisi';
+import { kurulumOzeti, type PosKurulumu } from '../../../cekirdek/posKurulumu';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
 import { yardimciyaSor } from '../../../platform/posYardimcisi';
-import { SURUM } from '../../../surum';
+import { kurulumKopyasiOku, kurulumKopyasiYaz } from '../../../platform/posKurulumKaydi';
 
-/** Yardımcı ZIP'i program sürümüyle üretilir; farklı sürüm çalışır ama yeni düzeltmeleri içermeyebilir. */
+/** Yardımcının kendi sürümü vardır; yalnız eklenti kodu değişince güncelleme önerilir. */
 export function surumUyarisi(yardimci: string): string {
-  return yardimci === SURUM
+  return yardimci === YARDIMCI_SURUMU
     ? ''
-    : `POS yardımcısının sürümü ${yardimci}, programın sürümü ${SURUM}. Aktarım çalışır ama son düzeltmeler için yardımcıyı yeni kurulum dosyasıyla güncelleyin ve bu sayfayı yenileyin.`;
+    : `POS yardımcısının sürümü ${yardimci}, beklenen ${YARDIMCI_SURUMU}. Aktarım çalışır ama son düzeltmeler için yardımcıyı kurulum dosyasıyla güncelleyin (kaldırmadan “Yeniden yükle”) ve bu sayfayı yenileyin.`;
 }
 function bekle(signal: AbortSignal) {
   return new Promise<void>((coz) => {
@@ -24,53 +26,89 @@ function bekle(signal: AbortSignal) {
     if (signal.aborted) bitir();
   });
 }
+/** Yardımcının bildirdiği kurulum programda da saklanır. Yardımcı kurulumu bilerek sildiyse (`null`)
+ * kopya da silinir; hiç kurulumu yoksa (yeniden kurulmuş) programdaki kopya geçerli kalır. */
+function kurulumuEsitle(s: YardimciSonucu): PosKurulumu | null {
+  if (s.kurulum !== undefined) kurulumKopyasiYaz(s.kurulum);
+  return s.kurulum === undefined ? kurulumKopyasiOku() : s.kurulum;
+}
+type Neden = YardimciSonucu['neden'];
+class AktarimHatasi extends KullaniciHatasi {
+  constructor(
+    mesaj: string,
+    readonly neden: Neden,
+  ) {
+    super(mesaj);
+  }
+}
+
 export function usePosAktarimi(cari: PosCari, kart: PosKart, mesgul: boolean) {
   const [durum, setDurum] = useState('');
   const [hata, setHata] = useState('');
+  const [neden, setNeden] = useState<Neden>(undefined);
   const [uyari, setUyari] = useState('');
   const [bekliyor, setBekliyor] = useState(false);
+  const [kurulum, setKurulum] = useState<PosKurulumu | null>(kurulumKopyasiOku);
   const islem = useRef<{ id: string; c: AbortController; gonderildi: boolean } | null>(null);
   const iptal = (i: NonNullable<typeof islem.current>) => {
     i.c.abort();
     if (i.gonderildi) void yardimciyaSor('iptal', i.id).catch(() => undefined);
   };
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    // Sessiz bağlantı denetimi: kart göndermez; yalnız hangi kutuların tanıtıldığını öğrenir.
+    const c = new AbortController();
+    void yardimciyaSor('durum', undefined, undefined, c.signal)
+      .then((s) => {
+        if (!c.signal.aborted) setKurulum(kurulumuEsitle(s));
+      })
+      .catch(() => undefined);
+    return () => {
+      c.abort();
       if (islem.current) iptal(islem.current);
-    },
-    [],
-  );
+    };
+  }, []);
   const durdur = () => {
     if (!islem.current) return;
     iptal(islem.current);
     islem.current = null;
     setBekliyor(false);
     setHata('');
+    setNeden(undefined);
     setDurum('Aktarım durduruldu. Doldurulmuş POS alanlarını kendiniz kontrol edin.');
   };
-  const baslat = async (kontrol = false) => {
-    if (islem.current || mesgul) return;
+  /** `cvv`: yalnız bu ödeme için; çağıran sonra kendi kutusunu boşaltır. Hiçbir yere yazılmaz. */
+  const baslat = async (kontrol = false, cvv = '') => {
+    if (islem.current || mesgul) return false;
     const i = { id: crypto.randomUUID(), c: new AbortController(), gonderildi: false };
     islem.current = i;
     setHata('');
+    setNeden(undefined);
     setBekliyor(true);
     setDurum('POS yardımcısı kontrol ediliyor…');
     try {
+      cvvDogrula(cvv);
       const bag = await yardimciyaSor('durum', undefined, undefined, i.c.signal);
       i.c.signal.throwIfAborted();
       if (bag.durum !== 'hazir') throw new KullaniciHatasi(bag.mesaj);
       setUyari(surumUyarisi(bag.surum));
+      const k = kurulumuEsitle(bag);
+      setKurulum(k);
       if (kontrol) {
         setDurum(
-          `POS yardımcısı bağlı (${bag.surum}). Kart bilgisi gönderilmedi; aktarımı başlatabilirsiniz.`,
+          `POS yardımcısı bağlı (${bag.surum}). ${
+            k
+              ? 'Ödeme formu tanıtılmış; her cari için geçerli.'
+              : 'Ödeme formu henüz tanıtılmamış: POS’taki yardımcı panelinden “Alanları tanıt” ile bir kez tanıtın.'
+          } Kart bilgisi gönderilmedi.`,
         );
-        return;
+        return true;
       }
-      const veri = kartAktarimi(cari, kart);
+      const veri = kartAktarimi(cari, kart, cvv);
       i.gonderildi = true;
-      const r = await yardimciyaSor('baslat', i.id, veri, i.c.signal);
+      const r = await yardimciyaSor('baslat', i.id, veri, i.c.signal, bag.kurulum === undefined ? k : null);
+      veri.cvv = veri.numara = veri.sifre = '';
       i.c.signal.throwIfAborted();
-      if (r.durum === 'hata' || r.durum === 'iptal') throw new KullaniciHatasi(r.mesaj);
+      if (r.durum === 'hata' || r.durum === 'iptal') throw new AktarimHatasi(r.mesaj, r.neden);
       if (r.durum !== 'giris')
         throw new KullaniciHatasi(
           'POS başlangıcı doğrulanamadı. Açık POS alanlarını kontrol edin; tekrar yapılmadı.',
@@ -82,10 +120,10 @@ export function usePosAktarimi(cari: PosCari, kart: PosKart, mesgul: boolean) {
         i.c.signal.throwIfAborted();
         const s = await yardimciyaSor('durum', i.id, undefined, i.c.signal);
         i.c.signal.throwIfAborted();
-        if (s.durum === 'hata' || s.durum === 'iptal') throw new KullaniciHatasi(s.mesaj);
+        if (s.durum === 'hata' || s.durum === 'iptal') throw new AktarimHatasi(s.mesaj, s.neden);
         if (s.durum === 'dolduruldu') {
           setDurum(s.mesaj);
-          return;
+          return true;
         }
         if (s.durum === 'hazir')
           throw new KullaniciHatasi(
@@ -97,12 +135,14 @@ export function usePosAktarimi(cari: PosCari, kart: PosKart, mesgul: boolean) {
     } catch (e) {
       if (!i.c.signal.aborted && islem.current === i) {
         setDurum('');
+        setNeden(e instanceof AktarimHatasi ? e.neden : undefined);
         setHata(
           e instanceof KullaniciHatasi
             ? e.message
             : 'POS aktarımı tamamlanamadı. POS alanlarını kontrol edin.',
         );
       }
+      return false;
     } finally {
       if (i.gonderildi) void yardimciyaSor('iptal', i.id).catch(() => undefined);
       if (islem.current === i) {
@@ -111,5 +151,5 @@ export function usePosAktarimi(cari: PosCari, kart: PosKart, mesgul: boolean) {
       }
     }
   };
-  return { durum, hata, uyari, bekliyor, baslat, durdur };
+  return { durum, hata, neden, uyari, bekliyor, baslat, durdur, tanitilan: kurulumOzeti(kurulum), kurulum };
 }

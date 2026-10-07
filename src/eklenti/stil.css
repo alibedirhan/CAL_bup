@@ -39,3 +39,35 @@ button:focus-visible {
 [hidden] {
   display: none;
 }
+.kurulum {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--soluk);
+}
+[data-ton='uyari'] {
+  padding: 8px 10px;
+  border-radius: var(--yaricap-k);
+  background: var(--uyari-yumusak);
+  border-left: 3px solid var(--uyari);
+}
+[data-ton='hata'] {
+  padding: 8px 10px;
+  border-radius: var(--yaricap-k);
+  background: var(--hata-yumusak);
+  border-left: 3px solid var(--hata);
+  font-weight: 600;
+}
+button.birincil {
+  font-weight: 600;
+  border-color: var(--murekkep);
+}
+textarea {
+  width: 100%;
+  min-height: 140px;
+  font: 12px/1.4 var(--yazi-rakam);
+  color: var(--murekkep);
+  background: var(--yuzey-2);
+  border: 1px solid var(--cizgi-guclu);
+  border-radius: var(--yaricap-k);
+  box-sizing: border-box;
+}

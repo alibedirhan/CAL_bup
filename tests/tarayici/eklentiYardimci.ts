@@ -88,32 +88,48 @@ function odemeHtml(v: { yanlis?: boolean; dolu?: boolean; ayri?: boolean }) {
     <button type="button" onclick="fetch('/sms',{method:'POST'})">Şifre gönder</button><button type="submit">Ödeme al</button></form>
     <script>window.yapayOlay=0;document.querySelectorAll('input,select').forEach(e=>{for(const t of ['input','change'])e.addEventListener(t,()=>{window.yapayOlay++;fetch('/sms',{method:'POST'})})});document.querySelector('form').addEventListener('submit',e=>{e.preventDefault();fetch('/odeme',{method:'POST'})});</script></body></html>`;
 }
-export async function alanlariTanit(p: Page, ayri = false) {
-  await p.goto(POS + '/yapay-odeme.aspx');
-  await p
-    .getByRole('button', {
-      name: ayri ? 'Numara, ayrı ay ve yılı tanıt' : 'Numara ve tek tarih alanını tanıt',
-      exact: true,
-    })
-    .click();
-  await p.locator('#firma').click();
+/** Tek “Alanları tanıt” akışı: numara, tarih (liste/2 karakterse ay ve yıl), Ad Soyad ve CVV
+ * (isteğe bağlı) ve firma yazısı yalnız kendiliğinden okunamıyorsa. */
+export async function alanlariTanit(p: Page, ayri = false, v: { cvv?: boolean; ad?: boolean } = {}) {
+  if (!p.url().startsWith(POS + '/yapay-odeme.aspx')) await p.goto(POS + '/yapay-odeme.aspx');
+  const panel = p.locator('#cal-bup-pos-yardimcisi');
+  const durum = panel.getByRole('status');
+  await panel.getByRole('button', { name: /^(Alanları tanıt|Kurulumu yenile)$/ }).click();
   await p.locator('#kart').click();
   if (ayri) {
     await p.locator('#ay').click();
+    await expect(durum).toContainText('yılı');
     await p.locator('#yil').click();
   } else await p.locator('#tarih').click();
-  await expect(p.locator('#cal-bup-pos-yardimcisi')).toContainText('Alanlar tanıtıldı');
+  await expect(durum).toContainText('Ad Soyad');
+  if (v.ad) await p.locator('#ad').click();
+  else await panel.getByRole('button', { name: 'Bu adımı atla', exact: true }).click();
+  await expect(durum).toContainText('CVV');
+  if (v.cvv) await p.locator('#cvv').click();
+  else await panel.getByRole('button', { name: 'Bu adımı atla', exact: true }).click();
+  await expect(durum).toContainText(/firma adının yanında|Alanlar tanıtıldı/);
+  if ((await durum.textContent())?.includes('firma adının')) await p.locator('#firma').click();
+  await expect(durum).toContainText('Alanlar tanıtıldı');
 }
-export async function yapayKartliCari(p: Page) {
+export async function yapayKartliCari(
+  p: Page,
+  v: { ad?: string; numara?: string; sahibi?: string; kullanici?: string; sifre?: string } = {},
+) {
   await p.goto(APP + '#/sanal-pos');
   await p.getByRole('button', { name: 'Yeni cari', exact: true }).click();
-  await p.getByLabel('Cari adı', { exact: true }).fill('Yapay Eklenti Carisi');
-  await p.getByLabel('Vergi/TC numarası', { exact: true }).fill('0123456789');
+  await p.getByLabel('Cari adı', { exact: true }).fill(v.ad ?? 'Yapay Eklenti Carisi');
+  await p.getByLabel('Vergi/TC numarası', { exact: true }).fill(v.numara ?? '0123456789');
+  if (v.kullanici || v.sifre) {
+    await p.getByText('POS girişi bu cari için farklıysa', { exact: true }).click();
+    if (v.kullanici) await p.getByLabel('Lisans numarası (kullanıcı)', { exact: true }).fill(v.kullanici);
+    if (v.sifre) await p.getByLabel('POS şifresi', { exact: true }).fill(v.sifre);
+  }
   await p.getByLabel('Cari adı ve numaranın aynı kişiye ait olduğunu kontrol ettim.').check();
   await p.getByRole('button', { name: 'Cariyi kaydet', exact: true }).click();
   await p.getByRole('button', { name: 'Kart ekle', exact: true }).click();
   await p.getByLabel('Karta vereceğiniz isim').fill('Yapay Eklenti Kartı');
   await p.getByLabel('Kart numarası', { exact: true }).fill('4242424242424242');
+  if (v.sahibi) await p.getByLabel('Kart üzerindeki ad', { exact: true }).fill(v.sahibi);
   await p.getByLabel('Son kullanma ayı', { exact: true }).selectOption('12');
   await p.getByLabel('Son kullanma yılı', { exact: true }).selectOption('2035');
   await p.getByLabel('Kart bilgilerini ve bu cari altında kaydetmeyi kontrol ettim.').check();

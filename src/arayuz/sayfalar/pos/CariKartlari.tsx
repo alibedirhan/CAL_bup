@@ -23,6 +23,7 @@ export function CariKartlari({
   kaydet,
   sil,
   kartDegisti,
+  cariyiDuzenle,
 }: {
   cari: PosCari;
   kartlar: PosKart[];
@@ -33,6 +34,7 @@ export function CariKartlari({
   kaydet: (k: PosKart, beklenen: PosKart | null) => Promise<IslemSonucu>;
   sil: (k: PosKart) => void;
   kartDegisti: () => void;
+  cariyiDuzenle: () => void;
 }) {
   const kopyalama = useIslem('kart-kopyalama');
   const blok = mesgul || kopyalama.mesgul;
@@ -144,7 +146,13 @@ export function CariKartlari({
               {kartMaskesi(secili)} · {secili.ay}/{secili.yil}
             </span>
           </div>
-          <PosKartAktarimi key={`${secili.id}-${aktarimNo}`} cari={cari} kart={secili} mesgul={blok} />
+          <PosKartAktarimi
+            key={`${secili.id}-${aktarimNo}`}
+            cari={cari}
+            kart={secili}
+            mesgul={blok}
+            cariyiDuzenle={cariyiDuzenle}
+          />
           <section className="pos-elle-kopya" aria-labelledby="pos-elle-kopya-baslik">
             <h3 id="pos-elle-kopya-baslik">Kart bilgilerini elle kopyala</h3>
             <dl className="bilgi-satirlari">

@@ -4,7 +4,10 @@ import {
   cariKaydet,
   numaraMaskesi,
   posCarileriBirlestir,
+  posGirisBilgisi,
+  posGirisKullanicisi,
   posGirisSifresi,
+  posOzelSifre,
   posNumarasi,
   posVerisiDogrula,
   type PosCari,
@@ -77,5 +80,42 @@ describe('Sanal POS cari kuralları', () => {
     expect(() => posVerisiDogrula({ surum: 1, cariler: Array.from({ length: 501 }, () => a) })).toThrow(
       /geçersiz/,
     );
+  });
+});
+
+describe('POS giriş bilgisi', () => {
+  it('varsayılan kural: lisans no = numara, şifre = ilk 2 + son 2 hane', () => {
+    expect(posGirisBilgisi(a)).toEqual({
+      vergiNo: a.numara,
+      kullanici: a.numara,
+      sifre: '0189',
+      ozel: false,
+    });
+  });
+  it('cariye özel lisans numarası ve şifre kuralın yerine geçer; geçersiz yazım reddedilir', () => {
+    expect(posGirisBilgisi({ ...a, girisKullanici: 'L77' })).toMatchObject({
+      kullanici: 'L77',
+      sifre: '0189',
+      ozel: true,
+    });
+    expect(posGirisBilgisi({ ...a, girisSifresi: 'Yapay 1' })).toMatchObject({
+      kullanici: a.numara,
+      sifre: 'Yapay 1',
+    });
+    expect(() => posGirisKullanicisi('L 77')).toThrow(/lisans/);
+    expect(() => posOzelSifre(' boşluk')).toThrow(/şifre/i);
+    expect(() => posOzelSifre('a'.repeat(65))).toThrow(/şifre/i);
+    expect(() => posOzelSifre('gizli‮')).toThrow(/şifre/i);
+  });
+  it('özel giriş alanları şemaya girer, boş değer ve başka sır alanı girmez', () => {
+    expect(
+      posVerisiDogrula({ surum: 1, cariler: [{ ...a, girisKullanici: 'L77', girisSifresi: 'x' }] })
+        .cariler[0],
+    ).toEqual({
+      ...a,
+      girisKullanici: 'L77',
+      girisSifresi: 'x',
+    });
+    expect(() => posVerisiDogrula({ surum: 1, cariler: [{ ...a, girisKullanici: '' }] })).toThrow(/geçersiz/);
   });
 });

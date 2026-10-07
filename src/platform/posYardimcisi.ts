@@ -1,13 +1,16 @@
 import { KullaniciHatasi } from '../cekirdek/hata';
 import type { PosAktarimi } from '../cekirdek/posAktarimi';
+import type { PosKurulumu } from '../cekirdek/posKurulumu';
 import { programAdresi } from '../cekirdek/posAktarimi';
 import { yardimciYanitiniDogrula, type YardimciSonucu } from '../cekirdek/posBaglantisi';
-/** Sırlar URL, pano veya kalıcı ayara konmaz. Eklenti köprüsüne tek işlem mesajı. */
+/** Sırlar URL, pano veya kalıcı ayara konmaz. Eklenti köprüsüne tek işlem mesajı. `kurulum`: programın
+ * sakladığı alan kurulumu kopyası; yardımcıda kurulum yoksa (yeniden kurulduysa) geri yüklenir. */
 export function yardimciyaSor(
   is: 'durum' | 'baslat' | 'iptal',
   islemId?: string,
   veri?: PosAktarimi,
   signal?: AbortSignal,
+  kurulum?: PosKurulumu | null,
 ): Promise<YardimciSonucu> {
   return new Promise((coz, reddet) => {
     if (!programAdresi(location.href)) {
@@ -58,6 +61,9 @@ export function yardimciyaSor(
         ),
       );
     }, 5_000);
-    window.postMessage({ kanal: 'CAL_BUP_POS_1', id, is, islemId, veri }, location.origin);
+    window.postMessage(
+      { kanal: 'CAL_BUP_POS_1', id, is, islemId, veri, ...(kurulum ? { kurulum } : {}) },
+      location.origin,
+    );
   });
 }

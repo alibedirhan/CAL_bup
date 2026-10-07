@@ -2,7 +2,7 @@ import { useIslem } from '../../bilesenler/useIslem';
 import { IslemBildirimi } from '../../bilesenler/IslemBildirimi';
 import { useState } from 'react';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
-import { numaraMaskesi, posGirisSifresi, type PosCari } from '../../../cekirdek/posCari';
+import { numaraMaskesi, posGirisBilgisi, type PosCari } from '../../../cekirdek/posCari';
 import { POS_GIRIS_ADRESI, posBilgisiniKopyala, posCariyleGirisYap } from '../../../platform/posGiris';
 import { Mesaj } from '../../bilesenler/Mesaj';
 
@@ -32,17 +32,23 @@ export function PosGirisYardimi({
   const goster = gosterNo === gizlilikNo;
   const [onayNo, setOnayNo] = useState<number | null>(null);
   const dogrulandi = firmaDogrulandi ?? onayNo === gizlilikNo;
-  const kopyala = (tur: 'numara' | 'sifre') => {
+  const giris = posGirisBilgisi(cari);
+  const ayriKullanici = giris.kullanici !== giris.vergiNo;
+  const kopyala = (tur: 'numara' | 'kullanici' | 'sifre') => {
     if (!izin()) return;
-    const metin = tur === 'numara' ? cari.numara : posGirisSifresi(cari.numara);
+    const metin = tur === 'numara' ? giris.vergiNo : tur === 'kullanici' ? giris.kullanici : giris.sifre;
     void kopyalama.calistir(
       async (signal) => {
         await posBilgisiniKopyala(metin);
         signal.throwIfAborted();
       },
       tur === 'numara'
-        ? 'Numara kopyalandı. Vergi no ve kullanıcı alanlarına yapıştırın.'
-        : 'POS giriş şifresi kopyalandı. POS’taki şifre alanına yapıştırın.',
+        ? ayriKullanici
+          ? 'Vergi/TC numarası kopyalandı. Vergi no alanına yapıştırın.'
+          : 'Numara kopyalandı. Vergi no ve lisans no alanlarına yapıştırın.'
+        : tur === 'kullanici'
+          ? 'Lisans numarası kopyalandı. Lisans no alanına yapıştırın.'
+          : 'POS giriş şifresi kopyalandı. POS’taki şifre alanına yapıştırın.',
     );
   };
 
@@ -52,7 +58,7 @@ export function PosGirisYardimi({
       <h2 id="pos-giris-baslik">{baslik ?? cari.ad}</h2>
       <p className="rakam">{numaraMaskesi(cari.numara)}</p>
       <ol className="pos-adimlar">
-        <li>POS’ta başka cari açıksa önce o oturumdan çıkın.</li>
+        <li>POS’ta başka cari açıksa önce o oturumdan çıkın ve eski POS sekmelerini kapatın.</li>
         <li>“POS’u aç” ile bu carinin giriş bilgilerini POS’a gönderin.</li>
         <li>Girişten sonra üstteki firma adı ve numarayı bu kayıtla karşılaştırın.</li>
       </ol>
@@ -63,7 +69,7 @@ export function PosGirisYardimi({
           onClick={() => {
             if (!izin()) return;
             try {
-              posCariyleGirisYap(cari.numara);
+              posCariyleGirisYap(cari);
               setOnayNo(null);
               firmaKontrolu?.(false);
               girisBasladi?.();
@@ -81,6 +87,16 @@ export function PosGirisYardimi({
         <button className="dugme" type="button" disabled={kopyalama.mesgul} onClick={() => kopyala('numara')}>
           Numarayı kopyala
         </button>
+        {ayriKullanici && (
+          <button
+            className="dugme"
+            type="button"
+            disabled={kopyalama.mesgul}
+            onClick={() => kopyala('kullanici')}
+          >
+            Lisans numarasını kopyala
+          </button>
+        )}
         <button className="dugme" type="button" disabled={kopyalama.mesgul} onClick={() => kopyala('sifre')}>
           Giriş şifresini kopyala
         </button>
@@ -118,12 +134,18 @@ export function PosGirisYardimi({
       {goster && (
         <dl className="bilgi-satirlari">
           <div>
-            <dt>Vergi no / Kullanıcı</dt>
-            <dd className="rakam">{cari.numara}</dd>
+            <dt>{ayriKullanici ? 'Vergi no' : 'Vergi no / Lisans no'}</dt>
+            <dd className="rakam">{giris.vergiNo}</dd>
           </div>
+          {ayriKullanici && (
+            <div>
+              <dt>Lisans no</dt>
+              <dd className="rakam">{giris.kullanici}</dd>
+            </div>
+          )}
           <div>
-            <dt>POS giriş şifresi</dt>
-            <dd className="rakam">{posGirisSifresi(cari.numara)}</dd>
+            <dt>POS giriş şifresi{giris.ozel ? ' (cariye özel)' : ''}</dt>
+            <dd className="rakam">{giris.sifre}</dd>
           </div>
         </dl>
       )}

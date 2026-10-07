@@ -29,7 +29,7 @@ for (const durum of ['opak', 'inert', 'aria', 'fieldset', 'firma'] as const)
       );
       const pos = await kartliPosAc(e.p, e.c);
       await expect(e.p.locator('#pos-aktarim-hatasi')).toContainText(
-        durum === 'firma' ? 'cari alanı okunamadı' : 'doldurulamadı',
+        durum === 'firma' ? 'firma numarası okunamadı' : 'doldurulamadı',
       );
       await expect(pos.locator('#kart')).toHaveValue('');
       await expect(pos.locator('#tarih')).toHaveValue('');

@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { ENGELLI_ALAN, ipucuUygun, tarihMetni } from '../../src/eklenti/alanKurallari';
+import {
+  alanEngelli,
+  baslikBicimi,
+  ENGELLI_ALAN,
+  ipucuUygun,
+  tarihMetni,
+} from '../../src/eklenti/alanKurallari';
 import { girisMesajiTemizle } from '../../src/cekirdek/posAktarimi';
 import { surumUyarisi } from '../../src/arayuz/sayfalar/pos/usePosAktarimi';
-import { SURUM } from '../../src/surum';
+import { YARDIMCI_SURUMU } from '../../src/cekirdek/posBaglantisi';
 import { yedekHatirlatmasi } from '../../src/cekirdek/posYedekHatirlatma';
 
 describe('POS yardımcısı alan kuralları', () => {
@@ -50,6 +56,38 @@ describe('POS yardımcısı alan kuralları', () => {
     for (const ad of ['Kartal', 'txtTitle', 'S.K.T', 'Kredi Kartı Numarası', 'ctl00$Icerik$txtKartNo'])
       expect(ENGELLI_ALAN.test(ad)).toBe(false);
   });
+  it.each([
+    ['ad', 'Ad Soyad'],
+    ['ad', 'Adi Soyadi'],
+    ['ad', 'txtAdSoyad'],
+    ['ad', 'Kart Sahibi'],
+    ['ad', 'cc-name'],
+    ['cvv', 'CVV'],
+    ['cvv', 'txtCvc'],
+    ['cvv', 'Güvenlik Kodu'.normalize('NFD').replace(/[\u0300-\u036f]/g, '')],
+    ['cvv', 'cc-csc'],
+  ] as const)('%s rolü tanınır: %s', (rol, ad) => {
+    expect(ipucuUygun(ad, rol)).toBe(true);
+  });
+  it('CVV yalnız CVV rolüne yazılır; tutar/şifre/SMS hiçbir role, e-posta Ad Soyad sayılmaz', () => {
+    for (const rol of ['numara', 'tarih', 'ad'] as const) expect(alanEngelli('CVV', rol)).toBe(true);
+    expect(alanEngelli('CVV', 'cvv')).toBe(false);
+    for (const ad of [
+      'Tutar',
+      'TL',
+      'SMS Kodu',
+      'Şifre'.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+      'txtPin',
+    ])
+      expect(alanEngelli(ad, 'cvv')).toBe(true);
+    expect(ipucuUygun('Tanımlı E-Mail Adresi', 'ad')).toBe(false);
+    expect(ipucuUygun('CVV', 'numara')).toBe(false);
+  });
+  it('başlık biçimi rakamları ve değişen sayıları atar', () => {
+    expect(baslikBicimi('  Kredi Kartı Numarası ')).toBe('kredi karti numarasi');
+    expect(baslikBicimi('S.K.T')).toBe('s.k.t');
+    expect(baslikBicimi('Tutar 327.829,05 TL')).toBe(baslikBicimi('Tutar 12,00 TL'));
+  });
   it('tek tarih alanının biçimini uzunluk ve yer tutucudan seçer', () => {
     expect(tarihMetni('12', '2035', 4, 'AAYY')).toBe('1235');
     expect(tarihMetni('12', '2035', 5, '')).toBe('12/35');
@@ -70,8 +108,8 @@ describe('POS giriş sonucu ve sürüm', () => {
     expect(girisMesajiTemizle(undefined)).toBe('');
     expect(girisMesajiTemizle({ metin: 'a' })).toBe('');
   });
-  it('yardımcı sürümü programdan farklıysa güncelleme önerir', () => {
-    expect(surumUyarisi(SURUM)).toBe('');
+  it('yardımcının kendi sürümünden farklıysa güncelleme önerir (programın sürümü değil)', () => {
+    expect(surumUyarisi(YARDIMCI_SURUMU)).toBe('');
     expect(surumUyarisi('0.0.1')).toContain('güncelleyin');
   });
 });

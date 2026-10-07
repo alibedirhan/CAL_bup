@@ -1,5 +1,5 @@
 import { kartMetni, kartNumarasi, kartTelefonu, kartSuresiGecti, type PosKart } from './posKart';
-import { cariAdi, posNumarasi, type PosCari } from './posCari';
+import { cariAdi, posGirisKullanicisi, posNumarasi, posOzelSifre, type PosCari } from './posCari';
 export function alanDenetle(denetimler: Record<string, () => unknown>): Record<string, string> {
   const hatalar: Record<string, string> = {};
   for (const [alan, denetle] of Object.entries(denetimler)) {
@@ -29,10 +29,21 @@ export function kartFormunuDenetle(k: PosKart, onay: boolean): Record<string, st
     },
   });
 }
-export function cariFormunuDenetle(c: PosCari, onay: boolean): Record<string, string> {
+/** `duzeltme`: kartlı carinin numarası değişiyorsa açık “aynı kişi” onayı istenir. */
+export function cariFormunuDenetle(
+  c: PosCari,
+  onay: boolean,
+  duzeltme: { gerekli: boolean; onay: boolean } = { gerekli: false, onay: false },
+): Record<string, string> {
   return alanDenetle({
     'pos-cari-ad': () => cariAdi(c.ad),
     'pos-cari-numara': () => posNumarasi(c.numara),
+    'pos-cari-kullanici': () => posGirisKullanicisi(c.girisKullanici ?? ''),
+    'pos-cari-sifre': () => posOzelSifre(c.girisSifresi ?? ''),
+    'pos-cari-duzeltme': () => {
+      if (duzeltme.gerekli && !duzeltme.onay)
+        throw new Error('Numara düzeltmesinin aynı kişi için yapıldığını onaylayın.');
+    },
     'pos-cari-onay': () => {
       if (!onay) throw new Error('Cari adı ve numaranın aynı kişiye ait olduğunu kontrol edin.');
     },

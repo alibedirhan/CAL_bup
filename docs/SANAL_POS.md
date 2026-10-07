@@ -1,4 +1,4 @@
-# Sanal POS — 1.12.0
+# Sanal POS — 1.16.0
 
 Cari profili ve isimli kart yönetimi gerçek uygulamanın Sanal POS bölümündedir. Seçilen carinin
 altında “Kayıtlı kartlar / Kart ekle” görünür. Elle kart kaydı, fotoğraftan numara/tarih okuma,
@@ -168,3 +168,22 @@ adresine hiçbir test isteği gönderilmedi; denemeler ağdan yalıtılmış tak
 
 Kalan sınırlar değişmedi: gerçek POS girişi/ödeme sayfası, Windows/Edge kurulumu ve gerçek fotoğraf
 kullanıcıyla denenmelidir. Tarayıcı depolamasının kalıcılık isteği bu turda incelenmedi.
+
+## 1.16.0 saha testi düzeltmeleri
+
+İş yerindeki ilk gerçek denemenin bulguları ([saha raporu](SANAL_POS_SAHA_TESTI_RAPORU.md)) uygulandı.
+Gerçek sağlayıcı adresine hiçbir istek gönderilmedi; denemeler ağdan yalıtılmış taklit POS'la yapıldı.
+
+- **Numara düzeltme:** Kartlı caride numara “aynı kişi” onay kutusuyla düzeltilir (`profilCariKaydet(…,
+numaraDuzeltme)`). Giriş reddedilince programda “Cariyi düzenle” düğmesi ve 10 haneli numarada TC ipucu çıkar.
+- **Cariye özel POS girişi:** Cari formunda “POS girişi bu cari için farklıysa” altında lisans numarası ve
+  şifre. Elle giriş yardımı, doğrudan “POS’u aç” ve yardımcı aynı `posGirisBilgisi` kuralını kullanır.
+  Yedek birleştirmede farklı giriş bilgisi çatışma olarak gösterilir (şifre metni özete girmez).
+- **CVV:** Yardımcıda CVV kutusu tanıtıldıysa seçili kart panelinde “CVV (bu ödeme için, kaydedilmez)”
+  kutusu çıkar. Değer gönderilince, kart değişince veya 2 dakika dokunulmazsa boşaltılır; IndexedDB,
+  yedek, `localStorage` veya yardımcının kalıcı deposuna girmez (tarayıcı testi denetler).
+- **Kurulum kopyası:** Yardımcının alan kurulumu (yalnız seçiciler/başlıklar) programda
+  `localStorage` `bup-rapor:pos-yardimci-kurulumu` altında da tutulur; yardımcı kaldırılıp yeniden
+  kurulursa ilk aktarımda geri verilir. Kullanıcı yardımcıda kurulumu bilerek sildiyse geri verilmez.
+
+Yardımcı tarafı ve sürüm kuralı: [POS_YARDIMCISI.md](POS_YARDIMCISI.md#200--tek-seferlik-kurulum).

@@ -11,7 +11,7 @@ export function windowsPosKurulumu(surum: string, zipHash: string): string {
     '[IO.Directory]::CreateDirectory($tempDir) | Out-Null',
     "$archive=Join-Path $tempDir 'yardimci.zip'",
     '[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12',
-    `Invoke-WebRequest -Uri 'https://alibedirhan.github.io/CAL_bup/pos-yardimcisi.zip?v=${surum}' -UseBasicParsing -MaximumRedirection 0 -TimeoutSec 45 -OutFile $archive`,
+    `Invoke-WebRequest -Uri 'https://alibedirhan.github.io/CAL_bup/pos-yardimcisi.zip?v=${surum}-${zipHash.slice(0, 12)}' -UseBasicParsing -MaximumRedirection 0 -TimeoutSec 45 -OutFile $archive`,
     `if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant() -ne '${zipHash}') {throw 'Paket dogrulanamadi. Dosyalar yuklenmedi. Yeni kurulum dosyasini programdan indirin.'}`,
     "$unpacked=Join-Path $tempDir 'paket'",
     'Expand-Archive -LiteralPath $archive -DestinationPath $unpacked',

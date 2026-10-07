@@ -57,7 +57,7 @@ test('iptal edilen bağlantının eski zaman aşımı yeni sonucu değiştirmez'
           {
             kanal: 'CAL_BUP_POS_YANIT_1',
             id: e.data.id,
-            sonuc: { durum: 'hazir', mesaj: 'Yapay', protokol: 2, surum: '1.6.1' },
+            sonuc: { durum: 'hazir', mesaj: 'Yapay', protokol: 3, surum: '1.6.1' },
           },
           location.origin,
         );

@@ -1,41 +1,52 @@
 import {
   AKTARIM_SURESI,
+  girisSayfasi,
   POS_KOKENI,
   posSayfasi,
-  type PosAlanlari,
   type PosAktarimi,
 } from '../cekirdek/posAktarimi';
-import { firmaNumarasi, kartiDoldur } from './alanlar';
-import { yardimciPaneli } from './kurulum';
+import { kurulumDogrula, type PosKurulumu } from '../cekirdek/posKurulumu';
+import { alanIzi } from './alanlar';
 import { eklenti } from './chrome';
+import { kartiDoldur } from './doldurma';
+import { firmaNumarasi } from './firma';
+import { panelOlustur, type Eylem } from './panel';
+import { tanitmayiBaslat } from './tanitma';
+import { ekranYapisi } from './tanilama';
+
 type Yanit = {
   durum: string;
   numara?: string;
+  kullanici?: string;
   sifre?: string;
-  alanlar?: PosAlanlari;
+  kurulum?: PosKurulumu | null;
   kart?: PosAktarimi;
   id?: string;
   mesaj?: string;
-  tanitilmis?: boolean;
   bekleyen?: boolean;
   kucuk?: boolean;
 };
-const GIRIS_SAYFASI = POS_KOKENI + '/login.aspx';
-/** Tek izinli sayfada login gönderimi. Ödeme gönderimi veya DOM event üretimi yoktur. */
+const sor = (m: Record<string, unknown>) => eklenti.runtime.sendMessage(m) as Promise<Yanit>;
+
+/** Giriş sayfasında yalnız sağlayıcının kendi formu gönderilir. Ödeme sayfasında form gönderimi veya
+ * DOM olayı üretilmez. Oturum düşünce gelen `?ReturnUrl=` adresi de giriş sayfasıdır. */
 function giris(r: Yanit) {
-  if (location.href !== GIRIS_SAYFASI || !r.numara || !r.sifre) throw new Error('Giriş sayfası uygun değil.');
+  if (!girisSayfasi(location.href) || !r.numara || !r.kullanici || !r.sifre)
+    throw new Error('Giriş sayfası uygun değil.');
   const form = document.getElementById('form1');
   const alanlar = ['lvergino', 'lkullaniciadi', 'lsifre'].map((id) => document.getElementById(id));
+  const hedef = form instanceof HTMLFormElement ? new URL(form.action) : null;
   if (
     !(form instanceof HTMLFormElement) ||
     form.method.toLowerCase() !== 'post' ||
     !['', '_self'].includes(form.target) ||
-    new URL(form.action).href !== POS_KOKENI + '/login.aspx' ||
+    hedef?.origin !== POS_KOKENI ||
+    hedef.pathname.toLowerCase() !== '/login.aspx' ||
     !alanlar.every((e) => e instanceof HTMLInputElement && e.form === form)
   )
     throw new Error('Giriş alanları değişmiş.');
   (alanlar[0] as HTMLInputElement).value = r.numara;
-  (alanlar[1] as HTMLInputElement).value = r.numara;
+  (alanlar[1] as HTMLInputElement).value = r.kullanici;
   (alanlar[2] as HTMLInputElement).value = r.sifre;
   const b = document.createElement('input');
   b.type = 'hidden';
@@ -45,108 +56,253 @@ function giris(r: Yanit) {
   try {
     HTMLFormElement.prototype.submit.call(form);
   } finally {
-    r.numara = '';
-    r.sifre = '';
+    r.numara = r.kullanici = r.sifre = '';
   }
 }
-if (window.top === window && posSayfasi(location.href)) {
-  const panel = yardimciPaneli((kucuk) => {
-    void eklenti.runtime.sendMessage({ is: 'panel', kucuk }).catch(() => undefined);
-  });
-  void eklenti.runtime
-    .sendMessage({ is: 'panel' })
+
+if (window.top === window) {
+  posSayfasi(location.href);
+  const panel = panelOlustur((kucuk) => void sor({ is: 'panel', kucuk }).catch(() => undefined));
+  void sor({ is: 'panel' })
     .then((r) => {
-      if ((r as Yanit | undefined)?.kucuk === true) panel.kucult(true);
+      if (r?.kucuk === true) panel.kucult(true);
     })
     .catch(() => undefined);
+
+  let kurulum: PosKurulumu | null = null;
+  let mod: 'bosta' | 'tanitma' | 'sil' | 'rapor' = 'bosta';
+  let gorunum = '';
   let kapali = false;
-  let alanlar: PosAlanlari | undefined;
+  let eskiOturum = false;
+  let iptalTanitma = () => {};
   const son = performance.now() + AKTARIM_SURESI + 5_000;
-  // Giriş sayfasına geri dönüldüyse sağlayıcının hata yazısı (yalnız metin) arka plana iletilir.
-  const girisMesaji = () =>
-    location.href === GIRIS_SAYFASI ? (document.getElementById('lblgizleme')?.textContent ?? '') : '';
+
+  const kurulumuAl = (d: unknown) => {
+    try {
+      kurulum = d === null || d === undefined ? null : kurulumDogrula(d);
+    } catch {
+      kurulum = null;
+    }
+  };
+  const formVar = () => {
+    if (!kurulum?.alanlar.numara || girisSayfasi(location.href)) return false;
+    return alanIzi(kurulum.alanlar.numara);
+  };
+  /** Boştaki panel: kurulum varsa “tamam” der ve tanıtmayı ikinci plana alır. */
+  const bosta = (zorla = false) => {
+    if (mod !== 'bosta') return;
+    const form = formVar();
+    const yeni = `${Boolean(kurulum)}-${form}`;
+    if (!zorla && yeni === gorunum) return;
+    gorunum = yeni;
+    const rapor: Eylem = { ad: 'Ekran yapısı raporu', is: raporAc };
+    // Giriş sayfasında tanıtılacak kart formu yoktur.
+    const giriste = girisSayfasi(location.href);
+    if (!kurulum) {
+      panel.kurulumYazisi('');
+      panel.eylemler(giriste ? [] : [{ ad: 'Alanları tanıt', birincil: true, is: tanit }, rapor]);
+      if (!giriste && !eskiOturum)
+        panel.bildir(
+          'Ödeme formu bu sayfadaysa kutuları “Alanları tanıt” ile bir kez tanıtın; bütün cariler için geçerli olur.',
+        );
+      return;
+    }
+    panel.kurulumYazisi(
+      form
+        ? 'Kurulum tamam: bu ödeme formu tanınıyor. Her cari için geçerlidir; yeniden tanıtmanız gerekmez.'
+        : 'Kurulum tamam. Bu sayfada kart formu yok; burada yapmanız gereken bir şey yok.',
+    );
+    panel.eylemler(
+      giriste ? [] : [{ ad: 'Kurulumu yenile', is: tanit }, { ad: 'Kurulumu sil', is: silSor }, rapor],
+    );
+  };
+  /** Boştaki görünüme dönülür; sonucun yazısı boştaki davet yazısının üstüne yazılır, kaybolmaz. */
+  const bostayaDon = (mesaj: string, ton: 'bilgi' | 'uyari' = 'bilgi') => {
+    mod = 'bosta';
+    bosta(true);
+    panel.bildir(mesaj, ton);
+  };
+  function tanit() {
+    mod = 'tanitma';
+    panel.kurulumYazisi('');
+    iptalTanitma = tanitmayiBaslat(panel, (k, mesaj) => {
+      panel.eylemler([]);
+      if (!k) {
+        bostayaDon(mesaj);
+        return;
+      }
+      panel.bildir('Kurulum kaydediliyor…');
+      void sor({ is: 'kurulum', veri: k })
+        .then((r) => {
+          kurulumuAl(r?.kurulum);
+          if (kurulum)
+            bostayaDon(
+              'Alanlar tanıtıldı. Bu kurulum bütün cariler için geçerli; CAL bup’tan cari ve kart seçerek POS’u açabilirsiniz.',
+            );
+          else bostayaDon('Kurulum kaydedilemedi. Yeniden deneyin.', 'uyari');
+        })
+        .catch(() => bostayaDon('Kurulum kaydedilemedi. Yeniden deneyin.', 'uyari'));
+    });
+  }
+  function silSor() {
+    mod = 'sil';
+    panel.bildir('Kurulum silinsin mi? Silerseniz ödeme formunu yeniden tanıtmanız gerekir.', 'uyari');
+    panel.eylemler([
+      {
+        ad: 'Evet, kurulumu sil',
+        is: () =>
+          void sor({ is: 'kurulumuSil' })
+            .then((r) => {
+              // Arka plan hatası red değil, `hata` yanıtı olarak gelir.
+              if (r?.durum !== 'hazir') throw new Error('Kurulum silinemedi.');
+              kurulum = null;
+              bostayaDon('Kurulum silindi. Kart doldurmak için ödeme formunu yeniden tanıtın.');
+            })
+            .catch(() => bostayaDon('Kurulum silinemedi. Yeniden deneyin.', 'uyari')),
+      },
+      { ad: 'Vazgeç', is: () => bostayaDon('Kurulum değişmedi.') },
+    ]);
+  }
+  function raporAc() {
+    mod = 'rapor';
+    const metin = ekranYapisi(kurulum);
+    panel.metin(metin);
+    panel.bildir(
+      'Rapor kutu değerlerini içermez; rakamlar # ile gizlidir. Göndermeden önce okuyun. Gerçek POS’a istek gönderilmez.',
+    );
+    panel.eylemler([
+      {
+        ad: 'Kopyala',
+        is: () =>
+          void navigator.clipboard
+            .writeText(metin)
+            .then(() => panel.bildir('Rapor kopyalandı.'))
+            .catch(() => panel.bildir('Kopyalanamadı; metni seçip Ctrl+C ile kopyalayın.', 'uyari')),
+      },
+      {
+        ad: 'Raporu kapat',
+        is: () => {
+          panel.metin(null);
+          bostayaDon('Rapor kapatıldı.');
+        },
+      },
+    ]);
+  }
+
+  // Başka sekmede yeni cariyle giriş başladı: bu sekmenin oturumu değişmiş olabilir.
+  eklenti.runtime.onMessage.addListener((m, s) => {
+    if (s.id !== eklenti.runtime.id || s.tab || (m as { is?: string } | null)?.is !== 'eskiOturum')
+      return false;
+    eskiOturum = true;
+    panel.bildir(
+      'Başka sekmede yeni bir cariyle POS girişi başladı. Bu sekme önceki cariye ait olabilir: buradan ödeme yapmayın, sekmeyi kapatın.',
+      'hata',
+    );
+    return false;
+  });
   window.addEventListener(
     'pagehide',
     () => {
       kapali = true;
+      iptalTanitma();
     },
     { once: true },
   );
+
+  const girisMesaji = () =>
+    girisSayfasi(location.href) ? (document.getElementById('lblgizleme')?.textContent ?? '') : '';
   const dene = async () => {
     if (kapali || performance.now() > son) return;
     let dolduruldu = false;
     try {
-      if (panel.seciliyor()) {
+      if (mod === 'tanitma') {
         setTimeout(() => void dene(), 1000);
         return;
       }
+      const alanVar = formVar();
       let firma = '';
-      if (alanlar) {
+      if (alanVar && kurulum)
         try {
-          firma = firmaNumarasi(alanlar);
+          firma = firmaNumarasi(kurulum);
         } catch {
-          panel.bildir('Firma numarası veya alanlar doğrulanamadı. Yeniden tanıtın.');
-          await eklenti.runtime.sendMessage({ is: 'alanHatasi' });
-          return;
+          firma = '';
         }
-      }
-      const r = (await eklenti.runtime.sendMessage({
-        is: 'posDurum',
-        firma,
-        girisMesaji: girisMesaji(),
-      })) as Yanit;
+      const r = await sor({ is: 'posDurum', alanVar, firma, girisMesaji: girisMesaji() });
       if (kapali) return;
-      if (r.alanlar) alanlar = r.alanlar;
+      if ('kurulum' in r) kurulumuAl(r.kurulum);
+      if (alanVar && !firma && r.bekleyen) {
+        await sor({ is: 'alanHatasi' });
+        panel.bildir(
+          'Firma numarası okunamadı; kart aktarılmadı. “Kurulumu yenile” ile firma yazısını da tanıtın.',
+          'uyari',
+        );
+        bosta(true);
+        return;
+      }
       if (r.durum === 'giris') {
         try {
           giris(r);
         } catch {
-          await eklenti.runtime.sendMessage({ is: 'girisHatasi' });
-          panel.bildir('POS giriş alanları değişmiş. Kart aktarılmadı; giriş sayfasını kontrol edin.');
+          await sor({ is: 'girisHatasi' });
+          panel.bildir('POS giriş alanları değişmiş. Kart aktarılmadı; girişi elle yapın.', 'uyari');
         }
         return;
       }
-      if (r.durum === 'doldur' && r.kart && r.alanlar) {
-        let tamam = false;
-        let onayDurumu = '';
+      if (r.durum === 'doldur' && r.kart && r.kurulum) {
+        let sonuc: ReturnType<typeof kartiDoldur> | null = null;
+        let onay = '';
         try {
-          kartiDoldur(r.alanlar, r.kart);
-          tamam = dolduruldu = true;
+          sonuc = kartiDoldur(kurulumDogrula(r.kurulum), r.kart);
+          dolduruldu = true;
         } finally {
-          r.kart.numara = '';
-          r.kart.cariNumarasi = '';
-          const onay = (await eklenti.runtime.sendMessage({
-            is: 'sonuc',
-            islemId: r.id,
-            durum: tamam ? 'tamam' : 'hata',
-          })) as Yanit;
-          onayDurumu = onay.durum;
+          r.kart.numara = r.kart.cvv = r.kart.sifre = r.kart.cariNumarasi = '';
+          onay = (
+            await sor({
+              is: 'sonuc',
+              islemId: r.id,
+              durum: sonuc ? 'tamam' : 'hata',
+              doldurulan: sonuc?.doldurulan ?? [],
+              notlar: sonuc?.notlar ?? [],
+            })
+          ).durum;
         }
-        if (onayDurumu !== 'tamam') throw new Error('Teslim sonucu doğrulanamadı.');
-        panel.bildir('Cari eşleşti; kart numarası ve son kullanma dolduruldu. CVV ve tutarı kendiniz girin.');
+        if (onay !== 'tamam') throw new Error('Teslim sonucu doğrulanamadı.');
+        panel.bildir(
+          [
+            'Cari eşleşti; kart bilgileri dolduruldu.',
+            ...(sonuc?.notlar ?? []),
+            'Tutar kutusundaki değer POS’un yazdığı bakiyedir: ödenecek tutarı kendiniz yazın.',
+          ].join(' '),
+        );
+        bosta(true);
         return;
       }
       if (r.durum === 'hata') {
-        panel.bildir(r.mesaj ?? 'Aktarım durduruldu.');
+        panel.bildir(r.mesaj ?? 'Aktarım durduruldu.', 'uyari');
+        bosta(true);
         return;
       }
-      if (r.durum === 'kurulum')
+      if (r.bekleyen)
         panel.bildir(
-          r.bekleyen && r.tanitilmis
-            ? 'POS’ta ödeme sayfasına geçin; kart numarası ve son kullanma orada, cari numarası eşleşirse doldurulacak.'
-            : r.bekleyen
-              ? 'Ödeme sayfasını açın ve boş kart alanlarını aşağıdaki düğmeyle bir kez tanıtın.'
-              : 'Bu sayfada tanıtılmış kart alanı yok. Ödeme sayfasındaysanız boş alanları bir kez tanıtın; değilse bir şey yapmanız gerekmez.',
+          !kurulum
+            ? 'Ödeme formunda “Alanları tanıt” ile kutuları bir kez tanıtın; kart sonra doldurulacak.'
+            : 'Ödeme formunun olduğu sayfaya geçin; cari numarası eşleşirse kart doldurulacak.',
         );
+      bosta();
     } catch {
       panel.bildir(
         dolduruldu
           ? 'Alanlar dolduruldu ancak aktarım sonucu doğrulanamadı. POS alanlarını kontrol edin; otomatik tekrar yapılmadı.'
           : 'POS alanları doğrulanamadı. Kart aktarılmadı; alanları ve cari bilgisini kontrol edin.',
+        'uyari',
       );
+      bosta(true);
       return;
     }
     setTimeout(() => void dene(), 1000);
   };
-  void dene();
+  void sor({ is: 'kurulumAl' })
+    .then((r) => kurulumuAl(r?.kurulum))
+    .catch(() => undefined)
+    .finally(() => void dene());
 }

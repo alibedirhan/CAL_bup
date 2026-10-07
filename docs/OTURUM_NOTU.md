@@ -1,3 +1,25 @@
+# 7 Ekim 2026 — Sanal POS saha testi düzeltmeleri (1.16.0, yardımcı 2.0.0)
+
+Kullanıcının arkadaşı Windows'ta denedi: 2. cari girişte hata (1. cari çalışıyor) ve her caride yeniden
+alan tanıtma. Önce [saha raporu](SANAL_POS_SAHA_TESTI_RAPORU.md) yazıldı (taklit POS'ta iki cariyle
+yeniden üretildi). Kullanıcı sonra “rapora göre ne varsa eksiksiz yap”, kart bilgilerinin elle veya
+fotoğrafla kaydedilmesi (zaten vardı, korundu) ve CVV'nin otomatik dolmasını istedi. CVV için seçim:
+**ödeme anında yaz, kaydetme** (saklamanın PCI/KVKK riski kendisine anlatıldı). Commit/push'u da istedi.
+
+- Çekirdek: `posKurulumu.ts` (site geneli kurulum, eski kayıt dönüşümü), `posAktarimi` protokol 3
+  (kullanıcı/şifre/sahibi/cvv), `posCari.posGirisBilgisi` + `girisKullanici/girisSifresi`,
+  `profilCariKaydet(…, numaraDuzeltme)`, birleştirmede giriş çatışması.
+- Eklenti parçalandı: `dom`, `alanlar` (kimlik → ad → başlık), `firma`, `doldurma`, `panel`, `tanitma`,
+  `tanilama`, `isler`, `kurulumDeposu`, `arkaPlan`, `pos`. Eski `kurulum.ts` kaldırıldı.
+- Program: CVV kutusu (yalnız bellek, 2 dk), “Cariyi düzenle”, düzeltme onayı, özel giriş alanları,
+  kurulum kopyası (`localStorage`), yardımcı sürüm uyarısı yardımcı sürümüne göre.
+- Yardımcı sürümü ayrı (2.0.0) ve derlemede kod özeti denetimi (`tools/posYardimciOzeti.json`).
+- Testler: 973 birim; tarayıcıda yeni `eklentiSaha.spec.ts` ve yenilenen tanıtma testleri.
+  Gerçek POS'a istek yok. Gerçek ekran/Windows kabulü kullanıcıda; Windows'ta yardımcı yeniden
+  kurulmalı (kaldırmadan “Yeniden yükle”) ve ödeme formu bir kez “Alanları tanıt” ile tanıtılmalı.
+
+---
+
 # 6 Ekim 2026 — Yaşlandırma, Kârlılık ve İskonto ekranları (1.15.0)
 
 Kullanıcı kalan modüllerin de aynı şekilde iyileştirilmesini, sonra kendisinin kontrol edeceğini

@@ -62,12 +62,12 @@ export function CariProfili({
           </button>
         </div>
         <ol className="pos-adimlar pos-sira">
-          <li>Aşağıdan kullanacağınız kartı seçin.</li>
+          <li>Aşağıdan kullanacağınız kartı seçin. Önce açık kalan eski POS sekmelerini kapatın.</li>
           <li>
-            <b>Seçili kartla POS’u aç</b> düğmesine basın. POS yardımcısı kuruluysa kart numarası ve son
-            kullanma POS’a kendiliğinden yazılır.
+            İsterseniz CVV’yi yazın (kaydedilmez) ve <b>Seçili kartla POS’u aç</b> düğmesine basın. POS
+            yardımcısı kuruluysa kart bilgileri POS’a kendiliğinden yazılır.
           </li>
-          <li>Tutarı, CVV’yi ve banka onayını POS ekranında siz girin.</li>
+          <li>Tutarı ve banka onayını POS ekranında siz girin.</li>
         </ol>
         <p className="ipucu">Yardımcı kurulu değilse en alttaki “Elle POS’a giriş” bölümünü kullanın.</p>
       </section>
@@ -80,6 +80,7 @@ export function CariProfili({
         firmaOnay={firmaOnay}
         kaydet={kartKaydet}
         kartDegisti={() => onayla(false)}
+        cariyiDuzenle={duzenle}
         sil={(k) => {
           if (
             !mesgul &&

@@ -64,7 +64,7 @@ describe('POS giriş yardımı sınırları', () => {
   });
   it('seçili carinin bilgilerini sabit HTTPS giriş adresine yalnızca POST gövdesinde gönderir', () => {
     const { form, ekle } = formOrtami();
-    posCariyleGirisYap('0123456789');
+    posCariyleGirisYap({ numara: '0123456789' });
     expect(form.method).toBe('post');
     expect(form.action).toBe(POS_GIRIS_ADRESI);
     expect(form.target).toBe('_blank');
@@ -86,9 +86,18 @@ describe('POS giriş yardımı sınırları', () => {
     expect(form.remove).toHaveBeenCalledTimes(1);
     expect(form.submit).toHaveBeenCalledTimes(1);
   });
+  it('cariye özel lisans numarası ve şifre varsa onlar gönderilir', () => {
+    const { form } = formOrtami();
+    posCariyleGirisYap({ numara: '0123456789', girisKullanici: 'L77', girisSifresi: 'yapay' });
+    expect(Object.fromEntries(form.elements.map((a) => [a.name, a.value]))).toMatchObject({
+      lvergino: '0123456789',
+      lkullaniciadi: 'L77',
+      lsifre: 'yapay',
+    });
+  });
   it('geçersiz cari numarası için form oluşturmaz veya giriş denemez', () => {
     const { olustur } = formOrtami();
-    expect(() => posCariyleGirisYap('=gecersiz')).toThrow(/numara/);
+    expect(() => posCariyleGirisYap({ numara: '=gecersiz' })).toThrow(/numara/);
     expect(olustur).not.toHaveBeenCalled();
   });
   it('giriş başlatılamazsa geçici bilgileri temizler; ham hata ve sırları göstermez', () => {
@@ -96,7 +105,7 @@ describe('POS giriş yardımı sınırları', () => {
     form.submit.mockImplementation(() => {
       throw new Error('hassas-metin');
     });
-    expect(() => posCariyleGirisYap('00000000001')).toThrow(/elle yazabilirsiniz/);
+    expect(() => posCariyleGirisYap({ numara: '00000000001' })).toThrow(/elle yazabilirsiniz/);
     expect(form.elements.every((a) => a.value === '')).toBe(true);
     expect(form.remove).toHaveBeenCalledTimes(1);
     expect(vi.getTimerCount()).toBe(0);

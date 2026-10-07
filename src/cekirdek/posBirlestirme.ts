@@ -27,6 +27,7 @@ const KART_ALANLARI = [
   ['telefon', 'telefon'],
 ] as const;
 const adAnahtari = (ad: string) => cariAdi(ad).toLocaleLowerCase('tr-TR');
+const girisAnahtari = (c: PosCari) => JSON.stringify([c.girisKullanici ?? '', c.girisSifresi ?? '']);
 
 function hesapla(
   mevcut: PosProfilVerisi,
@@ -53,20 +54,28 @@ function hesapla(
     const adSahibi = cariler.find((x) => x !== ayni && adAnahtari(x.ad) === adAnahtari(c.ad));
     if (ayni) {
       harita.set(c.id, ayni);
-      if (adAnahtari(ayni.ad) === adAnahtari(c.ad)) {
+      const adFarkli = adAnahtari(ayni.ad) !== adAnahtari(c.ad);
+      const girisFarkli = girisAnahtari(ayni) !== girisAnahtari(c);
+      if (!adFarkli && !girisFarkli) {
         ozet.ayniCari++;
         continue;
       }
       ozet.catismalar.push({
         tur: 'cari',
-        metin: `${numaraMaskesi(c.numara)} numaralı cari: burada “${ayni.ad}”, yedekte “${c.ad}”.`,
+        metin: adFarkli
+          ? `${numaraMaskesi(c.numara)} numaralı cari: burada “${ayni.ad}”, yedekte “${c.ad}”${girisFarkli ? '; POS giriş bilgisi de farklı' : ''}.`
+          : `${numaraMaskesi(c.numara)} numaralı “${ilkAd.get(ayni.id) ?? ayni.ad}”: farklı POS giriş bilgisi.`,
       });
       if (secim === 'yedek') {
-        if (adSahibi)
+        if (adFarkli && adSahibi)
           throw new KullaniciHatasi(
             `Yedekteki “${c.ad}” adı burada başka bir caride (${numaraMaskesi(adSahibi.numara)}) kullanılıyor. Birinin adını değiştirip yeniden deneyin.`,
           );
         ayni.ad = c.ad;
+        delete ayni.girisKullanici;
+        delete ayni.girisSifresi;
+        if (c.girisKullanici) ayni.girisKullanici = c.girisKullanici;
+        if (c.girisSifresi) ayni.girisSifresi = c.girisSifresi;
       }
       continue;
     }

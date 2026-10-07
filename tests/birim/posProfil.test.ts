@@ -149,3 +149,28 @@ describe('Yerel fotoğraf alanları ve boyut sınırı', () => {
     expect(() => kartGoruntuBoyutu(new TextEncoder().encode('<svg>' + 'x'.repeat(40)))).toThrow();
   });
 });
+
+describe('Kartlı caride numara düzeltmesi', () => {
+  it('açık düzeltme onayı olmadan numara değişmez; onayla değişir ve kartlar aynı caride kalır', () => {
+    const tc = { ...a, numara: '10000000146' };
+    expect(() => profilCariKaydet(veri, tc, a)).toThrow(/numara düzeltmesi/);
+    const sonuc = profilCariKaydet(veri, tc, a, true);
+    expect(sonuc.cariler.find((c) => c.id === a.id)?.numara).toBe('10000000146');
+    expect(sonuc.kartlar).toEqual(veri.kartlar);
+  });
+  it('düzeltme başka carinin numarasına çevrilemez; kartsız caride onay gerekmez', () => {
+    expect(() => profilCariKaydet(veri, { ...a, numara: b.numara }, a, true)).toThrow(/zaten kayıtlı/);
+    expect(profilCariKaydet(veri, { ...b, numara: '22222222222' }, b).cariler).toHaveLength(2);
+  });
+  it('cariye özel POS girişi saklanır, boşsa kayda yazılmaz', () => {
+    const ozel = profilCariKaydet(veri, { ...a, girisKullanici: ' L77 ', girisSifresi: 'yapay' }, a);
+    expect(ozel.cariler.find((c) => c.id === a.id)).toEqual({
+      ...a,
+      girisKullanici: 'L77',
+      girisSifresi: 'yapay',
+    });
+    const bos = profilCariKaydet(ozel, { ...a, girisKullanici: '', girisSifresi: '' });
+    expect(bos.cariler.find((c) => c.id === a.id)).toEqual(a);
+    expect(() => posProfilDogrula({ ...veri, cariler: [{ ...a, girisSifresi: '' }, b] })).toThrow();
+  });
+});

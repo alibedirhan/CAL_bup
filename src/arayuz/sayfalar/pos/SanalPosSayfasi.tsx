@@ -144,11 +144,14 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
             <CariFormu
               key={acikForm.cari?.id ?? 'yeni'}
               cari={acikForm.cari}
+              kartSayisi={
+                acikForm.cari ? veri.kartlar.filter((k) => k.cariId === acikForm.cari?.id).length : 0
+              }
               mesgul={mesgul}
               vazgec={() => setForm(null)}
-              kaydet={async (c) => {
+              kaydet={async (c, numaraDuzeltme) => {
                 const tamam = await guncelle(
-                  () => profilCariKaydet(veri, c, acikForm.cari),
+                  () => profilCariKaydet(veri, c, acikForm.cari, numaraDuzeltme),
                   'Cari kaydedildi. Kartlarını profiline ekleyebilirsiniz.',
                   true,
                 );
@@ -265,7 +268,7 @@ export function SanalPosSayfasi() {
       </SayfaBasligi>
       <Mesaj ton="bilgi">
         Cari ve kart bilgileri yalnız bu tarayıcıda şifreli saklanır; bu tarayıcıyı kullanan herkes görebilir.
-        CVV ve banka doğrulama kodları kaydedilmez.
+        CVV ve banka doğrulama kodları kaydedilmez; CVV yalnız ödeme anında yazılır.
       </Mesaj>
       {oturum.hata && (
         <div ref={hataKutusu} tabIndex={-1}>

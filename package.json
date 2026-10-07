@@ -1,7 +1,7 @@
 {
   "name": "cal-bup",
   "private": true,
-  "version": "1.15.0",
+  "version": "1.16.0",
   "description": "Bupiliç İzmir deposu için LED çıktılarından günlük rapor hazırlayan tarayıcı uygulaması",
   "type": "module",
   "scripts": {
@@ -16,6 +16,7 @@
     "bicim:kontrol": "prettier --check .",
     "kontrol": "npm run tip && npm run lint && npm run bicim:kontrol && npm run test && npm run build",
     "test:tarayici": "playwright test",
+    "yardimci:ozet": "YARDIMCI_OZET_YAZ=1 node --experimental-strip-types tools/posEklentisi.ts",
     "test:performans": "playwright test --config playwright.performans.config.ts",
     "prebuild": "node --experimental-strip-types tools/pythonVarliklariHazirla.ts",
     "predev": "node --experimental-strip-types tools/pythonVarliklariHazirla.ts",

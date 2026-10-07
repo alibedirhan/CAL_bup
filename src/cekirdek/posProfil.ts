@@ -73,16 +73,25 @@ function beklenenKayit<T extends { id: string }>(
       `Bu ${ad} siz düzenlerken başka sekmede değiştirildi veya silindi. Formu kapatıp güncel kaydı yeniden açın.`,
     );
 }
+/** Kartlı carinin numarası yalnız `numaraDuzeltme` açık onayıyla değişir: aynı kişinin yanlış girilmiş
+ * numarası (ör. VKN yerine TC) düzeltilir; kartlar cari kimliğine bağlı olduğundan yerinde kalır.
+ * Farklı kişi için yeni cari açılmalıdır; bu ayrım kullanıcının onayıdır, kod tarafından bilinemez. */
 export function profilCariKaydet(
   veri: PosProfilVerisi,
   cari: PosCari,
   beklenen?: PosCari | null,
+  numaraDuzeltme = false,
 ): PosProfilVerisi {
   beklenenKayit(veri.cariler, cari.id, beklenen, 'cari');
   const eski = veri.cariler.find((c) => c.id === cari.id);
-  if (eski && eski.numara !== cari.numara.trim() && veri.kartlar.some((k) => k.cariId === cari.id))
+  if (
+    !numaraDuzeltme &&
+    eski &&
+    eski.numara !== cari.numara.trim() &&
+    veri.kartlar.some((k) => k.cariId === cari.id)
+  )
     throw new KullaniciHatasi(
-      'Bu cariye bağlı kartlar var; vergi/TC numarası değiştirilemez. Farklı kişi için yeni cari oluşturun. Yanlış numarayı düzeltmek için önce bağlı kartları kaldırın.',
+      'Bu cariye bağlı kartlar var. Numarayı yalnız aynı kişi için düzeltiyorsanız “numara düzeltmesi” kutusunu işaretleyin; farklı kişi için yeni cari oluşturun.',
     );
   return posProfilDogrula({ ...veri, cariler: cariKaydet(veri.cariler, cari) });
 }

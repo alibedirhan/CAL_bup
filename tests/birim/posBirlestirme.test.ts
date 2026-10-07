@@ -134,3 +134,19 @@ describe('Yedekten ekleme ve iki bilgisayarda düzenlenmiş kayıtlar', () => {
     expect(() => profilBirlestir(dolu, gelen, 'koru')).toThrow(/10 kart sınırı/);
   });
 });
+
+describe('Cariye özel POS girişi yedekte', () => {
+  it('giriş bilgisi farklıysa çatışma gösterilir; şifre metni özete girmez', () => {
+    const gelen = {
+      ...mevcut,
+      cariler: [{ ...cari(A, 'Yapay Cari', '0123456789'), girisKullanici: 'L77', girisSifresi: 'yapay-sir' }],
+    };
+    const ozet = profilBirlestirmeOzeti(mevcut, gelen);
+    expect(ozet.catismalar).toHaveLength(1);
+    expect(ozet.catismalar[0]?.metin).toContain('farklı POS giriş bilgisi');
+    expect(JSON.stringify(ozet)).not.toContain('yapay-sir');
+    expect(profilBirlestir(mevcut, gelen, 'koru').cariler[0]).toEqual(mevcut.cariler[0]);
+    expect(profilBirlestir(mevcut, gelen, 'yedek').cariler[0]).toMatchObject({ girisKullanici: 'L77' });
+    expect(profilBirlestir(gelen, mevcut, 'yedek').cariler[0]).toEqual(mevcut.cariler[0]);
+  });
+});

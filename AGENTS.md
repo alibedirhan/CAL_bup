@@ -109,9 +109,20 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.15.0. Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.16.0 (POS yardımcısı 2.0.0). Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-07 Sanal POS saha testi (1.16.0, yardımcı 2.0.0):** İş yerindeki ilk gerçek denemede 2. cari
+girişi reddedildi (10 haneli VKN kayıtlı, POS muhtemelen TC istiyor; kartlı caride numara düzeltilemiyordu)
+ve alanlar her caride yeniden tanıtılıyordu. [Saha raporu](docs/SANAL_POS_SAHA_TESTI_RAPORU.md) K1–K9
+uygulandı: onaylı numara düzeltme, cariye özel lisans no/şifre, site geneli tek kurulum (kimlik → ad →
+başlık ile bulma), firma numarası kendiliğinden, tek “Alanları tanıt”, Ad Soyad, eski sekme uyarısı,
+ekran yapısı raporu, programda kurulum kopyası. **CVV kullanıcı kararıyla ödeme anında yazılır ve POS'a
+doldurulur, hiçbir yerde saklanmaz** (saklama PCI DSS gereği önerilmedi; kartta CVV alanı ekleme).
+**Yardımcının sürümü ayrıdır** (`src/cekirdek/posYardimciSurumu.json`); eklenti kodu değişince sürümü
+artırıp `npm run yardimci:ozet` çalıştır, yoksa derleme durur. Belgelere cari adı/numarası yazma (depo açık).
+Ayrıntı: [SANAL_POS.md](docs/SANAL_POS.md), [POS_YARDIMCISI.md](docs/POS_YARDIMCISI.md).
 
 **2026-10-06 Satış ekranları (1.15.0):** Sekme taramasının son adımı: Yaşlandırma, Kârlılık, İskonto.
 Geniş sonuç tabloları tam genişlikte, tek satır dosya seçimi, dönemler kendiliğinden okunur, tutar

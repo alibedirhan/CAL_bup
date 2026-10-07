@@ -1,93 +1,33 @@
-import {
-  alanlariDogrula,
-  type AlanRolu,
-  type AlanTanimi,
-  type PosAlanlari,
-  type PosAktarimi,
-} from '../cekirdek/posAktarimi';
-import { ENGELLI_ALAN, ipucuUygun, tarihMetni } from './alanKurallari';
-const KONTROL = 'input,select,textarea';
-const ETIKET_OGESI = /^(LABEL|SPAN|P|B|STRONG|SMALL|DIV|H[1-6]|TD|TH|DT)$/;
+import type { AlanRolu, AlanTanimi } from '../cekirdek/posKurulumu';
+import { alanEngelli, ipucuUygun } from './alanKurallari';
+import { gorunur, ipucu, KONTROL, kutuBasligi, kutuMu, sayfaOgesi } from './dom';
+
 export const ROL_ADI: Record<AlanRolu, string> = {
   firma: 'vergi/TC numarası',
   numara: 'kart numarası',
   tarih: 'son kullanma (S.K.T)',
   ay: 'son kullanma ayı',
   yil: 'son kullanma yılı',
+  ad: 'Ad Soyad (kart sahibi)',
+  cvv: 'CVV',
 };
+const YAZI_OGESI = [
+  'SPAN',
+  'DIV',
+  'P',
+  'TD',
+  'DD',
+  'B',
+  'STRONG',
+  'LABEL',
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'H5',
+  'H6',
+];
 
-/** Seçim listesi seçenekleri ve betikler dışındaki görünen yazı. */
-function yazi(k: Element): string {
-  let s = '';
-  const w = document.createTreeWalker(k, NodeFilter.SHOW_TEXT);
-  for (let n = w.nextNode(); n; n = w.nextNode())
-    if (!n.parentElement?.closest('select,option,script,style,textarea')) s += ' ' + (n.nodeValue ?? '');
-  return s.replace(/\s+/g, ' ').trim();
-}
-
-/** Kutuya bağlı olmayan ama yalnız ona ait görünen yazı: “S.K.T”, “CVV”, “Tutar” gibi başlıklar. */
-function yakinYazi(e: Element): string {
-  const parca: string[] = [];
-  for (const id of (e.getAttribute('aria-labelledby') ?? '').split(/\s+/).filter(Boolean)) {
-    const t = document.getElementById(id)?.textContent?.trim() ?? '';
-    if (t && t.length <= 120) parca.push(t);
-  }
-  // Yalnız bu kutuyu içeren üst kapsayıcıların hepsinin yazısı (en fazla dört düzey). İlk yazıda
-  // durulmaz: “TL” gibi bir birim yazısı, bir üstteki “Tutar” başlığını gizleyemez.
-  let p = e.parentElement;
-  for (let d = 0; p && p !== document.body && d < 4; d++, p = p.parentElement) {
-    if (p.querySelectorAll(KONTROL).length !== 1) break;
-    const t = yazi(p);
-    if (t && t.length <= 160) parca.push(t);
-  }
-  // Aynı kapsayıcıda birden çok kutu varsa hemen önündeki başlık öğesi.
-  const once = e.previousElementSibling;
-  if (once && ETIKET_OGESI.test(once.tagName) && !once.querySelector(KONTROL)) {
-    const t = yazi(once);
-    if (t && t.length <= 60) parca.push(t);
-  }
-  return parca.join(' ');
-}
-function ipucu(e: Element): string {
-  const label =
-    e instanceof HTMLInputElement || e instanceof HTMLSelectElement
-      ? Array.from(e.labels ?? [])
-          .map((l) => l.textContent ?? '')
-          .join(' ')
-      : '';
-  return [
-    e.id,
-    e.getAttribute('name'),
-    e.getAttribute('autocomplete'),
-    e.getAttribute('placeholder'),
-    e.getAttribute('aria-label'),
-    e.getAttribute('title'),
-    label,
-    e instanceof HTMLInputElement || e instanceof HTMLSelectElement ? yakinYazi(e) : '',
-  ]
-    .join(' ')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/ı/g, 'i');
-}
-export function gorunur(e: Element): boolean {
-  const r = e.getBoundingClientRect();
-  if (!e.isConnected || r.width <= 0 || r.height <= 0) return false;
-  for (let p: Element | null = e; p; p = p.parentElement) {
-    const s = getComputedStyle(p);
-    if (
-      p.hasAttribute('hidden') ||
-      p.hasAttribute('inert') ||
-      p.getAttribute('aria-hidden') === 'true' ||
-      s.visibility !== 'visible' ||
-      s.display === 'none' ||
-      Number(s.opacity) === 0 ||
-      s.contentVisibility === 'hidden'
-    )
-      return false;
-  }
-  return true;
-}
 /** `onaylanabilir`: yalnız ad/yazı tanınmadığında; kullanıcı açıkça onaylayabilir. */
 export class AlanHatasi extends Error {
   constructor(
@@ -97,37 +37,50 @@ export class AlanHatasi extends Error {
     super(mesaj);
   }
 }
-/** Uygunsa `null`, değilse kullanıcıya gösterilecek neden. `elle`: ad/yazı denetimi kullanıcı onayıyla geçilir;
- * görünürlük, engelli alan (CVV/tutar/şifre…), tür ve uzunluk denetimleri hiçbir durumda atlanmaz. */
+
+/** Uygunsa `null`, değilse kullanıcıya gösterilecek neden. `elle`: ad/yazı denetimi kullanıcı onayıyla
+ * geçilir; görünürlük, engelli alan (tutar/şifre/SMS; CVV rolü dışında CVV), tür ve uzunluk denetimleri
+ * hiçbir durumda atlanmaz. Doldurma anında da aynı denetim yeniden yapılır. */
 export function alanSorunu(e: Element, rol: AlanRolu, elle = false): AlanHatasi | null {
   if (!gorunur(e)) return new AlanHatasi('Bu alan görünmüyor veya gizli bir bölümde.');
   const ip = ipucu(e);
-  if (ENGELLI_ALAN.test(ip))
+  if (alanEngelli(ip, rol))
     return new AlanHatasi(
-      'Bu alan CVV, tutar, taksit, şifre veya güvenlik alanına benziyor; yardımcı buraya hiçbir şey yazmaz.',
+      rol === 'cvv'
+        ? 'Bu alan tutar, taksit, şifre veya SMS alanına benziyor; yardımcı buraya hiçbir şey yazmaz.'
+        : 'Bu alan CVV, tutar, taksit, şifre veya güvenlik alanına benziyor; yardımcı buraya bu bilgiyi yazmaz.',
     );
   if (rol === 'firma')
-    return ['SPAN', 'DIV', 'P', 'TD', 'DD', 'B', 'STRONG'].includes(e.tagName) &&
-      (e.textContent?.length ?? 0) <= 256 &&
+    return YAZI_OGESI.includes(e.tagName) &&
+      (e.textContent ?? '').replace(/\s+/g, ' ').trim().length <= 256 &&
       !e.querySelector('input,select,button,textarea')
       ? null
       : new AlanHatasi('Kutu veya düğme değil, vergi/TC numarasının yazdığı düz yazıyı seçin.');
-  if (!(e instanceof HTMLInputElement || e instanceof HTMLSelectElement))
+  if (!kutuMu(e))
     return new AlanHatasi('Tıkladığınız yer bir yazı kutusu değil. Boş kutunun içine tıklayın.');
   if (e.disabled || e.matches(':disabled') || (e instanceof HTMLInputElement && e.readOnly))
     return new AlanHatasi('Bu kutu kapalı veya salt okunur; yardımcı yazamaz.');
-  if (e instanceof HTMLInputElement && !['text', 'tel', 'number'].includes(e.type))
-    return new AlanHatasi(`Bu kutunun türü (${e.type}) desteklenmiyor.`);
-  if (rol === 'numara' || rol === 'tarih') {
-    if (!(e instanceof HTMLInputElement) || e.type === 'number')
-      return new AlanHatasi(`Bu kutu ${ROL_ADI[rol]} için uygun türde değil (yazı kutusu olmalı).`);
-    const enAz = rol === 'numara' ? 12 : 4;
+  const metinKutusu = rol === 'numara' || rol === 'tarih' || rol === 'ad';
+  if (e instanceof HTMLSelectElement && (metinKutusu || rol === 'cvv'))
+    return new AlanHatasi(`Bu kutu ${ROL_ADI[rol]} için uygun türde değil (yazı kutusu olmalı).`);
+  if (e instanceof HTMLInputElement) {
+    const turler =
+      rol === 'cvv'
+        ? ['text', 'tel', 'number', 'password']
+        : metinKutusu
+          ? ['text', 'tel']
+          : ['text', 'tel', 'number'];
+    if (!turler.includes(e.type))
+      return new AlanHatasi(`Bu kutunun türü (${e.type}) ${ROL_ADI[rol]} için desteklenmiyor.`);
+    const enAz = { numara: 12, tarih: 4, ad: 2, cvv: 3, ay: 1, yil: 2 }[rol];
     if (e.maxLength !== -1 && e.maxLength < enAz)
       return new AlanHatasi(
-        `Bu kutu en fazla ${e.maxLength} karakter alıyor; ${ROL_ADI[rol]} için kısa. CVV kutusu olabilir.`,
+        `Bu kutu en fazla ${e.maxLength} karakter alıyor; ${ROL_ADI[rol]} için kısa.${rol === 'numara' || rol === 'tarih' ? ' CVV kutusu olabilir.' : ''}`,
       );
+    if (rol === 'cvv' && e.maxLength > 4)
+      return new AlanHatasi('Bu kutu CVV için fazla uzun; CVV kutusu 3–4 karakter alır.');
   }
-  // Etiketsiz bir tutar alanı yanlışlıkla seçilse de kart/tarih diye yazılmaz; tanınmayan ad yalnız açık onayla.
+  // Etiketsiz bir tutar alanı yanlışlıkla seçilse de yazılmaz; tanınmayan ad yalnız açık onayla.
   if (!elle && !ipucuUygun(ip, rol))
     return new AlanHatasi(`Kutunun adı veya yanındaki yazı ${ROL_ADI[rol]} olarak tanınmadı.`, true);
   return null;
@@ -135,12 +88,31 @@ export function alanSorunu(e: Element, rol: AlanRolu, elle = false): AlanHatasi 
 export function alanUygun(e: Element, rol: AlanRolu, elle = false): boolean {
   return !alanSorunu(e, rol, elle);
 }
+
+function tek(secici: string): Element | null {
+  try {
+    const e = document.querySelectorAll(secici);
+    return e.length === 1 ? (e[0] ?? null) : null;
+  } catch {
+    return null;
+  }
+}
+function kutuTuru(e: Element): string {
+  return e instanceof HTMLInputElement ? e.type : '';
+}
+
+/** Seçici sırası: kalıcı kimlik → `name` → sayfadaki sıra. Kimlik veya ad 6+ rakam içeriyorsa
+ * (oturuma göre değişen değer olabilir) kullanılmaz. */
 export function alanTanimi(e: Element, rol: AlanRolu, elle = false): AlanTanimi {
   const sorun = alanSorunu(e, rol, elle);
   if (sorun) throw sorun;
-  let secici = '';
-  if (e.id && !/\d{6}/.test(e.id)) secici = '#' + CSS.escape(e.id);
-  if (!secici || document.querySelectorAll(secici).length !== 1) {
+  const ad = e.getAttribute('name') ?? '';
+  const adUygun = Boolean(ad) && ad.length <= 120 && !/\d{6}/.test(ad);
+  let secici: string;
+  if (e.id && !/\d{6}/.test(e.id) && tek('#' + CSS.escape(e.id)) === e) secici = '#' + CSS.escape(e.id);
+  else if (adUygun && tek(`${e.tagName.toLowerCase()}[name="${CSS.escape(ad)}"]`) === e)
+    secici = `${e.tagName.toLowerCase()}[name="${CSS.escape(ad)}"]`;
+  else {
     let p: Element | null = e;
     const parc: string[] = [];
     while (p && p !== document.body && parc.length < 12) {
@@ -151,92 +123,53 @@ export function alanTanimi(e: Element, rol: AlanRolu, elle = false): AlanTanimi 
     }
     secici = 'body>' + parc.join('>');
   }
-  if (document.querySelectorAll(secici).length !== 1) throw new AlanHatasi('Alan tek başına tanınamadı.');
+  if (tek(secici) !== e || /\d{6}/.test(secici)) throw new AlanHatasi('Alan tek başına tanınamadı.');
+  const baslik = rol === 'firma' ? '' : kutuBasligi(e);
   return {
     secici,
     etiket: e.tagName,
-    tur: e instanceof HTMLInputElement ? e.type : '',
+    tur: kutuTuru(e),
     ...(elle && rol !== 'firma' ? { elle: true as const } : {}),
+    ...(adUygun && rol !== 'firma' ? { ad } : {}),
+    ...(baslik ? { baslik } : {}),
   };
 }
-export function alanBul(a: AlanTanimi, rol: AlanRolu): Element {
-  const e = document.querySelectorAll(a.secici);
-  const f = e[0];
-  if (
-    e.length !== 1 ||
-    !f ||
-    f.tagName !== a.etiket ||
-    (f instanceof HTMLInputElement ? f.type : '') !== a.tur ||
-    !alanUygun(f, rol, a.elle === true)
-  )
-    throw new Error('Tanıtılan alan değişmiş veya görünmüyor. Yeniden tanıtın.');
-  return f;
+
+/** Tanıtılan kutu bu sayfada var mı (uygunluğuna bakılmadan)? Ödeme formunun olduğu sayfayı ayırt eder;
+ * kutu varsa ama gizli/kapalıysa doldurma açık hatayla durur, “sayfaya geçin” denmez. */
+export function alanIzi(t: AlanTanimi): boolean {
+  if (tek(t.secici)?.tagName === t.etiket) return true;
+  if (t.ad && Array.from(document.getElementsByName(t.ad)).some((x) => x.tagName === t.etiket)) return true;
+  return Boolean(
+    t.baslik &&
+    Array.from(document.querySelectorAll(KONTROL)).some(
+      (x) => x.tagName === t.etiket && sayfaOgesi(x) && kutuBasligi(x) === t.baslik,
+    ),
+  );
 }
-export function firmaNumarasi(a: PosAlanlari): string {
-  alanlariDogrula(a);
-  const firma = a.alanlar.firma;
-  if (!firma) throw new Error('Firma alanı eksik.');
-  const text = alanBul(firma, 'firma').textContent ?? '';
-  const sayilar = text.match(/(?<!\d)\d{10,11}(?!\d)/g) ?? [];
-  if (sayilar.length !== 1)
-    throw new Error('Firma numarası tek ve açık biçimde okunamadı. Kart aktarılmadı.');
-  return sayilar[0] ?? '';
-}
-function yilDegeri(e: HTMLInputElement | HTMLSelectElement, yil: string): string {
-  if (e instanceof HTMLSelectElement) {
-    const deger = Array.from(e.options).find((o) => o.value === yil || o.value === yil.slice(-2));
-    if (!deger || deger.disabled) throw new Error('Son kullanma yılı listede yok.');
-    return deger.value;
+
+/** Tanıtılan alanı bulur. Kaydedilen seçici bu carinin ekranında kaymışsa (ek satır, eksik satır)
+ * `name` ve ardından başlık yazısıyla yeniden bulunur. Her adayda bütün güvenlik denetimleri yinelenir;
+ * tek ve uygun aday yoksa hiçbir şey yazılmaz. */
+export function alanBul(t: AlanTanimi, rol: AlanRolu): Element {
+  const uygun = (f: Element | null | undefined): f is Element =>
+    f !== null &&
+    f !== undefined &&
+    f.tagName === t.etiket &&
+    kutuTuru(f) === t.tur &&
+    sayfaOgesi(f) &&
+    alanUygun(f, rol, t.elle === true);
+  const ilk = tek(t.secici);
+  if (uygun(ilk)) return ilk;
+  if (t.ad && rol !== 'firma') {
+    const adlar = Array.from(document.getElementsByName(t.ad)).filter((x) => x.tagName === t.etiket);
+    if (adlar.length === 1 && uygun(adlar[0])) return adlar[0];
   }
-  return e.maxLength === 2 ? yil.slice(-2) : yil;
-}
-export function kartiDoldur(a: PosAlanlari, kart: PosAktarimi): void {
-  if (firmaNumarasi(a) !== kart.cariNumarasi) throw new Error('Cari eşleşmiyor.');
-  const yazilar: { e: HTMLInputElement | HTMLSelectElement; yeni: string; eski: string }[] = [];
-  for (const rol of ['numara', 'tarih', 'ay', 'yil'] as const) {
-    const t = a.alanlar[rol];
-    if (!t) continue;
-    const e = alanBul(t, rol) as HTMLInputElement | HTMLSelectElement;
-    let yeni =
-      rol === 'numara'
-        ? kart.numara
-        : rol === 'tarih'
-          ? tarihMetni(
-              kart.ay,
-              kart.yil,
-              (e as HTMLInputElement).maxLength,
-              e.getAttribute('placeholder') ?? '',
-            )
-          : rol === 'ay'
-            ? kart.ay
-            : yilDegeri(e, kart.yil);
-    if (
-      rol === 'ay' &&
-      e instanceof HTMLSelectElement &&
-      !Array.from(e.options).some((o) => o.value === yeni && !o.disabled)
-    )
-      yeni = String(Number(kart.ay));
-    if (e instanceof HTMLSelectElement && !Array.from(e.options).some((o) => o.value === yeni && !o.disabled))
-      throw new Error('Tarih listesinde seçilen değer yok.');
-    if (e instanceof HTMLInputElement && e.maxLength !== -1 && yeni.length > e.maxLength)
-      throw new Error('Alan uzunluğu uygun değil.');
-    if (e.value && e.value.replace(/[ /-]/g, '') !== yeni.replace(/[ /-]/g, ''))
-      throw new Error('POS alanında başka bilgi var. Alanlar değiştirilmedi.');
-    yazilar.push({ e, yeni, eski: e.value });
+  if (t.baslik && rol !== 'firma') {
+    const adaylar = Array.from(document.querySelectorAll(KONTROL)).filter(
+      (x) => x.tagName === t.etiket && kutuTuru(x) === t.tur && sayfaOgesi(x) && kutuBasligi(x) === t.baslik,
+    );
+    if (adaylar.length === 1 && uygun(adaylar[0])) return adaylar[0];
   }
-  // Bütün alanlar doğrulanmadan hiçbir yazı yapılmaz. input/change/submit/click yok.
-  const yaz = (e: HTMLInputElement | HTMLSelectElement, s: string) => {
-    const p = e instanceof HTMLInputElement ? HTMLInputElement.prototype : HTMLSelectElement.prototype;
-    const setter = Object.getOwnPropertyDescriptor(p, 'value')?.set;
-    if (!setter) throw new Error('Alan yazıcısı bulunamadı.');
-    setter.call(e, s);
-  };
-  try {
-    for (const s of yazilar) yaz(s.e, s.yeni);
-    if (firmaNumarasi(a) !== kart.cariNumarasi || yazilar.some((s) => s.e.value !== s.yeni))
-      throw new Error('Alan yazısı doğrulanamadı.');
-  } catch (e) {
-    for (const s of yazilar) yaz(s.e, s.eski);
-    throw e;
-  }
+  throw new Error(`Tanıtılan ${ROL_ADI[rol]} kutusu bu sayfada bulunamadı.`);
 }
