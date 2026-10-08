@@ -61,8 +61,9 @@ export function ProfilYedegi({
         </button>
       </div>
       <p>
-        Yedek carileri, kart numaralarını ve iletişim telefonlarını içerir; ayrı uzun parolayla şifrelenir. Bu
-        parola günlük açılışta sorulmaz. Tarayıcı verileri silinirse yedekten geri getirebilirsiniz.
+        Yedek carileri, kart numaralarını, kayıtlı CVV’leri ve iletişim telefonlarını içerir; ayrı uzun
+        parolayla şifrelenir. Bu parola günlük açılışta sorulmaz. Tarayıcı verileri silinirse yedekten geri
+        getirebilirsiniz.
       </p>
       {hatirlatma && <p className="ipucu">{hatirlatma}</p>}
       {acik && (

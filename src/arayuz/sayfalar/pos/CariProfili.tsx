@@ -4,6 +4,7 @@ import { numaraMaskesi, type PosCari } from '../../../cekirdek/posCari';
 import { kartMaskesi, type PosKart } from '../../../cekirdek/posKart';
 import { CariKartlari } from './CariKartlari';
 import { PosGirisYardimi } from './PosGirisYardimi';
+import { useYardimci } from './useYardimci';
 
 /** Firma beyanı POS oturumuyla ilgilidir; sekme geçişinde korunur, en fazla bu kadar geçerlidir. */
 export const FIRMA_ONAYI_SURESI = 30 * 60_000;
@@ -14,6 +15,7 @@ export function CariProfili({
   mesgul,
   gizlilikNo,
   duzenle,
+  sil,
   kartKaydet,
   kartSil,
   bildir,
@@ -23,6 +25,7 @@ export function CariProfili({
   mesgul: boolean;
   gizlilikNo: number;
   duzenle: () => void;
+  sil: () => void;
   kartKaydet: (k: PosKart, beklenen: PosKart | null) => Promise<IslemSonucu>;
   kartSil: (k: PosKart) => Promise<IslemSonucu>;
   bildir: (m: string, h?: boolean) => void;
@@ -31,6 +34,7 @@ export function CariProfili({
   const [onay, setOnay] = useState(0);
   const [onayNo, setOnayNo] = useState(0);
   const [aktarimNo, setAktarimNo] = useState(0);
+  const yardimci = useYardimci();
   const firmaOnay = onay > 0 && onay === onayNo;
   useEffect(() => {
     if (!firmaOnay) return;
@@ -48,6 +52,21 @@ export function CariProfili({
     setOnayNo(yeni);
     setOnay(yeni);
   };
+  const elleGiris = (
+    <PosGirisYardimi
+      cari={cari}
+      baslik="Elle POS’a giriş"
+      izin={() => !mesgul}
+      bildir={bildir}
+      gizlilikNo={gizlilikNo}
+      firmaDogrulandi={firmaOnay}
+      firmaKontrolu={onayla}
+      girisBasladi={() => {
+        onayla(false);
+        setAktarimNo((n) => n + 1);
+      }}
+    />
+  );
   return (
     <div className="pos-profil-grid">
       <section className="kart">
@@ -57,19 +76,39 @@ export function CariProfili({
             <h2>{cari.ad}</h2>
             <p className="rakam">{numaraMaskesi(cari.numara)}</p>
           </div>
-          <button className="dugme" type="button" disabled={mesgul} onClick={duzenle}>
-            Cariyi düzenle
-          </button>
+          <div className="satir-dugmeleri">
+            <button className="dugme" type="button" disabled={mesgul} onClick={duzenle}>
+              Cariyi düzenle
+            </button>
+            <button className="dugme tehlike" type="button" disabled={mesgul} onClick={sil}>
+              Cariyi sil
+            </button>
+          </div>
         </div>
+        {yardimci.hazir ? (
+          <p className="pos-yardimci-hazir" role="status">
+            ✓ POS yardımcısı kurulu ve ödeme formu tanıtılmış. Yeniden kurmanız gerekmez.
+          </p>
+        ) : (
+          yardimci.kurulum &&
+          yardimci.bagli === false && (
+            <p className="ipucu" role="status">
+              POS yardımcısına ulaşılamadı. Tarayıcının eklenti sayfasında yardımcının açık olduğunu kontrol
+              edip bu sayfayı yenileyin.
+            </p>
+          )
+        )}
         <ol className="pos-adimlar pos-sira">
           <li>Aşağıdan kullanacağınız kartı seçin. Önce açık kalan eski POS sekmelerini kapatın.</li>
           <li>
-            İsterseniz CVV’yi yazın (kaydedilmez) ve <b>Seçili kartla POS’u aç</b> düğmesine basın. POS
-            yardımcısı kuruluysa kart bilgileri POS’a kendiliğinden yazılır.
+            <b>Seçili kartla POS’u aç</b> düğmesine basın. Kart numarası, son kullanma ve kayıtlı CVV POS’a
+            kendiliğinden yazılır{yardimci.hazir ? '' : ' (POS yardımcısı kuruluysa)'}.
           </li>
           <li>Tutarı ve banka onayını POS ekranında siz girin.</li>
         </ol>
-        <p className="ipucu">Yardımcı kurulu değilse en alttaki “Elle POS’a giriş” bölümünü kullanın.</p>
+        {!yardimci.hazir && (
+          <p className="ipucu">Yardımcı kurulu değilse en alttaki “Elle POS’a giriş” bölümünü kullanın.</p>
+        )}
       </section>
       <CariKartlari
         cari={cari}
@@ -81,6 +120,7 @@ export function CariProfili({
         kaydet={kartKaydet}
         kartDegisti={() => onayla(false)}
         cariyiDuzenle={duzenle}
+        yardimci={yardimci}
         sil={(k) => {
           if (
             !mesgul &&
@@ -89,19 +129,14 @@ export function CariProfili({
             void kartSil(k);
         }}
       />
-      <PosGirisYardimi
-        cari={cari}
-        baslik="Elle POS’a giriş"
-        izin={() => !mesgul}
-        bildir={bildir}
-        gizlilikNo={gizlilikNo}
-        firmaDogrulandi={firmaOnay}
-        firmaKontrolu={onayla}
-        girisBasladi={() => {
-          onayla(false);
-          setAktarimNo((n) => n + 1);
-        }}
-      />
+      {yardimci.hazir ? (
+        <details className="pos-elle-giris">
+          <summary>Elle POS’a giriş (yardımcı çalışmazsa)</summary>
+          {elleGiris}
+        </details>
+      ) : (
+        elleGiris
+      )}
     </div>
   );
 }

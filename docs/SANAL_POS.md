@@ -35,7 +35,8 @@ Mevcut cari giriş formu kart/ödeme API'si değildir. Gerçek ödeme isteği ve
   dakika boşta açık tam numara gizlenir; açık formlar korunur, kart formunda numara/fotoğraf örtülür (1.12.0).
 - Süresi geçmiş kartlar okunur/düzenlenir/silinir, işlem için seçilemez veya yeni kayıt olarak kaydedilemez.
 - Cari silme bağlı kartlarını aynı veri aktarımında siler; kullanıcıya kart sayısı gösterilir.
-- CVV/CVC, banka PIN’i, OTP/SMS kodu, fotoğraf, ham OCR, serbest not, ödeme tutarı/sonucu kaydı yoktur.
+- CVV kartla birlikte isteğe bağlı kaydedilir (1.17.0, kullanıcı kararı); bkz. aşağıdaki “CVV” maddesi.
+  Banka PIN’i, OTP/SMS kodu, fotoğraf, ham OCR, serbest not, ödeme tutarı/sonucu kaydı yoktur.
   Şema ek alanları reddeder. Ad gibi serbest metne sır yazılması tamamen önlenebilir diye iddia edilmez.
 
 ## Şifreli yerel depo ve geçiş
@@ -179,9 +180,21 @@ numaraDuzeltme)`). Giriş reddedilince programda “Cariyi düzenle” düğmesi
 - **Cariye özel POS girişi:** Cari formunda “POS girişi bu cari için farklıysa” altında lisans numarası ve
   şifre. Elle giriş yardımı, doğrudan “POS’u aç” ve yardımcı aynı `posGirisBilgisi` kuralını kullanır.
   Yedek birleştirmede farklı giriş bilgisi çatışma olarak gösterilir (şifre metni özete girmez).
-- **CVV:** Yardımcıda CVV kutusu tanıtıldıysa seçili kart panelinde “CVV (bu ödeme için, kaydedilmez)”
-  kutusu çıkar. Değer gönderilince, kart değişince veya 2 dakika dokunulmazsa boşaltılır; IndexedDB,
-  yedek, `localStorage` veya yardımcının kalıcı deposuna girmez (tarayıcı testi denetler).
+- **CVV (1.17.0'dan beri):** Kullanıcı 2026-10-08'de, PCI DSS'nin CVV saklamayı yasakladığı ve kart
+  numarası + tarih + CVV birlikte çalınırsa kartın her yerde kullanılabileceği anlatıldıktan sonra,
+  CVV'nin kartla birlikte **kalıcı** kaydedilmesini seçti. Kart formunda isteğe bağlı “CVV” kutusu
+  (yazarken de maskeli); değer kartın `cvv` alanında şifreli profilde ve şifreli yedekte durur, yoksa alan
+  hiç yazılmaz (eski kayıtlar aynen okunur). Ekranda hiçbir yerde açık gösterilmez (“CVV •••”); elle
+  kopyalama düğmesi firma onayına bağlıdır. Kayıtlı CVV “Seçili kartla POS’u aç”ta yardımcıya gider.
+  Kartta CVV yoksa eski tek seferlik “CVV (bu ödeme için, kaydedilmez)” kutusu kalır. Yardımcının kalıcı
+  deposuna ve `localStorage`'a CVV girmez (tarayıcı testi denetler). Yedek birleştirmede farklı CVV
+  çatışmadır (değer özete girmez).
+- **Kurulum görünümü (1.17.0):** Programdaki kurulum kopyası varken ve yardımcı yanıt verirken
+  (`useYardimci`) “✓ POS yardımcısı kurulu” satırı görünür; kurulum anlatımı “Yardımcıyı güncelle veya
+  yeniden kur” altına iner, “Elle POS’a giriş” kapalı ayrıntıya döner. Yardımcı yanıt vermezse anlatım
+  geri gelir. POS sayfasındaki yardımcı paneline dokunulmadı (yardımcı sürümü 2.0.0 kaldı).
+- **Cari silme (1.17.0):** Cari profilinin başında “Cariyi sil” (önceden yalnız düzenleme formunun
+  altındaydı ve bulunamıyordu).
 - **Kurulum kopyası:** Yardımcının alan kurulumu (yalnız seçiciler/başlıklar) programda
   `localStorage` `bup-rapor:pos-yardimci-kurulumu` altında da tutulur; yardımcı kaldırılıp yeniden
   kurulursa ilk aktarımda geri verilir. Kullanıcı yardımcıda kurulumu bilerek sildiyse geri verilmez.

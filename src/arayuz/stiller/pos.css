@@ -337,10 +337,28 @@
   max-width: 320px;
   margin-bottom: 12px;
 }
-.pos-cvv .girdi {
+.pos-cvv .girdi,
+.pos-cvv-girdi {
   max-width: 8ch;
 }
 .pos-cari-giris {
   display: grid;
   gap: 8px;
+}
+.pos-yardimci-hazir {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: var(--yaricap-k);
+  background: var(--tamam-yumusak);
+  color: var(--tamam);
+  font-weight: 600;
+}
+.pos-elle-giris > summary,
+.pos-kurulum-kapali > summary {
+  cursor: pointer;
+  color: var(--soluk);
+  font-size: 14px;
+}
+.pos-elle-giris[open] > summary {
+  margin-bottom: 12px;
 }

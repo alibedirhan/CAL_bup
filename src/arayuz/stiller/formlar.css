@@ -56,6 +56,16 @@
   color: var(--murekkep);
 }
 
+/* Geri alınamayan silme işleri: kırmızı yazı, normal çerçeve. */
+.dugme.tehlike {
+  color: var(--hata);
+}
+
+.dugme.tehlike:hover:not(:disabled) {
+  border-color: var(--hata);
+  background: var(--hata-yumusak);
+}
+
 .dugme.kucuk {
   min-height: 32px;
   padding: 0 12px;

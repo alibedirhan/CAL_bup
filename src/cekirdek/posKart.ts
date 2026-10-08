@@ -10,6 +10,9 @@ export interface PosKart {
   yil: string;
   telefon: string;
   onayTarihi: string;
+  /** Kullanıcı kararıyla (2026-10-08) kartla birlikte şifreli profilde saklanır; ekranda hep maskelidir.
+   * Kaydedilmemişse alan hiç yoktur (eski kayıtlar ve yedekler aynen okunur). */
+  cvv?: string;
 }
 export const EN_FAZLA_CARI_KARTI = 10;
 export const POS_KIMLIK = /^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i;
@@ -49,6 +52,12 @@ export function kartTelefonu(deger: string): string {
     throw new KullaniciHatasi('Türkiye cep telefonunu 05xx xxx xx xx veya +90 ile yazın.');
   return n;
 }
+/** Kart üzerindeki 3 veya 4 rakamlık güvenlik kodu; boş metin “kaydedilmedi” demektir. */
+export function kartCvv(deger: string): string {
+  if (deger === '') return '';
+  if (!/^[0-9]{3,4}$/.test(deger)) throw new KullaniciHatasi('CVV 3 veya 4 rakam olmalı.');
+  return deger;
+}
 export function kartSuresiGecti(kart: Pick<PosKart, 'ay' | 'yil'>, simdi = new Date()): boolean {
   return (
     Number(kart.yil) < simdi.getFullYear() ||
@@ -66,12 +75,15 @@ export function kartDogrula(kart: PosKart): PosKart {
     new Date(kart.onayTarihi).toISOString() !== kart.onayTarihi
   )
     throw new KullaniciHatasi('Kart kontrol tarihi geçersiz.');
+  const { cvv, ...diger } = kart;
+  const kod = kartCvv(cvv ?? '');
   return {
-    ...kart,
+    ...diger,
     ad: kartMetni(kart.ad, 2, 80),
     numara: kartNumarasi(kart.numara),
     sahibi: kartMetni(kart.sahibi, 0, 120),
     telefon: kartTelefonu(kart.telefon),
+    ...(kod ? { cvv: kod } : {}),
   };
 }
 export function kartMaskesi(kart: Pick<PosKart, 'numara'>): string {

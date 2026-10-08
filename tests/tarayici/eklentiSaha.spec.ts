@@ -1,5 +1,5 @@
 import { test, expect, type BrowserContext, type Page } from '@playwright/test';
-import { eklentiOrtami, yapayKartliCari, APP, POS } from './eklentiYardimci';
+import { eklentiOrtami, yapayKartliCari, POS } from './eklentiYardimci';
 
 // 2026-10-07 saha denemesindeki durumların YAPAY karşılıkları (docs/SANAL_POS_SAHA_TESTI_RAPORU.md).
 // Gerçek POS'a istek yoktur: bütün adresler route ve kapalı proxy ile karşılanır. Numaralar yapaydır.
@@ -176,7 +176,7 @@ test('yardımcı yeniden kurulunca program kurulumu geri verir; bilerek silinen 
     await pos.close();
     // Programın kopyası bir sonraki bağlantı denetiminde güncellenir.
     await e.p.getByRole('button', { name: 'Yardımcı bağlantısını kontrol et', exact: true }).click();
-    await expect(e.p.getByRole('status').filter({ hasText: 'Ödeme formu tanıtılmış' })).toBeVisible();
+    await expect(e.p.getByRole('status').filter({ hasText: 'Ödeme formu tanıtılmış;' })).toBeVisible();
     const w = e.c.serviceWorkers()[0];
     await w?.evaluate(async () => {
       await Reflect.get(globalThis, 'chrome').storage.local.clear();
@@ -187,14 +187,58 @@ test('yardımcı yeniden kurulunca program kurulumu geri verir; bilerek silinen 
     await panel(pos2).getByRole('button', { name: 'Evet, kurulumu sil', exact: true }).click();
     await expect(panel(pos2)).toContainText('Kurulum silindi');
     await pos2.close();
-    await e.p.goto(APP + '#/sanal-pos');
+    // Program sayfası yenilenince sessiz denetim silinen kurulumu görür; kurulum anlatımı geri gelir.
+    await e.p.reload();
     await e.p.locator('.pos-cari').first().click();
+    await expect(e.p.locator('.pos-yardimci-hazir')).toHaveCount(0);
     await e.p.locator('.pos-odeme-karti').click();
     await e.p.getByRole('button', { name: 'Yardımcı bağlantısını kontrol et', exact: true }).click();
     await expect(e.p.getByRole('status').filter({ hasText: 'henüz tanıtılmamış' })).toBeVisible();
     const pos3 = await posuAc(e.p, e.c);
     await expect(panel(pos3)).toContainText('bir kez tanıtın');
     await expect(kutu(pos3, 'Kredi Kartı Numarası')).toHaveValue('');
+    expect(e.sayac.sms + e.sayac.odeme + e.sayac.dis).toBe(0);
+  } finally {
+    await e.kapat();
+  }
+});
+
+test('kartta kayıtlı CVV maskeli görünür ve POS’a kendiliğinden yazılır; kurulum tamamsa anlatım geri planda', async () => {
+  const e = await eklentiOrtami();
+  try {
+    await sahteSaglayici(e.c, () => ({}));
+    await yapayKartliCari(e.p, { numara: A, sahibi: 'YAPAY A', cvv: '654' });
+    // Kart formunda yazılan CVV ekranda hiçbir yerde açık görünmez.
+    await expect(e.p.locator('.pos-odeme-karti')).toContainText('CVV •••');
+    await expect(e.p.locator('body')).not.toContainText('654');
+    const posA = await posuAc(e.p, e.c);
+    await tanit(posA);
+    await posA.close();
+    // Kurulum bir kez yapıldıktan sonra program sayfası yenilense de kurulum anlatımı öne çıkmaz.
+    await e.p.reload();
+    await e.p.locator('.pos-cari').first().click();
+    await expect(e.p.locator('.pos-yardimci-hazir')).toContainText('POS yardımcısı kurulu');
+    await expect(e.p.getByText('Yardımcı kurulu değilse en alttaki', { exact: false })).toHaveCount(0);
+    await expect(e.p.getByRole('button', { name: 'POS’u aç', exact: true })).toBeHidden();
+    await e.p.locator('.pos-odeme-karti').click();
+    await expect(e.p.locator('.pos-secili-kart')).toContainText('CVV bu kartta kayıtlı (•••)');
+    await expect(e.p.getByLabel('CVV (bu ödeme için, kaydedilmez)')).toHaveCount(0);
+    await expect(e.p.getByRole('button', { name: 'Yardımcı bağlantısını kontrol et' })).toHaveCount(0);
+    await expect(e.p.getByText('Yardımcıyı güncelle veya yeniden kur', { exact: true })).toBeVisible();
+    await expect(e.p.getByText('Windows kolay kurulum dosyasını indir')).toBeHidden();
+    const posB = await posuAc(e.p, e.c);
+    await expect(kutu(posB, 'Kredi Kartı Numarası')).toHaveValue('4242424242424242');
+    await expect(kutu(posB, 'CVV')).toHaveValue('654');
+    // Yardımcı CVV'yi kendi deposunda tutmaz; programın yerel ayarlarında da açık CVV yoktur.
+    const depo = await e.c.serviceWorkers()[0]?.evaluate(async () => {
+      const ch = Reflect.get(globalThis, 'chrome');
+      return JSON.stringify([await ch.storage.local.get(null), await ch.storage.session.get(null)]);
+    });
+    expect(depo).not.toMatch(/654|4242424242424242/);
+    expect(await e.p.evaluate(() => JSON.stringify({ ...localStorage }))).not.toMatch(/654|4242/);
+    // Elle giriş bölümü kapalı ama gerektiğinde açılabilir.
+    await e.p.getByText('Elle POS’a giriş (yardımcı çalışmazsa)', { exact: true }).click();
+    await expect(e.p.getByRole('button', { name: 'POS’u aç', exact: true })).toBeVisible();
     expect(e.sayac.sms + e.sayac.odeme + e.sayac.dis).toBe(0);
   } finally {
     await e.kapat();

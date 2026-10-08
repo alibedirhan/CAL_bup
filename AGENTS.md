@@ -109,9 +109,17 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.16.0 (POS yardımcısı 2.0.0). Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.17.0 (POS yardımcısı 2.0.0). Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
+
+**2026-10-08 Sanal POS istekleri (1.17.0, yardımcı değişmedi 2.0.0):** Cari profilinde görünür
+“Cariyi sil”; kurulum tamamsa “✓ POS yardımcısı kurulu” ve kurulum/elle giriş anlatımı kapalı ayrıntıda
+(`pos/useYardimci.ts`). **CVV artık kullanıcı kararıyla kartla birlikte şifreli saklanır** (isteğe bağlı
+`PosKart.cvv`, ekranda hep “•••”, yedekte de var, aktarımda kendiliğinden gider). PCI DSS aykırılığı ve
+sorumluluk kullanıcıya anlatıldı, yine de seçti; aşağıdaki 2026-10-07 “CVV saklanmaz” cümlesi eskidi.
+CVV'yi günlük/test/yayın varlıklarına koyma kuralı sürer. Eklenti koduna dokunulmadığı için yardımcı
+yeniden kurulmaz; kod değişirse sürüm kuralı aynen geçerli.
 
 **2026-10-07 Sanal POS saha testi (1.16.0, yardımcı 2.0.0):** İş yerindeki ilk gerçek denemede 2. cari
 girişi reddedildi (10 haneli VKN kayıtlı, POS muhtemelen TC istiyor; kartlı caride numara düzeltilemiyordu)

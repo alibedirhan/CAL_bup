@@ -113,7 +113,7 @@ export async function alanlariTanit(p: Page, ayri = false, v: { cvv?: boolean; a
 }
 export async function yapayKartliCari(
   p: Page,
-  v: { ad?: string; numara?: string; sahibi?: string; kullanici?: string; sifre?: string } = {},
+  v: { ad?: string; numara?: string; sahibi?: string; kullanici?: string; sifre?: string; cvv?: string } = {},
 ) {
   await p.goto(APP + '#/sanal-pos');
   await p.getByRole('button', { name: 'Yeni cari', exact: true }).click();
@@ -130,6 +130,7 @@ export async function yapayKartliCari(
   await p.getByLabel('Karta vereceğiniz isim').fill('Yapay Eklenti Kartı');
   await p.getByLabel('Kart numarası', { exact: true }).fill('4242424242424242');
   if (v.sahibi) await p.getByLabel('Kart üzerindeki ad', { exact: true }).fill(v.sahibi);
+  if (v.cvv) await p.getByLabel('CVV (isteğe bağlı)', { exact: true }).fill(v.cvv);
   await p.getByLabel('Son kullanma ayı', { exact: true }).selectOption('12');
   await p.getByLabel('Son kullanma yılı', { exact: true }).selectOption('2035');
   await p.getByLabel('Kart bilgilerini ve bu cari altında kaydetmeyi kontrol ettim.').check();

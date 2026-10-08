@@ -7,10 +7,11 @@ import { kartMaskesi, kartSuresiGecti, type PosKart } from '../../../cekirdek/po
 import { posBilgisiniKopyala } from '../../../platform/posGiris';
 import { KartFormu } from './KartFormu';
 import { PosKartAktarimi } from './PosKartAktarimi';
+import type { Yardimci } from './useYardimci';
 
 /** Seçim ve aktarım, kartın bu sekmede görülen içeriğine bağlanır. */
 function kartImzasi(k: PosKart): string {
-  return JSON.stringify([k.id, k.cariId, k.numara, k.ay, k.yil, k.ad, k.sahibi, k.telefon]);
+  return JSON.stringify([k.id, k.cariId, k.numara, k.ay, k.yil, k.ad, k.sahibi, k.telefon, k.cvv ?? '']);
 }
 
 export function CariKartlari({
@@ -24,6 +25,7 @@ export function CariKartlari({
   sil,
   kartDegisti,
   cariyiDuzenle,
+  yardimci,
 }: {
   cari: PosCari;
   kartlar: PosKart[];
@@ -35,6 +37,7 @@ export function CariKartlari({
   sil: (k: PosKart) => void;
   kartDegisti: () => void;
   cariyiDuzenle: () => void;
+  yardimci: Yardimci;
 }) {
   const kopyalama = useIslem('kart-kopyalama');
   const blok = mesgul || kopyalama.mesgul;
@@ -47,9 +50,9 @@ export function CariKartlari({
   );
   const izinli = Boolean(secili && !kartSuresiGecti(secili) && firmaOnay && !blok);
   const acik = izinli && gosterNo === gizlilikNo;
-  const kopyala = (tur: 'numara' | 'tarih' | 'sahibi') => {
+  const kopyala = (tur: 'numara' | 'tarih' | 'sahibi' | 'cvv') => {
     if (!izinli || !secili) return;
-    const s = tur === 'tarih' ? `${secili.ay}/${secili.yil}` : secili[tur];
+    const s = tur === 'tarih' ? `${secili.ay}/${secili.yil}` : (secili[tur] ?? '');
     void kopyalama.calistir(async (signal) => {
       await posBilgisiniKopyala(s);
       signal.throwIfAborted();
@@ -105,6 +108,7 @@ export function CariKartlari({
                   <span>{k.sahibi || 'Kart sahibi eklenmedi'}</span>
                   <span>
                     {k.ay}/{k.yil}
+                    {k.cvv ? ' · CVV •••' : ''}
                     {eski ? ' · Süresi geçmiş' : ''}
                   </span>
                 </button>
@@ -151,6 +155,7 @@ export function CariKartlari({
             cari={cari}
             kart={secili}
             mesgul={blok}
+            yardimci={yardimci}
             cariyiDuzenle={cariyiDuzenle}
           />
           <section className="pos-elle-kopya" aria-labelledby="pos-elle-kopya-baslik">
@@ -169,6 +174,10 @@ export function CariKartlari({
                 <dd className="rakam">
                   {secili.ay}/{secili.yil}
                 </dd>
+              </div>
+              <div>
+                <dt>CVV</dt>
+                <dd className="rakam">{secili.cvv ? '•••' : 'Kaydedilmedi'}</dd>
               </div>
             </dl>
             {!firmaOnay && (
@@ -196,6 +205,11 @@ export function CariKartlari({
               {secili.sahibi && (
                 <button className="dugme" type="button" disabled={!izinli} onClick={() => kopyala('sahibi')}>
                   Kart sahibini kopyala
+                </button>
+              )}
+              {secili.cvv && (
+                <button className="dugme" type="button" disabled={!izinli} onClick={() => kopyala('cvv')}>
+                  CVV’yi kopyala
                 </button>
               )}
             </div>

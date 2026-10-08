@@ -1,4 +1,4 @@
-import { kartMetni, kartNumarasi, kartTelefonu, kartSuresiGecti, type PosKart } from './posKart';
+import { kartCvv, kartMetni, kartNumarasi, kartTelefonu, kartSuresiGecti, type PosKart } from './posKart';
 import { cariAdi, posGirisKullanicisi, posNumarasi, posOzelSifre, type PosCari } from './posCari';
 export function alanDenetle(denetimler: Record<string, () => unknown>): Record<string, string> {
   const hatalar: Record<string, string> = {};
@@ -23,6 +23,7 @@ export function kartFormunuDenetle(k: PosKart, onay: boolean): Record<string, st
       if (!/^20[0-9]{2}$/.test(k.yil)) throw new Error('Son kullanma yılını seçin.');
       if (kartSuresiGecti(k)) throw new Error('Kartın son kullanma tarihi geçmiş.');
     },
+    'pos-kart-cvv': () => kartCvv(k.cvv ?? ''),
     'pos-kart-telefon': () => kartTelefonu(k.telefon),
     'pos-kart-onay': () => {
       if (!onay) throw new Error('Kaydetmeden önce kartı ve bağlı cariyi kontrol edip kutuyu işaretleyin.');

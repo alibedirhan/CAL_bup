@@ -234,7 +234,8 @@ oturumdan çıkar, açılan firma adı/numarasını karşılaştırır ve kontro
 
 Her kart kalıcı cari kimliğine bağlıdır; kart adı, numara, son kullanma, kart sahibi ve isteğe bağlı
 iletişim telefonu elle kaydedilir. Fotoğraf numara/tarih adaylarını yerelde okuyabilir; gözden geçirme
-ve kayıt ayrı kullanıcı adımıdır. CVV/CVC, banka PIN’i, SMS/OTP, fotoğraf veya ham OCR saklanmaz.
+ve kayıt ayrı kullanıcı adımıdır. CVV isteğe bağlı kartla saklanır (1.17.0); banka PIN’i, SMS/OTP,
+fotoğraf veya ham OCR saklanmaz.
 Telefon bankanın SMS hedefini değiştirmez. Tutar ve banka doğrulaması POS/banka ekranında yapılır.
 1.6.0'da ayrı MV3 yardımcı, kullanıcı tarafından tanıtılmış boş numara/S.K.T alanlarını cari numarası
 eşleşince doldurabilir. Sağlayıcının kart API'si doğrulanmış değildir; SMS/ödeme otomasyonu yoktur.
@@ -246,9 +247,11 @@ eşleşince doldurabilir. Sağlayıcının kart API'si doğrulanmış değildir;
 - POS girişi varsayılan olarak vergi no = lisans no = numara, şifre = numaranın ilk 2 + son 2 hanesidir.
   Cari kaydında isteğe bağlı `girisKullanici` / `girisSifresi` bu kuralın yerine geçer (şifreli kasada,
   boşsa kayda yazılmaz). Kural tek yerde: `cekirdek/posCari.ts → posGirisBilgisi`.
-- CVV **kaydedilmez**. Kullanıcı isterse ödeme anında programdaki CVV kutusuna yazar; yalnız o aktarımda
-  yardımcıya gider, teslimden önce yardımcının oturum belleğinden silinir. Kullanıcı kararı (2026-10-07):
-  CVV'nin saklanması kart kuralları (PCI DSS) gereği seçilmedi.
+- CVV (1.17.0): kart kaydında isteğe bağlı, 3–4 rakam, şifreli profilde ve yedekte saklanır; ekranda
+  yalnız “•••”. Kayıtlıysa aktarımda kendiliğinden gider; ödeme anında yazılan CVV kayıtlı olanın önüne
+  geçer. Yardımcıya yalnız o aktarımda gider, teslimden önce yardımcının oturum belleğinden silinir.
+  Kullanıcı kararı (2026-10-08), önceki “kaydetme” kararının (2026-10-07) yerine geçti; PCI DSS'ye
+  aykırılığı ve sorumluluk kendisine açıkça anlatıldı.
 - Yardımcı Ad Soyad kutusunu kartın “Kart üzerindeki ad” bilgisiyle doldurur (tanıtıldıysa). Tutar
   kutusuna hiçbir durumda yazılmaz; POS'un yazdığı bakiye ödeme tutarı değildir.
 

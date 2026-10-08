@@ -25,6 +25,7 @@ const KART_ALANLARI = [
   ['ay', 'son kullanma'],
   ['yil', 'son kullanma'],
   ['telefon', 'telefon'],
+  ['cvv', 'CVV'],
 ] as const;
 const adAnahtari = (ad: string) => cariAdi(ad).toLocaleLowerCase('tr-TR');
 const girisAnahtari = (c: PosCari) => JSON.stringify([c.girisKullanici ?? '', c.girisSifresi ?? '']);
@@ -111,7 +112,7 @@ function hesapla(
       tur: 'kart',
       metin: `${ilkAd.get(cari.id) ?? cari.ad} · “${ayni.ad}” (${kartMaskesi(ayni)}): farklı ${farklar.join(', ')}.`,
     });
-    if (secim === 'yedek')
+    if (secim === 'yedek') {
       Object.assign(ayni, {
         ad: k.ad,
         sahibi: k.sahibi,
@@ -120,6 +121,10 @@ function hesapla(
         telefon: k.telefon,
         onayTarihi: k.onayTarihi,
       });
+      // Yedekteki kartta CVV yoksa buradaki de kaldırılır: “yedektekini kullan” kartın tamamıdır.
+      if (k.cvv) ayni.cvv = k.cvv;
+      else delete ayni.cvv;
+    }
   }
   for (const c of cariler)
     if (kartlar.filter((k) => k.cariId === c.id).length > EN_FAZLA_CARI_KARTI)

@@ -73,6 +73,16 @@ describe('Cari profili ve kart kuralları', () => {
     expect(profilKartSil(v, b.id, kart.id).kartlar).toHaveLength(2);
     expect(profilCariSil(v, a.id).kartlar).toEqual([expect.objectContaining({ cariId: b.id })]);
   });
+  it('CVV isteğe bağlıdır: kayıtlı CVV korunur, eski CVV’siz kayıt okunur, boş CVV alanı yazılmaz', () => {
+    const v = profilKartKaydet(veri, { ...kart, cvv: '0123' }, simdi);
+    expect(v.kartlar[0]?.cvv).toBe('0123');
+    expect(posProfilDogrula(v)).toEqual(v);
+    expect(posProfilDogrula(veri).kartlar[0]).not.toHaveProperty('cvv');
+    expect(profilKartKaydet(v, { ...kart, cvv: '' }, simdi).kartlar[0]).not.toHaveProperty('cvv');
+    for (const cvv of ['12', '12345', '12a', '١٢٣'])
+      expect(() => profilKartKaydet(veri, { ...kart, cvv }, simdi)).toThrow(/CVV/);
+    expect(() => posProfilDogrula({ ...veri, kartlar: [{ ...kart, cvv: '' }] })).toThrow();
+  });
   it('başka sekmede değişen veya silinen kaydı açık formdan sessizce ezmez', () => {
     const duzenlenen = { ...kart, ad: 'Yeni Ad' };
     expect(profilKartKaydet(veri, duzenlenen, simdi, kart).kartlar[0]?.ad).toBe('Yeni Ad');

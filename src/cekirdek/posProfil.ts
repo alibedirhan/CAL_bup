@@ -8,7 +8,10 @@ export interface PosProfilVerisi {
   kartlar: PosKart[];
 }
 export const BOS_POS_PROFILI: PosProfilVerisi = { surum: 2, cariler: [], kartlar: [] };
-const KART_ALANLARI = 'ad,ay,cariId,id,numara,onayTarihi,sahibi,telefon,yil';
+const KART_ALANLARI = new Set([
+  'ad,ay,cariId,id,numara,onayTarihi,sahibi,telefon,yil',
+  'ad,ay,cariId,cvv,id,numara,onayTarihi,sahibi,telefon,yil',
+]);
 
 export function posProfilDogrula(deger: unknown): PosProfilVerisi {
   const hata = () => new KullaniciHatasi('Cari ve kart kaydının biçimi geçersiz. Mevcut kayıt korunuyor.');
@@ -31,7 +34,8 @@ export function posProfilDogrula(deger: unknown): PosProfilVerisi {
       !k ||
       typeof k !== 'object' ||
       Array.isArray(k) ||
-      Object.keys(k).sort().join() !== KART_ALANLARI ||
+      !KART_ALANLARI.has(Object.keys(k).sort().join()) ||
+      (k as PosKart).cvv === '' ||
       Object.values(k).some((a) => typeof a !== 'string')
     )
       throw hata();

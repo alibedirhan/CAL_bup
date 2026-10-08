@@ -49,6 +49,15 @@ describe('Yedekten ekleme ve iki bilgisayarda düzenlenmiş kayıtlar', () => {
     expect(profilBirlestir(mevcut, gelen, 'koru').cariler[0]?.ad).toBe('Yapay Cari');
     expect(profilBirlestir(mevcut, gelen, 'yedek').cariler[0]?.ad).toBe('Yapay Cari Ltd');
   });
+  it('kayıtlı CVV farklıysa çatışma olur; CVV gösterilmez, “yedektekini kullan” CVV’siz yedekte CVV’yi kaldırır', () => {
+    const cvvli: PosProfilVerisi = { ...mevcut, kartlar: [kart(K1, A, { cvv: '987' })] };
+    const ozet = profilBirlestirmeOzeti(cvvli, mevcut);
+    expect(ozet.catismalar[0]?.metin).toContain('farklı CVV');
+    expect(ozet.catismalar[0]?.metin).not.toContain('987');
+    expect(profilBirlestir(cvvli, mevcut, 'koru')).toEqual(cvvli);
+    expect(profilBirlestir(cvvli, mevcut, 'yedek').kartlar[0]).not.toHaveProperty('cvv');
+    expect(profilBirlestir(mevcut, cvvli, 'yedek').kartlar[0]?.cvv).toBe('987');
+  });
   it('kartın telefonu/adı farklıysa farklı alanlar listelenir; numara gösterilmez', () => {
     const gelen = { ...mevcut, kartlar: [kart(K1, A, { telefon: '+905000000000', ad: 'Şirket kartı' })] };
     const ozet = profilBirlestirmeOzeti(mevcut, gelen);

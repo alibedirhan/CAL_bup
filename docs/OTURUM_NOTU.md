@@ -1,3 +1,28 @@
+# 8 Ekim 2026 — Cari silme, kayıtlı CVV, kurulumdan sonra sade ekran (1.17.0)
+
+Kullanıcı üç şey istedi ve önce genel tarama: (1) cari silme seçeneği yok, (2) CVV kart eklenirken
+girilsin, maskeli görünsün, POS'ta kendiliğinden dolsun, (3) yardımcı kurulup alanlar tanıtıldıktan
+sonra kurulum anlatımı ekranda kalmasın.
+
+- Tarama: cari silme vardı ama yalnız “Düzenle” formunun altında soluk düğmeydi. CVV kutusu yalnız CVV
+  alanı tanıtıldıysa çıkıyordu. Kurulum anlatımı, “Yardımcı kurulu değilse…” ve elle giriş kartı her
+  zaman açıktı. Saha raporundaki iki soru (2. cari elle giriş, “Devam Et” sonrası banka ekranı) hâlâ yanıtsız.
+- CVV kararı: PCI DSS yasağı ve tam kart bilgisinin birlikte çalınma riski anlatıldı. Önerilen seçenek
+  “sekme açıkken hatırla” idi, kullanıcı **“kartla birlikte kalıcı kaydet”i seçti**. `PosKart.cvv` isteğe
+  bağlı (yoksa anahtar yok; eski kasa/yedek okunur, boş metin reddedilir), birleştirmede çatışma alanı,
+  `kartAktarimi` yazılan CVV yoksa kayıtlıyı kullanır. Kart formunda maskeli kutu, listede “CVV •••”,
+  elle kopyalama düğmesi firma onayına bağlı. Sayfa/yedek metinleri güncellendi.
+- Kurulum görünümü: `useYardimci` (sessiz durum denetimi + kurulum kopyası) `CariProfili`'nde; hazırsa
+  yeşil durum satırı, “Yardımcıyı güncelle veya yeniden kur” kapalı ayrıntısı (bağlantı kontrolü düğmesi
+  de orada), elle giriş kapalı `<details>`. Yanıt yoksa anlatım geri gelir.
+- POS sayfasındaki yardımcı paneli değişmedi: kendiliğinden küçültmek ödeme sonrası “tutarı kendiniz
+  yazın” uyarısını gizlerdi ve yardımcının yeniden kurulmasını gerektirirdi. Panelin kendi “Paneli küçült”
+  tercihi zaten kalıcı. `cvvDogrula` eklentide kullanıldığı için aynen bırakıldı; yardımcı özeti değişmedi.
+- Testler: yeni birim (CVV kayıt/aktarım/birleştirme), tarayıcıda “Cariyi sil”, maskeli CVV, kayıtlı CVV'nin
+  POS'a dolması ve sade kurulum görünümü. Gerçek POS'a istek yok.
+
+---
+
 # 7 Ekim 2026 — Sanal POS saha testi düzeltmeleri (1.16.0, yardımcı 2.0.0)
 
 Kullanıcının arkadaşı Windows'ta denedi: 2. cari girişte hata (1. cari çalışıyor) ve her caride yeniden

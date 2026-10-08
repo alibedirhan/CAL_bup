@@ -28,6 +28,7 @@ export function KartFormu({
   const [ay, setAy] = useState(kart?.ay ?? '');
   const [yil, setYil] = useState(kart?.yil ?? '');
   const [telefon, setTelefon] = useState(kart?.telefon ?? '');
+  const [cvv, setCvv] = useState(kart?.cvv ?? '');
   const [kontrol, setKontrol] = useState(false);
   const [hata, setHata] = useState('');
   const [alanlar, setAlanlar] = useState<Record<string, string>>({});
@@ -139,6 +140,7 @@ export function KartFormu({
               yil,
               telefon,
               onayTarihi: new Date().toISOString(),
+              ...(cvv ? { cvv } : {}),
             };
             const hatalar = kartFormunuDenetle(taslak, kontrol);
             setAlanlar(hatalar);
@@ -235,6 +237,26 @@ export function KartFormu({
             </select>
           </label>
         </div>
+        <label htmlFor="pos-kart-cvv">CVV (isteğe bağlı)</label>
+        <input
+          id="pos-kart-cvv"
+          aria-invalid={Boolean(alanlar['pos-kart-cvv'])}
+          className="girdi rakam pos-gizli-girdi pos-cvv-girdi"
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          spellCheck={false}
+          maxLength={4}
+          value={cvv}
+          disabled={mesgul || okunuyor}
+          onChange={(e) => degistir(setCvv, e.target.value.replace(/\D/g, ''))}
+          aria-describedby={alanlar['pos-kart-cvv'] ? 'pos-kart-hata pos-kart-cvv-notu' : 'pos-kart-cvv-notu'}
+        />
+        <p id="pos-kart-cvv-notu" className="ipucu">
+          Kartın arkasındaki 3 (Amex’te 4) rakam. Yazarken de ••• görünür; kartla birlikte şifreli saklanır ve
+          “Seçili kartla POS’u aç” dediğinizde POS’a kendiliğinden yazılır. Boş bırakırsanız ödeme anında
+          yazarsınız.
+        </p>
         <label htmlFor="pos-kart-telefon">Kart sahibinin iletişim telefonu (isteğe bağlı)</label>
         <input
           id="pos-kart-telefon"
@@ -255,7 +277,7 @@ export function KartFormu({
           belirler.
         </p>
         <p className="ipucu">
-          CVV, banka şifresi ve doğrulama kodu kaydedilmez. Kart sahibi ve kart numarasını kontrol edin.
+          Banka şifresi ve SMS doğrulama kodu kaydedilmez. Kart sahibi ve kart numarasını kontrol edin.
         </p>
         <label className="pos-onay">
           <input

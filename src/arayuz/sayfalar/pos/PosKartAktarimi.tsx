@@ -3,6 +3,7 @@ import type { PosCari } from '../../../cekirdek/posCari';
 import { kartSuresiGecti, type PosKart } from '../../../cekirdek/posKart';
 import { usePosAktarimi } from './usePosAktarimi';
 import { FormHatasi } from '../../bilesenler/FormHatasi';
+import type { Yardimci } from './useYardimci';
 
 /** CVV kutusu yazılmadan bu kadar beklerse boşaltılır. */
 export const CVV_SURESI = 120_000;
@@ -11,19 +12,23 @@ export function PosKartAktarimi({
   cari,
   kart,
   mesgul,
+  yardimci,
   cariyiDuzenle,
 }: {
   cari: PosCari;
   kart: PosKart;
   mesgul: boolean;
+  yardimci: Yardimci;
   cariyiDuzenle?: () => void;
 }) {
   const { durum, hata, neden, uyari, bekliyor, baslat, durdur, tanitilan, kurulum } = usePosAktarimi(
     cari,
     kart,
     mesgul,
+    yardimci,
   );
-  // CVV yalnız bu bileşenin belleğinde; gönderilince, kart değişince veya 2 dakika dokunulmazsa silinir.
+  // Kartta CVV kayıtlı değilse ödeme anında yazılan CVV yalnız bu bileşenin belleğindedir; gönderilince,
+  // kart değişince veya 2 dakika dokunulmazsa silinir.
   const [cvv, setCvv] = useState('');
   useEffect(() => {
     if (!cvv) return;
@@ -38,14 +43,29 @@ export function PosKartAktarimi({
     if (/^\d{3,4}$/.test(yazilan)) setCvv('');
     void baslat(false, yazilan);
   };
+  const kontrolDugmesi = (
+    <button type="button" className="dugme" disabled={mesgul || bekliyor} onClick={() => void baslat(true)}>
+      Yardımcı bağlantısını kontrol et
+    </button>
+  );
   return (
     <section aria-label="Seçili kartı POS’a aktar">
       <p className="ipucu">
         POS yardımcısı cari numarasını karşılaştırır; kart numarası, son kullanma
         {tanitilan.ad ? ', Ad Soyad' : ''}
-        {tanitilan.cvv ? ' ve yazdığınız CVV' : ''} POS’a kendiliğinden yazılır. Tutar ve onay sizde kalır.
+        {tanitilan.cvv ? (kart.cvv ? ' ve kayıtlı CVV' : ' ve yazdığınız CVV') : ''} POS’a kendiliğinden
+        yazılır. Tutar ve onay sizde kalır.
       </p>
-      {tanitilan.cvv ? (
+      {kart.cvv ? (
+        <p className="ipucu">
+          CVV bu kartta kayıtlı (•••).{' '}
+          {tanitilan.cvv
+            ? 'POS’taki CVV kutusuna kendiliğinden yazılır.'
+            : kurulum
+              ? 'Kendiliğinden dolması için POS’taki yardımcı panelinden “Kurulumu yenile” ile CVV kutusunu da tanıtın.'
+              : ''}
+        </p>
+      ) : tanitilan.cvv ? (
         <div className="pos-cvv">
           <label htmlFor="pos-cvv">CVV (bu ödeme için, kaydedilmez)</label>
           <input
@@ -63,8 +83,8 @@ export function PosKartAktarimi({
             onChange={(e) => setCvv(e.target.value.replace(/\D/g, ''))}
           />
           <p id="pos-cvv-notu" className="ipucu">
-            CVV yalnız bu aktarımda POS’taki CVV kutusuna yazılır ve hemen silinir; hiçbir yerde saklanmaz.
-            Boş bırakırsanız CVV’yi POS’ta kendiniz yazarsınız.
+            Bu CVV yalnız bu aktarımda POS’a yazılır. Her seferinde yazmak istemiyorsanız “Düzenle” ile kartın
+            CVV’sini kaydedin. Boş bırakırsanız CVV’yi POS’ta kendiniz yazarsınız.
           </p>
         </div>
       ) : (
@@ -83,14 +103,7 @@ export function PosKartAktarimi({
         >
           Seçili kartla POS’u aç
         </button>
-        <button
-          type="button"
-          className="dugme"
-          disabled={mesgul || bekliyor}
-          onClick={() => void baslat(true)}
-        >
-          Yardımcı bağlantısını kontrol et
-        </button>
+        {!yardimci.hazir && kontrolDugmesi}
         {bekliyor && (
           <button type="button" className="dugme" onClick={durdur}>
             Aktarımı durdur
@@ -105,8 +118,16 @@ export function PosKartAktarimi({
       <FormHatasi id="pos-aktarim-hatasi" hata={hata} />
       {durum && <p role="status">{durum}</p>}
       {uyari && <p className="ipucu">{uyari}</p>}
-      <details open={Boolean(hata) && !neden}>
-        <summary>POS yardımcısını bir kez kur</summary>
+      {/* Kurulum tamamsa anlatım kapalı ve küçük bir “güncelle” satırına iner. */}
+      <details
+        key={String(yardimci.hazir)}
+        className={yardimci.hazir ? 'pos-kurulum-kapali' : undefined}
+        open={Boolean(hata) && !neden}
+      >
+        <summary>
+          {yardimci.hazir ? 'Yardımcıyı güncelle veya yeniden kur' : 'POS yardımcısını bir kez kur'}
+        </summary>
+        {yardimci.hazir && <p>{kontrolDugmesi}</p>}
         <p>
           <a
             href={import.meta.env.BASE_URL + 'POS-Yardimcisi-Windows-Kurulum.cmd'}

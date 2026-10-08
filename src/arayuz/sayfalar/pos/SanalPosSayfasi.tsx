@@ -56,6 +56,28 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
     }
   };
   const acikForm = formCariSilindi ? null : form;
+  /** POS'taki hesaba dokunmaz; yalnız bu tarayıcıdaki cari kaydını ve bağlı kartları siler. */
+  const cariyiSil = (c: PosCari) => {
+    if (mesgul) return;
+    const sayi = veri.kartlar.filter((k) => k.cariId === c.id).length;
+    if (
+      !window.confirm(
+        sayi
+          ? `“${c.ad}” ve ona bağlı ${sayi} kart silinsin mi? POS’taki hesap etkilenmez.`
+          : `“${c.ad}” silinsin mi? POS’taki hesap etkilenmez.`,
+      )
+    )
+      return;
+    void guncelle(
+      () => profilCariSil(veri, c.id),
+      sayi ? 'Cari ve bağlı kartları silindi.' : 'Cari silindi.',
+    ).then((tamam) => {
+      if (tamam.durum === 'tamam') {
+        setSeciliId(null);
+        setForm(null);
+      }
+    });
+  };
   return (
     <>
       <div className="pos-yerlesim">
@@ -164,30 +186,14 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
             />
             {acikForm.cari && (
               <button
-                className="dugme hayalet"
+                className="dugme tehlike"
                 type="button"
                 disabled={mesgul}
                 onClick={() => {
-                  const c = acikForm.cari;
-                  if (!c) return;
-                  const sayi = veri.kartlar.filter((k) => k.cariId === c.id).length;
-                  if (
-                    !window.confirm(
-                      `“${c.ad}” ve ona bağlı ${sayi} kart silinsin mi? POS’taki hesap etkilenmez.`,
-                    )
-                  )
-                    return;
-                  void guncelle(() => profilCariSil(veri, c.id), 'Cari ve bağlı kartları silindi.').then(
-                    (tamam) => {
-                      if (tamam.durum === 'tamam') {
-                        setSeciliId(null);
-                        setForm(null);
-                      }
-                    },
-                  );
+                  if (acikForm.cari) cariyiSil(acikForm.cari);
                 }}
               >
-                Bu cari ve bağlı kartlarını sil
+                Cariyi sil
               </button>
             )}
           </div>
@@ -200,6 +206,7 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
             mesgul={mesgul}
             bildir={bildir}
             duzenle={() => setForm({ cari })}
+            sil={() => cariyiSil(cari)}
             kartKaydet={(k, beklenen) =>
               guncelle(
                 () => profilKartKaydet(veri, k, new Date(), beklenen),
@@ -267,8 +274,8 @@ export function SanalPosSayfasi() {
         Carinizi seçin, kartını hazırlayın ve tutarı POS’ta kendiniz girin.
       </SayfaBasligi>
       <Mesaj ton="bilgi">
-        Cari ve kart bilgileri yalnız bu tarayıcıda şifreli saklanır; bu tarayıcıyı kullanan herkes görebilir.
-        CVV ve banka doğrulama kodları kaydedilmez; CVV yalnız ödeme anında yazılır.
+        Cari ve kart bilgileri (kaydettiyseniz CVV de) yalnız bu tarayıcıda şifreli saklanır; bu tarayıcıyı
+        kullanan herkes kullanabilir. Banka şifresi ve SMS doğrulama kodları kaydedilmez.
       </Mesaj>
       {oturum.hata && (
         <div ref={hataKutusu} tabIndex={-1}>

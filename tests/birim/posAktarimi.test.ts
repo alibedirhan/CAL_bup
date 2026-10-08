@@ -41,6 +41,12 @@ it('yalnızca seçilen carinin kartı, giriş bilgisi ve ödeme anındaki CVV il
   expect(kartAktarimi(cari, kart).cvv).toBe('');
   expect(() => kartAktarimi({ ...cari, id: kart.id }, kart)).toThrow();
 });
+it('kartta kayıtlı CVV kendiliğinden aktarılır; ödeme anında yazılan CVV önce gelir', () => {
+  const kayitli = { ...kart, cvv: '456' };
+  expect(kartAktarimi(cari, kayitli).cvv).toBe('456');
+  expect(kartAktarimi(cari, kayitli, '789').cvv).toBe('789');
+  expect(() => kartAktarimi(cari, kayitli, '78')).toThrow(/CVV/);
+});
 it('cariye özel POS giriş bilgisi varsayılan kuralın yerine geçer', () => {
   const s = kartAktarimi({ ...cari, girisKullanici: 'L-77', girisSifresi: 'yapay sır' }, kart);
   expect([s.cariNumarasi, s.kullanici, s.sifre]).toEqual([cari.numara, 'L-77', 'yapay sır']);

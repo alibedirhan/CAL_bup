@@ -38,3 +38,41 @@ test('cari profili işlem sırasını gösterir; seçili kart iki yolu ayrı ba�
   await expect(elle).toHaveCSS('text-decoration-line', 'none');
   expect(disIstekler).toEqual([]);
 });
+
+test('cari profilinden “Cariyi sil” onayla siler; kart formundaki CVV maskeli ve kayıtlı kalır', async ({
+  page,
+}) => {
+  await page.route(
+    (u) => !u.toString().startsWith('http://127.0.0.1:4180/'),
+    (r) => r.abort(),
+  );
+  await cariHazirla(page);
+  await kartDoldur(page);
+  const cvv = page.getByLabel('CVV (isteğe bağlı)', { exact: true });
+  await cvv.fill('12a3');
+  await expect(cvv).toHaveValue('123');
+  await expect(cvv).toHaveCSS('-webkit-text-security', 'disc');
+  // Alan değişince kontrol kutusu yeniden işaretlenmelidir.
+  await page.getByLabel('Kart bilgilerini ve bu cari altında kaydetmeyi kontrol ettim.').check();
+  await page.getByRole('button', { name: 'Kartı kaydet', exact: true }).click();
+  await expect(page.locator('.pos-odeme-karti')).toContainText('CVV •••');
+  // Düzenlemede kayıtlı CVV maskeli olarak geri gelir.
+  await page.getByRole('button', { name: 'Yapay Denetim Kartı kartını düzenle' }).click();
+  await expect(page.getByLabel('CVV (isteğe bağlı)', { exact: true })).toHaveValue('123');
+  await page.getByRole('button', { name: 'Vazgeç', exact: true }).click();
+  await page.locator('.pos-odeme-karti').click();
+  await expect(page.locator('.pos-secili-kart')).toContainText('CVV•••');
+
+  // Vazgeçilen silme hiçbir şeyi değiştirmez.
+  page.once('dialog', (d) => {
+    expect(d.message()).toContain('1 kart silinsin mi');
+    void d.dismiss();
+  });
+  await page.getByRole('button', { name: 'Cariyi sil', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Yapay Denetim Carisi', exact: true })).toBeVisible();
+  page.once('dialog', (d) => void d.accept());
+  await page.getByRole('button', { name: 'Cariyi sil', exact: true }).click();
+  await expect(page.getByText('Henüz cari yok.', { exact: false })).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('Henüz cari yok.', { exact: false })).toBeVisible();
+});

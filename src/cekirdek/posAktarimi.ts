@@ -6,8 +6,8 @@ export const POS_KOKENI = 'https://denizpay.bupilic.com.tr';
 export const PROGRAM_KOKENI = 'https://alibedirhan.github.io';
 // Girişten sonra ödeme sayfasına geçmek için gerçekçi süre; kart yalnız yardımcının oturum belleğinde bekler.
 export const AKTARIM_SURESI = 180_000;
-/** Tek ödeme için yardımcıya bir kez giden veri. CVV ödeme anında yazılır, hiçbir yerde saklanmaz;
- * boş metin “CVV'yi POS'ta kendim yazacağım” demektir. */
+/** Tek ödeme için yardımcıya bir kez giden veri. CVV kartta kayıtlıysa oradan, değilse ödeme anında
+ * yazılandan gelir; boş metin “CVV'yi POS'ta kendim yazacağım” demektir. */
 export interface PosAktarimi {
   cariId: string;
   kartId: string;
@@ -55,6 +55,7 @@ export function aktarimiDogrula(d: unknown): PosAktarimi {
     cvv: cvvDogrula(k.cvv),
   };
 }
+/** `cvv`: ödeme anında yazılan; boşsa kartta kayıtlı CVV kullanılır. */
 export function kartAktarimi(cari: PosCari, kart: PosKart, cvv = ''): PosAktarimi {
   if (kart.cariId !== cari.id) throw new KullaniciHatasi('Kart seçilen cariye ait değil.');
   const giris = posGirisBilgisi(cari);
@@ -68,7 +69,7 @@ export function kartAktarimi(cari: PosCari, kart: PosKart, cvv = ''): PosAktarim
     ay: kart.ay,
     yil: kart.yil,
     sahibi: kart.sahibi,
-    cvv: cvvDogrula(cvv),
+    cvv: cvvDogrula(cvv) || (kart.cvv ?? ''),
   });
 }
 export function programAdresi(adres: string): boolean {

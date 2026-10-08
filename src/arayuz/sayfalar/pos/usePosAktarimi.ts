@@ -3,10 +3,10 @@ import type { PosCari } from '../../../cekirdek/posCari';
 import type { PosKart } from '../../../cekirdek/posKart';
 import { AKTARIM_SURESI, cvvDogrula, kartAktarimi } from '../../../cekirdek/posAktarimi';
 import { YARDIMCI_SURUMU, type YardimciSonucu } from '../../../cekirdek/posBaglantisi';
-import { kurulumOzeti, type PosKurulumu } from '../../../cekirdek/posKurulumu';
+import { kurulumOzeti } from '../../../cekirdek/posKurulumu';
 import { KullaniciHatasi } from '../../../cekirdek/hata';
 import { yardimciyaSor } from '../../../platform/posYardimcisi';
-import { kurulumKopyasiOku, kurulumKopyasiYaz } from '../../../platform/posKurulumKaydi';
+import type { Yardimci } from './useYardimci';
 
 /** Yardımcının kendi sürümü vardır; yalnız eklenti kodu değişince güncelleme önerilir. */
 export function surumUyarisi(yardimci: string): string {
@@ -26,12 +26,6 @@ function bekle(signal: AbortSignal) {
     if (signal.aborted) bitir();
   });
 }
-/** Yardımcının bildirdiği kurulum programda da saklanır. Yardımcı kurulumu bilerek sildiyse (`null`)
- * kopya da silinir; hiç kurulumu yoksa (yeniden kurulmuş) programdaki kopya geçerli kalır. */
-function kurulumuEsitle(s: YardimciSonucu): PosKurulumu | null {
-  if (s.kurulum !== undefined) kurulumKopyasiYaz(s.kurulum);
-  return s.kurulum === undefined ? kurulumKopyasiOku() : s.kurulum;
-}
 type Neden = YardimciSonucu['neden'];
 class AktarimHatasi extends KullaniciHatasi {
   constructor(
@@ -42,28 +36,20 @@ class AktarimHatasi extends KullaniciHatasi {
   }
 }
 
-export function usePosAktarimi(cari: PosCari, kart: PosKart, mesgul: boolean) {
+export function usePosAktarimi(cari: PosCari, kart: PosKart, mesgul: boolean, yardimci: Yardimci) {
   const [durum, setDurum] = useState('');
   const [hata, setHata] = useState('');
   const [neden, setNeden] = useState<Neden>(undefined);
   const [uyari, setUyari] = useState('');
   const [bekliyor, setBekliyor] = useState(false);
-  const [kurulum, setKurulum] = useState<PosKurulumu | null>(kurulumKopyasiOku);
   const islem = useRef<{ id: string; c: AbortController; gonderildi: boolean } | null>(null);
   const iptal = (i: NonNullable<typeof islem.current>) => {
     i.c.abort();
     if (i.gonderildi) void yardimciyaSor('iptal', i.id).catch(() => undefined);
   };
+  // Sessiz bağlantı denetimini `useYardimci` yapar; burada yalnız yarım kalan aktarım kapatılır.
   useEffect(() => {
-    // Sessiz bağlantı denetimi: kart göndermez; yalnız hangi kutuların tanıtıldığını öğrenir.
-    const c = new AbortController();
-    void yardimciyaSor('durum', undefined, undefined, c.signal)
-      .then((s) => {
-        if (!c.signal.aborted) setKurulum(kurulumuEsitle(s));
-      })
-      .catch(() => undefined);
     return () => {
-      c.abort();
       if (islem.current) iptal(islem.current);
     };
   }, []);
@@ -91,8 +77,7 @@ export function usePosAktarimi(cari: PosCari, kart: PosKart, mesgul: boolean) {
       i.c.signal.throwIfAborted();
       if (bag.durum !== 'hazir') throw new KullaniciHatasi(bag.mesaj);
       setUyari(surumUyarisi(bag.surum));
-      const k = kurulumuEsitle(bag);
-      setKurulum(k);
+      const k = yardimci.esitle(bag);
       if (kontrol) {
         setDurum(
           `POS yardımcısı bağlı (${bag.surum}). ${
@@ -151,5 +136,15 @@ export function usePosAktarimi(cari: PosCari, kart: PosKart, mesgul: boolean) {
       }
     }
   };
-  return { durum, hata, neden, uyari, bekliyor, baslat, durdur, tanitilan: kurulumOzeti(kurulum), kurulum };
+  return {
+    durum,
+    hata,
+    neden,
+    uyari,
+    bekliyor,
+    baslat,
+    durdur,
+    tanitilan: kurulumOzeti(yardimci.kurulum),
+    kurulum: yardimci.kurulum,
+  };
 }
