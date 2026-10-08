@@ -30,13 +30,24 @@ export function yeniKasaParolasiDogrula(parola: string, tekrar: string, sadeceUz
   if (parola !== tekrar) throw new KullaniciHatasi('İki kasa parolası aynı olmalı. Yazımı kontrol edin.');
 }
 
-export function yedekParolasiDogrula(parola: string, tekrar?: string): void {
-  if (!parola) throw new KullaniciHatasi('Yedek parolasını yazın.');
-  if (parola.trim().length < KASA_PAROLA_EN_AZ || parola.length > KASA_PAROLA_EN_FAZLA)
-    throw new KullaniciHatasi('Yedek parolası 14–128 karakter olmalı.');
-  if (tekrar !== undefined) {
-    if (parola !== parola.trim())
-      throw new KullaniciHatasi('Yedek parolasının başında veya sonunda boşluk olmasın.');
-    if (parola !== tekrar) throw new KullaniciHatasi('İki yedek parolası aynı olmalı.');
-  }
+/** Sanal POS kilidi (1.18.0). Kayıtlar yalnız bu paroladan üretilen anahtarla açılır; kurtarma yolu yoktur.
+ * Tarayıcı dosyaları kopyalansa bile tahmin denemesini yavaşlatmak için en az 10 karakter, harf ve rakam. */
+export const PROFIL_PAROLA_EN_AZ = 10;
+export function profilParolasiDogrula(parola: string, tekrar: string): void {
+  if (!parola) throw new KullaniciHatasi('Sanal POS parolasını yazın.');
+  if (parola.length < PROFIL_PAROLA_EN_AZ || parola.length > KASA_PAROLA_EN_FAZLA)
+    throw new KullaniciHatasi(
+      `Parola en az ${PROFIL_PAROLA_EN_AZ}, en fazla ${KASA_PAROLA_EN_FAZLA} karakter olmalı.`,
+    );
+  if (!/\p{L}/u.test(parola) || !/\d/.test(parola))
+    throw new KullaniciHatasi('Parolada en az bir harf ve bir rakam olmalı.');
+  if (/^(.)\1+$/u.test(parola.replace(/\d/g, '')) && /^(\d)\1*$/.test(parola.replace(/\D/g, '')))
+    throw new KullaniciHatasi('Parola tahmin edilmesi kolay. Farklı harf ve rakamlar kullanın.');
+  if (parola !== parola.trim()) throw new KullaniciHatasi('Parolanın başında veya sonunda boşluk olmasın.');
+  if (parola !== tekrar) throw new KullaniciHatasi('İki parola aynı olmalı. Yazımı kontrol edin.');
+}
+/** Kilit açarken yalnız boş/aşırı uzun girdi reddedilir; asıl denetim şifre çözmedir. */
+export function profilParolasiGirdisi(parola: string): void {
+  if (!parola) throw new KullaniciHatasi('Sanal POS parolasını yazın.');
+  if (parola.length > KASA_PAROLA_EN_FAZLA) throw new KullaniciHatasi('Parola yanlış.');
 }

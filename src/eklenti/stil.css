@@ -8,6 +8,10 @@
   font: 14px/1.5 var(--yazi-govde);
   color: var(--murekkep);
 }
+/* `all: initial` tarayıcının [hidden] kuralını da sıfırlar; gizli pencere açıkça kapatılır. */
+:host([hidden]) {
+  display: none;
+}
 section {
   padding: 16px;
   background: var(--yuzey);

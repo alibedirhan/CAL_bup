@@ -1,6 +1,25 @@
 import { expect, type Page } from '@playwright/test';
+/** Yalnız testlerde kullanılan yapay Sanal POS parolası. */
+export const YAPAY_PAROLA = 'Yapay-kilit-2026';
+/** Sanal POS ilk açılışta parola belirletir, sonra (sayfa yenilenince) kilit açtırır. */
+export async function posKilidiniAc(page: Page, parola = YAPAY_PAROLA) {
+  const belirle = page.getByRole('heading', { name: 'Sanal POS parolası belirleyin' });
+  const kilitli = page.getByRole('heading', { name: 'Sanal POS kilitli' });
+  const acik = page.getByRole('heading', { name: /^Cariler/ });
+  await expect(belirle.or(kilitli).or(acik)).toBeVisible({ timeout: 15_000 });
+  if (await belirle.isVisible()) {
+    await page.getByLabel('Yeni Sanal POS parolası', { exact: true }).fill(parola);
+    await page.getByLabel('Yeni parolayı tekrar yazın', { exact: true }).fill(parola);
+    await page.getByRole('button', { name: 'Parolayı belirle', exact: true }).click();
+  } else if (await kilitli.isVisible()) {
+    await page.getByLabel('Sanal POS parolası', { exact: true }).fill(parola);
+    await page.getByRole('button', { name: 'Kilidi aç', exact: true }).click();
+  }
+  await expect(acik).toBeVisible({ timeout: 15_000 });
+}
 export async function cariHazirla(page: Page) {
   await page.goto('/CAL_bup/#/sanal-pos');
+  await posKilidiniAc(page);
   await page.getByRole('button', { name: 'Yeni cari', exact: true }).click();
   await page.getByLabel('Cari adı', { exact: true }).fill('Yapay Denetim Carisi');
   await page.getByLabel('Vergi/TC numarası', { exact: true }).fill('0123456789');

@@ -2,6 +2,7 @@ import { chromium, expect, type BrowserContext, type Page } from '@playwright/te
 import { readFile, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, extname } from 'node:path';
+import { posKilidiniAc } from './yardimci';
 export const APP = 'https://alibedirhan.github.io/CAL_bup/';
 export const POS = 'https://denizpay.bupilic.com.tr';
 export async function eklentiOrtami(v: { yanlis?: boolean; dolu?: boolean; ayri?: boolean } = {}) {
@@ -23,6 +24,8 @@ export async function eklentiOrtami(v: { yanlis?: boolean; dolu?: boolean; ayri?
   const sayac = { sms: 0, odeme: 0, giris: 0, dis: 0 };
   await c.route('**/*', async (r) => {
     const u = new URL(r.request().url());
+    // Yardımcının kendi sayfası (araç çubuğu anahtarı) ve dosyaları ağa çıkmaz.
+    if (u.protocol === 'chrome-extension:') return r.continue();
     if (u.origin === 'https://alibedirhan.github.io' && u.pathname.startsWith('/CAL_bup/')) {
       const rel = u.pathname.slice('/CAL_bup/'.length) || 'index.html';
       if (rel.includes('..')) return r.abort();
@@ -94,6 +97,9 @@ export async function alanlariTanit(p: Page, ayri = false, v: { cvv?: boolean; a
   if (!p.url().startsWith(POS + '/yapay-odeme.aspx')) await p.goto(POS + '/yapay-odeme.aspx');
   const panel = p.locator('#cal-bup-pos-yardimcisi');
   const durum = panel.getByRole('status');
+  await expect(panel).toHaveCount(1);
+  // Kurulumdan sonra pencere gizlidir; kullanıcı gibi araç çubuğundan açılır.
+  if (await panel.isHidden()) await pencereyiGoster(p.context());
   await panel.getByRole('button', { name: /^(Alanları tanıt|Kurulumu yenile)$/ }).click();
   await p.locator('#kart').click();
   if (ayri) {
@@ -116,6 +122,7 @@ export async function yapayKartliCari(
   v: { ad?: string; numara?: string; sahibi?: string; kullanici?: string; sifre?: string; cvv?: string } = {},
 ) {
   await p.goto(APP + '#/sanal-pos');
+  await posKilidiniAc(p);
   await p.getByRole('button', { name: 'Yeni cari', exact: true }).click();
   await p.getByLabel('Cari adı', { exact: true }).fill(v.ad ?? 'Yapay Eklenti Carisi');
   await p.getByLabel('Vergi/TC numarası', { exact: true }).fill(v.numara ?? '0123456789');
@@ -143,4 +150,10 @@ export async function kartliPosAc(p: Page, c: BrowserContext) {
   const pos = await yeni;
   await pos.waitForURL(POS + '/yapay-odeme.aspx');
   return pos;
+}
+/** Araç çubuğundaki “POS sayfasında pencereyi göster” anahtarının eşdeğeri (kurulumdan sonra pencere
+ * kendiliğinden görünmez; panel düğmelerini sınayan denemeler bunu açar). */
+export async function pencereyiGoster(c: BrowserContext, goster = true) {
+  const w = c.serviceWorkers()[0] ?? (await c.waitForEvent('serviceworker'));
+  await w.evaluate((g) => Reflect.get(globalThis, 'chrome').storage.local.set({ panelGoster: g }), goster);
 }

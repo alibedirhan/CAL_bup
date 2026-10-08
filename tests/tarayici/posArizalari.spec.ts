@@ -3,6 +3,7 @@ const SURUM: string = JSON.parse(
   readFileSync(new URL('../../src/cekirdek/posYardimciSurumu.json', import.meta.url), 'utf8'),
 ).surum;
 import { test, expect, type Worker, type BrowserContext } from '@playwright/test';
+import { posKilidiniAc } from './yardimci';
 import { eklentiOrtami, alanlariTanit, yapayKartliCari, kartliPosAc, APP, POS } from './eklentiYardimci';
 function arkaPlan(c: BrowserContext): Worker {
   const w = c.serviceWorkers()[0];
@@ -123,6 +124,7 @@ test('iki uygulama sekmesi aynı anda POS aktarımı başlatamaz', async () => {
     await kartliPosAc(e.p, e.c);
     const p2 = await e.c.newPage();
     await p2.goto(APP + '#/sanal-pos');
+    await posKilidiniAc(p2);
     await p2.locator('.pos-cari').click();
     await p2.locator('.pos-odeme-karti').click();
     const once = e.c.pages().length;

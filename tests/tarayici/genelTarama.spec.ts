@@ -142,7 +142,10 @@ test('açık sayfada kartın süresi dolarsa aktarım düğmesi de kapanır', as
     await yapayKartliCari(e.p);
     await e.p.clock.install({ time: new Date('2036-01-01T00:00:00Z') });
     await e.p.clock.fastForward(1001);
-    await expect(e.p.getByRole('button', { name: 'Seçili kartla POS’u aç', exact: true })).toBeDisabled();
+    // On yıllık saat atlaması Sanal POS'u da kilitler; her iki durumda kart gönderilemez.
+    const dugme = e.p.getByRole('button', { name: 'Seçili kartla POS’u aç', exact: true });
+    await expect(e.p.getByRole('heading', { name: 'Sanal POS kilitli' }).or(dugme)).toBeVisible();
+    await expect(dugme.and(e.p.locator(':enabled'))).toHaveCount(0);
     expect(e.sayac.sms + e.sayac.odeme + e.sayac.dis).toBe(0);
   } finally {
     await e.kapat();

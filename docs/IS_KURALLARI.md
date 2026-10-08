@@ -247,7 +247,7 @@ eşleşince doldurabilir. Sağlayıcının kart API'si doğrulanmış değildir;
 - POS girişi varsayılan olarak vergi no = lisans no = numara, şifre = numaranın ilk 2 + son 2 hanesidir.
   Cari kaydında isteğe bağlı `girisKullanici` / `girisSifresi` bu kuralın yerine geçer (şifreli kasada,
   boşsa kayda yazılmaz). Kural tek yerde: `cekirdek/posCari.ts → posGirisBilgisi`.
-- CVV (1.17.0): kart kaydında isteğe bağlı, 3–4 rakam, şifreli profilde ve yedekte saklanır; ekranda
+- CVV (1.17.0): kart kaydında isteğe bağlı, 3–4 rakam, parolayla şifreli profilde saklanır; ekranda
   yalnız “•••”. Kayıtlıysa aktarımda kendiliğinden gider; ödeme anında yazılan CVV kayıtlı olanın önüne
   geçer. Yardımcıya yalnız o aktarımda gider, teslimden önce yardımcının oturum belleğinden silinir.
   Kullanıcı kararı (2026-10-08), önceki “kaydetme” kararının (2026-10-07) yerine geçti; PCI DSS'ye
@@ -255,15 +255,14 @@ eşleşince doldurabilir. Sağlayıcının kart API'si doğrulanmış değildir;
 - Yardımcı Ad Soyad kutusunu kartın “Kart üzerindeki ad” bilgisiyle doldurur (tanıtıldıysa). Tutar
   kutusuna hiçbir durumda yazılmaz; POS'un yazdığı bakiye ödeme tutarı değildir.
 
-- 500 cari, cari başına 10 kart; şifreli zarf/yedek toplamı 2 MiB’yi geçemez.
+- 500 cari, cari başına 10 kart; şifreli zarf 2 MiB’yi geçemez.
 - Numara 12–19 ASCII rakam ve Luhn; telefon isteğe bağlı Türkiye cep telefonu biçimidir.
   Biçim kontrolü kart/telefon sahipliği doğrulaması değildir.
 - Aynı caride aynı numara tekrar eklenmez; mevcut kartın bağlı carisi değiştirilmez.
 - İlk açılışta kart kendiliğinden seçilmez. Cari değişimi ve seçili kartın içeriğinin değişmesi/silinmesi
-  kart seçimini sıfırlar. Firma beyanı yeni POS açılışı, kart değişimi ve 30 dakika sonunda sıfırlanır;
-  sekme geçişi beyanı sıfırlamaz (1.12.0). Numara varsayılan maskelidir.
-- Tam numara gösterme/kopyalama açık kullanıcı adımı ve firma kontrolü ister. Gizli sekme veya iki dakika
-  boşta açık tam numara ve giriş bilgileri gizlenir. Açık cari/kart formları **kapanmaz**, yazılanlar
+  kart seçimini sıfırlar. Numara ve CVV her zaman maskelidir.
+- 1.18.0: kart numarası/CVV gösterme ve kopyalama yoktur; kart yalnız POS yardımcısıyla aktarılır.
+  Gizli sekme veya iki dakika boşta giriş bilgileri gizlenir. Açık cari/kart formları **kapanmaz**, yazılanlar
   korunur; kart formundaki numara ve fotoğraf örtülür, “Gizlenen bilgileri göster” ile açılır (1.12.0).
 - Başka sekmedeki kayıt bu sekmede ekranı kapatmadan yeniden okunur. Düzenlenen cari/kart o arada
   başka sekmede değiştiyse veya silindiyse kayıt reddedilir; diğer sekmenin değişikliği ezilmez.
@@ -271,19 +270,17 @@ eşleşince doldurabilir. Sağlayıcının kart API'si doğrulanmış değildir;
   tarihi olur ya da boşaltılır (başka kartın tarihiyle karışmaz).
 - Son kullanma ayı boyunca kart geçerlidir. Süresi geçmiş kart düzenlenebilir/silinebilir;
   işlem için seçilemez ve yeni kayıt olarak kaydedilemez.
-- Cari silme bağlı kartları onayla birlikte atomik siler. Geri yükleme maskeli inceleme ve açık onay
-  ister. Cari kimliği vergi/TC numarası, kart kimliği (cari, kart numarası) çiftidir. Aynı kayıt atlanır;
-  farklı bilgi (cari adı, kart adı/sahibi/son kullanma/telefon) listelenir ve kullanıcı “buradakileri
-  koru” veya “yedektekileri kullan” seçmeden eklenmez. Aynı ad farklı numarada, sınır aşımı veya
-  inceleme sonrası kayıt değişikliği bütün eklemeyi durdurur. Mevcut kayıt hiçbir durumda silinmez (1.12.0).
+- Cari silme bağlı kartları onayla birlikte atomik siler (cari profilinde “Cariyi sil”, 1.17.0).
 - Cari listesi ada veya en az üç rakamla vergi/TC numarasının bir kısmına göre aranır.
-- Kayıt varken hiç yedek alınmadıysa veya son yedek 30 günden eskiyse hatırlatılır; yalnız tarih saklanır.
 
-Günlük açılışta PIN sorulmaz; dışa aktarılamayan AES-GCM anahtarı bu tarayıcıda saklanır.
-Bu tarayıcıya erişen kişi veriyi açabilir; kullanıcı doğrulaması değildir. Eski kasa mevcut
-PIN/parolayla bir kez taşınır, cari kimlikleri korunur. Yanlış parola/geçiş hatası eski kaydı korur.
-Taşınabilir cari/kart yedeği ayrı en az 14 karakterlik uzun parola kullanır; eski cari yedekleri okunur.
-Veriler rapor/Drive kaydına girmez. Ayrıntı: [SANAL_POS.md](SANAL_POS.md).
+**Parola kilidi (1.18.0, kullanıcı kararı):** Sanal POS parolası en az 10 karakter, en az bir harf ve bir
+rakam. Kayıtlar yalnız bu paroladan PBKDF2-SHA256 (600.000) ile üretilen anahtarla açılır; anahtar hiçbir
+yere yazılmaz. Açılışta, yenilemede, tarayıcı kapanınca, 10 dakika işlem yapılmayınca ve “Şimdi kilitle”de
+parola sorulur. 5 yanlış denemeden sonra bekleme 30 sn’den başlayıp katlanır (en çok 15 dk). **Unutulan
+parola kurtarılamaz**; “Parolamı unuttum” + “SİL” onayı bütün cari/kart/CVV kayıtlarını kalıcı siler ve
+yeni parolayla boş başlatır. Parolasız 1.17 kaydı ilk açılışta yeni parolayla şifrelenir, eski anahtar
+silinir. Eski PIN kasa önce PIN ile taşınır. **Yedek, yedekten ekleme ve dışa aktarma yoktur**; veriler
+rapor/Drive kaydına girmez. Ayrıntı: [SANAL_POS.md](SANAL_POS.md).
 
 ## Fotoğraf ve işlem sonuçları (1.5.0)
 

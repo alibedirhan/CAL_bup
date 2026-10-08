@@ -11,7 +11,15 @@ import { KART_ROLLERI, kurulumDogrula } from '../cekirdek/posKurulumu';
 import { POS_KIMLIK } from '../cekirdek/posKart';
 import { POS_YARDIMCI_PROTOKOLU } from '../cekirdek/posBaglantisi';
 import { eklenti } from './chrome';
-import { kurulumKaydi, kurulumOku, kurulumSil, kurulumYaz, panelTercihi } from './kurulumDeposu';
+import {
+  kurulumKaydi,
+  kurulumOku,
+  kurulumSil,
+  kurulumYaz,
+  panelGorunur,
+  panelTercihi,
+  yardimciKapali,
+} from './kurulumDeposu';
 import {
   bitir,
   isler,
@@ -38,6 +46,8 @@ type Mesaj = {
   doldurulan?: unknown;
   notlar?: unknown;
 };
+const KAPALI_MESAJI =
+  'POS yardımcısı kapalı. Açmak için tarayıcının sağ üstündeki uzantı simgesinden “CAL bup POS yardımcısı”na tıklayıp anahtarı açın.';
 let kuyruk: Promise<unknown> = Promise.resolve();
 const koruma = Promise.all([
   eklenti.storage.session.setAccessLevel({ accessLevel: 'TRUSTED_CONTEXTS' }),
@@ -47,12 +57,17 @@ const koruma = Promise.all([
 /** Program (CAL bup) sekmesinden gelenler: durum, başlat, iptal. */
 async function program(m: Mesaj, tab: number): Promise<unknown> {
   const s = await isler();
+  const kapali = await yardimciKapali();
   if (m.is === 'durum') {
     await yaz(s);
     // Programa kurulumun kopyası verilir: eklenti yeniden kurulsa da tanıtım kaybolmaz.
     if (m.islemId) return ozet(s.find((i) => i.kaynak === tab && i.id === m.islemId));
     const kayit = await kurulumKaydi();
-    return { ...ozet(), ...(kayit === undefined ? {} : { kurulum: kayit }) };
+    return {
+      ...ozet(),
+      ...(kapali ? { mesaj: KAPALI_MESAJI, kapali: true } : {}),
+      ...(kayit === undefined ? {} : { kurulum: kayit }),
+    };
   }
   if (!m.islemId || !POS_KIMLIK.test(m.islemId)) throw new Error('İşlem kimliği uygun değil.');
   if (m.is === 'iptal') {
@@ -63,6 +78,7 @@ async function program(m: Mesaj, tab: number): Promise<unknown> {
     return { durum: 'iptal', mesaj: 'Aktarım durduruldu.' };
   }
   if (m.is !== 'baslat') throw new Error('İstek uygun değil.');
+  if (kapali) return { durum: 'hata', mesaj: KAPALI_MESAJI };
   if (s.some((i) => i.kaynak !== tab && SURUYOR.includes(i.durum)))
     return {
       durum: 'hata',
@@ -116,10 +132,13 @@ function notListesi(d: unknown): string[] {
 async function pos(m: Mesaj, tab: number, adres: string): Promise<unknown> {
   posSayfasi(adres);
   await posSekmesiEkle(tab);
+  // Kapalıyken POS sekmesine giriş bilgisi, kart veya kurulum verilmez.
+  if (await yardimciKapali()) return { durum: 'kapali' };
   const s = await isler();
   await yaz(s); // Okuma isteği de süresi dolmuş kartı fiziksel kuyruktan çıkarır.
   const i = s.find((x) => x.hedef === tab && x.kart && (x.durum === 'giris' || x.durum === 'alanlar'));
-  if (m.is === 'panel') return { durum: 'hazir', kucuk: await panelTercihi(m.kucuk) };
+  if (m.is === 'panel')
+    return { durum: 'hazir', kucuk: await panelTercihi(m.kucuk), goster: await panelGorunur() };
   if (m.is === 'kurulumAl') return { durum: 'hazir', kurulum: await kurulumOku(), bekleyen: Boolean(i) };
   if (m.is === 'kurulum') {
     const k = await kurulumYaz(kurulumDogrula(m.veri));
@@ -136,7 +155,7 @@ async function pos(m: Mesaj, tab: number, adres: string): Promise<unknown> {
         'hata',
         m.is === 'girisHatasi'
           ? 'POS giriş sayfası beklenen yapıda değil. Kart aktarılmadı; POS girişini elle yapın.'
-          : 'POS’taki firma numarası okunamadı. Kart aktarılmadı; POS ekranındaki yardımcı panelinden “Kurulumu yenile” ile firma yazısını tanıtın.',
+          : 'POS’taki firma numarası okunamadı. Kart aktarılmadı; uzantı simgesinden “POS sayfasında pencereyi göster”i açıp POS penceresindeki “Kurulumu yenile” ile firma yazısını tanıtın.',
       );
     await yaz(s);
     return ozet(i);
@@ -254,4 +273,42 @@ eklenti.tabs.onUpdated.addListener((id, d) => {
   } catch {
     temizle(id, true);
   }
+});
+
+/** Araç çubuğundaki anahtar: kapalıyken simgede “OFF” yazar; bekleyen aktarımlar durur ve açık POS
+ * sekmelerindeki panel kalkar. Açılınca panel geri gelir. */
+async function anahtarGoster(kapali: boolean) {
+  await eklenti.action.setBadgeText({ text: kapali ? 'OFF' : '' });
+  await eklenti.action.setBadgeBackgroundColor({ color: '#5a6372' });
+  await eklenti.action.setTitle({
+    title: kapali ? 'CAL bup POS yardımcısı — KAPALI' : 'CAL bup POS yardımcısı — açık',
+  });
+}
+void yardimciKapali()
+  .then(anahtarGoster)
+  .catch(() => undefined);
+eklenti.storage.onChanged.addListener((d, alan) => {
+  if (alan !== 'local') return;
+  if ('panelGoster' in d) {
+    const goster = d.panelGoster?.newValue === true;
+    kuyruk = kuyruk
+      .then(async () => {
+        for (const id of await posSekmeleri())
+          void eklenti.tabs.sendMessage(id, { is: 'panelGorunum', goster }).catch(() => undefined);
+      })
+      .catch(() => undefined);
+  }
+  if (!('kapali' in d)) return;
+  const kapali = d.kapali?.newValue === true;
+  void anahtarGoster(kapali).catch(() => undefined);
+  const is = async () => {
+    if (kapali) {
+      const s = await isler();
+      for (const i of s) if (SURUYOR.includes(i.durum)) bitir(i, 'iptal', 'POS yardımcısı kapatıldı.');
+      await yaz(s);
+    }
+    for (const id of await posSekmeleri())
+      void eklenti.tabs.sendMessage(id, { is: 'acKapa', kapali }).catch(() => undefined);
+  };
+  kuyruk = kuyruk.then(is, is).catch(() => undefined);
 });

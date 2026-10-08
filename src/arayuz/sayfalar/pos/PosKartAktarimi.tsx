@@ -62,7 +62,7 @@ export function PosKartAktarimi({
           {tanitilan.cvv
             ? 'POS’taki CVV kutusuna kendiliğinden yazılır.'
             : kurulum
-              ? 'Kendiliğinden dolması için POS’taki yardımcı panelinden “Kurulumu yenile” ile CVV kutusunu da tanıtın.'
+              ? 'Kendiliğinden dolması için uzantı simgesinden “POS sayfasında pencereyi göster”i açıp POS penceresindeki “Kurulumu yenile” ile CVV kutusunu da tanıtın.'
               : ''}
         </p>
       ) : tanitilan.cvv ? (
@@ -90,7 +90,8 @@ export function PosKartAktarimi({
       ) : (
         kurulum && (
           <p className="ipucu">
-            CVV’nin de dolması için POS’taki yardımcı panelinden “Kurulumu yenile” ile CVV kutusunu tanıtın.
+            CVV’nin de dolması için uzantı simgesinden “POS sayfasında pencereyi göster”i açıp POS
+            penceresindeki “Kurulumu yenile” ile CVV kutusunu tanıtın.
           </p>
         )
       )}

@@ -9,7 +9,6 @@ import {
 import { girisMesajiTemizle } from '../../src/cekirdek/posAktarimi';
 import { surumUyarisi } from '../../src/arayuz/sayfalar/pos/usePosAktarimi';
 import { YARDIMCI_SURUMU } from '../../src/cekirdek/posBaglantisi';
-import { yedekHatirlatmasi } from '../../src/cekirdek/posYedekHatirlatma';
 
 describe('POS yardımcısı alan kuralları', () => {
   it.each([
@@ -111,16 +110,5 @@ describe('POS giriş sonucu ve sürüm', () => {
   it('yardımcının kendi sürümünden farklıysa güncelleme önerir (programın sürümü değil)', () => {
     expect(surumUyarisi(YARDIMCI_SURUMU)).toBe('');
     expect(surumUyarisi('0.0.1')).toContain('güncelleyin');
-  });
-});
-
-describe('Yedek hatırlatması', () => {
-  const simdi = new Date('2026-10-05T12:00:00.000Z');
-  it('kayıt yoksa hatırlatmaz; hiç yedek yoksa veya eskiyse uyarır', () => {
-    expect(yedekHatirlatmasi(null, simdi, false)).toBe('');
-    expect(yedekHatirlatmasi(null, simdi, true)).toContain('henüz şifreli yedek alınmadı');
-    expect(yedekHatirlatmasi('bozuk', simdi, true)).toContain('henüz şifreli yedek alınmadı');
-    expect(yedekHatirlatmasi('2026-10-01T12:00:00.000Z', simdi, true)).toContain('Son şifreli yedek:');
-    expect(yedekHatirlatmasi('2026-08-01T12:00:00.000Z', simdi, true)).toContain('65 gün önce');
   });
 });

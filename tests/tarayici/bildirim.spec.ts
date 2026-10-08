@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { cariHazirla, kartDoldur, yapayFoto } from './yardimci';
+import { cariHazirla, kartDoldur, posKilidiniAc, yapayFoto } from './yardimci';
 
 test('kart doğrulama ve yinelenen kayıt hatası modal içinde, görünür ve odaklıdır', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
@@ -46,6 +46,7 @@ test('depo yazısı engellenince profil kapanır, hata görünür ve başarı g�
   await expect(page.locator('.bildirim').filter({ hasText: 'Kart bu carinin' })).toHaveCount(0);
   await page.keyboard.press('Escape');
   await page.reload();
+  await posKilidiniAc(page);
   await page.locator('.pos-cari').click();
   await expect(page.locator('.pos-odeme-karti')).toHaveCount(0);
 });

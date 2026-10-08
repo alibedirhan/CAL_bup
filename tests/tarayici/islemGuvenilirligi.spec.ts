@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { cariHazirla, yapayFoto } from './yardimci';
+import { cariHazirla, posKilidiniAc, yapayFoto } from './yardimci';
 for (const dosya of ['worker.min.js', '*.wasm*'])
   test(`OCR bileşeni eksik: ${dosya}, hata ve kaynak temizliği`, async ({ page, context }) => {
     await context.route(`**/ocr/${dosya}`, (r) => r.fulfill({ status: 404, body: 'yapay eksik' }));
@@ -81,6 +81,7 @@ test('React ekran hatası anlaşılır kurtarma ekranı gösterir; profil ve ham
   await expect(page.getByRole('alert')).not.toContainText('4242');
   expect(gunluk.join(' ')).not.toContain('4242424242424242');
   await page.getByRole('button', { name: 'Uygulamayı yeniden aç' }).click();
+  await posKilidiniAc(page);
   await expect(page.locator('.pos-cari')).toContainText('Yapay Denetim Carisi');
 });
 
@@ -117,23 +118,6 @@ test('reddedilen LED dosyası kendi bölümünde görünür ve odaklanır', asyn
   await expect(page.locator('#led-dosya-hata')).toContainText('dosya okunamadı');
   await expect(page.locator('#led-dosya-hata')).toBeInViewport();
   await expect(page.locator('#led-dosya-hata')).toBeFocused();
-});
-
-test('bozuk şifreli profil yedeği yerel hata verir, mevcut cari değiştirilmez', async ({ page }) => {
-  await cariHazirla(page);
-  await page.getByText('Şifreli yedekten kayıt ekle', { exact: true }).click();
-  await page.getByLabel('Şifreli profil veya eski cari yedeği').setInputFiles({
-    name: 'yapay.calpos',
-    mimeType: 'application/octet-stream',
-    buffer: Buffer.from('yapay bozuk yedek'),
-  });
-  await page.getByLabel('Yedeğin uzun parolası', { exact: true }).fill('yalnizca-yapay-yedek-parolasi');
-  await page.getByRole('button', { name: 'Yedeği incele', exact: true }).click();
-  await expect(page.locator('#islem-profil-yedek-inceleme-hata')).toContainText(
-    'Geçerli bir şifreli profil yedeği',
-  );
-  await expect(page.locator('#islem-profil-yedek-inceleme-hata')).toBeInViewport();
-  await expect(page.locator('.pos-cari')).toHaveCount(1);
 });
 
 test('geç biten pano işlemi farklı sayfaya başarı mesajı taşımaz', async ({ page }) => {

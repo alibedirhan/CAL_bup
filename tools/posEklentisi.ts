@@ -18,7 +18,7 @@ const kayitli = JSON.parse(await readFile(ozetDosyasi, 'utf8').catch(() => '{}')
   ozet?: string;
 };
 await mkdir(cikti, { recursive: true });
-for (const ad of ['arkaPlan', 'kopru', 'pos'])
+for (const ad of ['arkaPlan', 'kopru', 'pos', 'acKapa'])
   await build({
     configFile: false,
     root: kok,
@@ -42,6 +42,7 @@ const manifest = {
   description: 'Seçilen carinin kart numarası ve son kullanmasını tanıtılmış POS alanlarına doldurur.',
   minimum_chrome_version: '120',
   permissions: ['storage', 'alarms'],
+  action: { default_title: 'CAL bup POS yardımcısı', default_popup: 'acKapa.html' },
   host_permissions: ['https://denizpay.bupilic.com.tr/*'],
   background: { service_worker: 'arkaPlan.js' },
   content_scripts: [
@@ -49,7 +50,8 @@ const manifest = {
     { matches: ['https://denizpay.bupilic.com.tr/*'], js: ['pos.js'], run_at: 'document_idle' },
   ],
   content_security_policy: {
-    extension_pages: "default-src 'none'; script-src 'self'; object-src 'none'; connect-src 'none'",
+    extension_pages:
+      "default-src 'none'; script-src 'self'; style-src 'self'; object-src 'none'; connect-src 'none'",
   },
 };
 const aciklama =
@@ -59,13 +61,32 @@ const aciklama =
   '3. Paketlenmemiş öğe yükle ile manifest.json bulunan klasörü seçin.\n' +
   '4. Herhangi bir cariyle POS’a girin. Ödeme formunda kart bilgisi yazmadan, CAL bup panelindeki Alanları tanıt ile kutuları sırayla tıklayın. Bu bir kez yapılır; bütün cariler için geçerlidir.\n' +
   '5. CAL bup sayfasını yenileyin. Cari ve kart seçin; isterseniz CVV yazıp Seçili kartla POS’u aç düğmesini kullanın.\n\n' +
-  'Yardımcı tutara, ödeme/SMS düğmelerine dokunmaz. CVV yalnız o ödeme için gelir ve hiçbir yerde saklanmaz.\n' +
+  'Yardımcı tutara, ödeme/SMS düğmelerine dokunmaz. CVV programda kayıtlıysa veya yazdıysanız yalnız o ödeme için gelir; yardımcı onu saklamaz.\n' +
+  'AÇ/KAPAT: Tarayıcının sağ üstündeki uzantı (yapboz) simgesinden CAL bup POS yardımcısını sabitleyin; simgeye tıklayınca açılan anahtarla yardımcıyı kapatıp açabilirsiniz. Kapalıyken simgede OFF yazar. Aynı yerden POS sayfasındaki pencereyi de gösterip gizleyebilirsiniz; kurulumdan sonra pencere kendiliğinden açılmaz.\n' +
   'POS’ta görünen firma numarası seçilen cariyle eşleşmezse hiçbir şey doldurulmaz. Ayrı çerçevedeki kart alanları desteklenmez.\n' +
   'Kurumunuz eklenti kurulumunu engelliyorsa kurumsal politikayı aşmayın; bilgi işlemle görüşün.\n' +
   'GÜNCELLEME: Yardımcıyı kaldırmayın. Dosyaları eski klasörün üzerine çıkarın ve eklenti sayfasında Yeniden yükle deyin; alan kurulumu korunur.\n' +
   'Kaldırmak için edge://extensions sayfasını kullanın.\n';
+// Araç çubuğu penceresi: yalnız aç/kapa anahtarı. Satır içi stil/betik yoktur (CSP).
+const tema = await readFile(resolve(kok, 'src/arayuz/stiller/tema.css'), 'utf8');
+await writeFile(
+  resolve(cikti, 'acKapa.css'),
+  tema + (await readFile(resolve(kok, 'src/eklenti/acKapa.css'), 'utf8')),
+);
+await writeFile(
+  resolve(cikti, 'acKapa.html'),
+  '<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>CAL bup POS yardımcısı</title>' +
+    '<link rel="stylesheet" href="acKapa.css"></head><body><h1>CAL bup POS yardımcısı</h1>' +
+    '<label class="anahtar">Yardımcı açık<input id="anahtar" type="checkbox" role="switch" checked></label>' +
+    '<p id="durum" role="status"></p>' +
+    '<label class="anahtar">POS sayfasında pencereyi göster<input id="pencere" type="checkbox" role="switch"></label>' +
+    '<p class="not">Kurulumdan sonra pencere kendiliğinden açılmaz. Alanları yeniden tanıtmak veya ' +
+    'kurulumu silmek için açın. Önemli uyarılarda pencere yine görünür.</p>' +
+    '<p id="surum"></p><script src="acKapa.js"></script></body></html>\n',
+);
 const kod = createHash('sha256');
-for (const ad of ['arkaPlan', 'kopru', 'pos']) kod.update(await readFile(resolve(cikti, ad + '.js')));
+for (const ad of ['arkaPlan', 'kopru', 'pos', 'acKapa', 'acKapa.html', 'acKapa.css'])
+  kod.update(await readFile(resolve(cikti, ad.includes('.') ? ad : ad + '.js')));
 const ozet = kod.digest('hex');
 if (process.env.YARDIMCI_OZET_YAZ === '1') {
   if (kayitli.ozet && kayitli.ozet !== ozet && kayitli.surum === yardimci.surum)
@@ -82,7 +103,16 @@ if (process.env.YARDIMCI_OZET_YAZ === '1') {
 await writeFile(resolve(cikti, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
 await writeFile(resolve(cikti, 'KURULUM.txt'), aciklama);
 const zip = new JSZip();
-for (const ad of ['manifest.json', 'arkaPlan.js', 'kopru.js', 'pos.js', 'KURULUM.txt'])
+for (const ad of [
+  'manifest.json',
+  'arkaPlan.js',
+  'kopru.js',
+  'pos.js',
+  'acKapa.js',
+  'acKapa.html',
+  'acKapa.css',
+  'KURULUM.txt',
+])
   zip.file(ad, await readFile(resolve(cikti, ad)));
 const zipVerisi = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
 await writeFile(resolve(kok, 'dist/pos-yardimcisi.zip'), zipVerisi);

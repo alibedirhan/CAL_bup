@@ -3,6 +3,8 @@ import {
   kasaAcilisBilgisiDogrula,
   kasaParolasiDogrula,
   yeniKasaParolasiDogrula,
+  profilParolasiDogrula,
+  profilParolasiGirdisi,
 } from '../../src/cekirdek/posParola';
 
 describe('Kasa PIN, parola ve yedek ayrımı', () => {
@@ -31,5 +33,22 @@ describe('Kasa PIN, parola ve yedek ayrımı', () => {
     expect(() =>
       yeniKasaParolasiDogrula('yapay uzun yedek parolasi', 'yapay uzun yedek parolasi', true),
     ).not.toThrow();
+  });
+});
+
+describe('Sanal POS parolası (1.18.0)', () => {
+  it('en az 10 karakter, harf ve rakam ister; boşluk ve tekrar denetlenir', () => {
+    expect(() => profilParolasiDogrula('Yapay-kilit-2026', 'Yapay-kilit-2026')).not.toThrow();
+    for (const [p, h] of [
+      ['', /yazın/],
+      ['Kisa-1', /en az 10/],
+      ['sadeceharfler', /harf ve bir rakam/],
+      ['1234567890', /harf ve bir rakam/],
+      ['aaaaaaaaa1', /tahmin/],
+      [' Yapay-kilit-2026', /boşluk/],
+    ] as const)
+      expect(() => profilParolasiDogrula(p, p)).toThrow(h);
+    expect(() => profilParolasiDogrula('Yapay-kilit-2026', 'Yapay-kilit-2027')).toThrow(/aynı/);
+    expect(() => profilParolasiGirdisi('')).toThrow(/yazın/);
   });
 });

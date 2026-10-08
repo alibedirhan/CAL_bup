@@ -1,13 +1,10 @@
 import type { IslemSonucu } from '../../../cekirdek/islemSonucu';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { numaraMaskesi, type PosCari } from '../../../cekirdek/posCari';
 import { kartMaskesi, type PosKart } from '../../../cekirdek/posKart';
 import { CariKartlari } from './CariKartlari';
 import { PosGirisYardimi } from './PosGirisYardimi';
 import { useYardimci } from './useYardimci';
-
-/** Firma beyanı POS oturumuyla ilgilidir; sekme geçişinde korunur, en fazla bu kadar geçerlidir. */
-export const FIRMA_ONAYI_SURESI = 30 * 60_000;
 
 export function CariProfili({
   cari,
@@ -30,28 +27,8 @@ export function CariProfili({
   kartSil: (k: PosKart) => Promise<IslemSonucu>;
   bildir: (m: string, h?: boolean) => void;
 }) {
-  // Sayaç: her onay ayrı bir süre başlatır; eski zamanlayıcı yeni onayı kapatamaz.
-  const [onay, setOnay] = useState(0);
-  const [onayNo, setOnayNo] = useState(0);
   const [aktarimNo, setAktarimNo] = useState(0);
   const yardimci = useYardimci();
-  const firmaOnay = onay > 0 && onay === onayNo;
-  useEffect(() => {
-    if (!firmaOnay) return;
-    const t = window.setTimeout(() => setOnay(0), FIRMA_ONAYI_SURESI);
-    return () => {
-      window.clearTimeout(t);
-    };
-  }, [firmaOnay, onayNo]);
-  const onayla = (evet: boolean) => {
-    if (!evet) {
-      setOnay(0);
-      return;
-    }
-    const yeni = onayNo + 1;
-    setOnayNo(yeni);
-    setOnay(yeni);
-  };
   const elleGiris = (
     <PosGirisYardimi
       cari={cari}
@@ -59,10 +36,7 @@ export function CariProfili({
       izin={() => !mesgul}
       bildir={bildir}
       gizlilikNo={gizlilikNo}
-      firmaDogrulandi={firmaOnay}
-      firmaKontrolu={onayla}
       girisBasladi={() => {
-        onayla(false);
         setAktarimNo((n) => n + 1);
       }}
     />
@@ -88,6 +62,11 @@ export function CariProfili({
         {yardimci.hazir ? (
           <p className="pos-yardimci-hazir" role="status">
             ✓ POS yardımcısı kurulu ve ödeme formu tanıtılmış. Yeniden kurmanız gerekmez.
+          </p>
+        ) : yardimci.kapali ? (
+          <p className="ipucu" role="status">
+            POS yardımcısı kapalı. Açmak için tarayıcının sağ üstündeki uzantı simgesinden “CAL bup POS
+            yardımcısı”na tıklayıp anahtarı açın, sonra bu sayfayı yenileyin.
           </p>
         ) : (
           yardimci.kurulum &&
@@ -116,9 +95,7 @@ export function CariProfili({
         mesgul={mesgul}
         gizlilikNo={gizlilikNo}
         aktarimNo={aktarimNo}
-        firmaOnay={firmaOnay}
         kaydet={kartKaydet}
-        kartDegisti={() => onayla(false)}
         cariyiDuzenle={duzenle}
         yardimci={yardimci}
         sil={(k) => {

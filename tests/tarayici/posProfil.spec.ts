@@ -1,9 +1,9 @@
 import { test, expect, type Page, type Request } from '@playwright/test';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { posKilidiniAc, YAPAY_PAROLA } from './yardimci';
 
 const yol = '/CAL_bup/#/sanal-pos';
-const parola = 'yalnizca-yapay-yedek-parolasi';
 async function ortam(page: Page) {
   const hatalar: string[] = [];
   const istekler: Request[] = [];
@@ -23,6 +23,7 @@ async function ortam(page: Page) {
     await r.abort();
   });
   await page.goto(yol);
+  await posKilidiniAc(page);
   await expect(page.getByRole('button', { name: 'Yeni cari', exact: true })).toBeVisible();
   return { hatalar, istekler };
 }
@@ -60,16 +61,24 @@ const cariSec = (page: Page, harf: string) =>
     .filter({ hasText: 'Yapay Cari ' + harf })
     .click();
 
-test('PIN olmadan gerçek kart kaydı, cari ayrımı, form onayı ve kalıcı şifreleme', async ({ page }) => {
+test('parolalı kart kaydı, cari ayrımı, numara/CVV ekrana ve panoya çıkmaz, kalıcı şifreleme', async ({
+  page,
+}) => {
   const { hatalar, istekler } = await ortam(page);
-  await expect(page.getByLabel('Kasa parolası', { exact: true })).toHaveCount(0);
   await cariEkle(page);
   await kartEkle(page);
   await expect(page.locator('.pos-odeme-karti[aria-pressed="true"]')).toHaveCount(0);
   await page.locator('.pos-odeme-karti').click();
-  await expect(page.getByRole('button', { name: 'Kart numarasını göster', exact: true })).toBeDisabled();
   await expect(page.locator('.pos-secili-kart')).toContainText('+905000000000');
+  // Kart numarasını/CVV'yi gösterme ve kopyalama yoktur; kart yalnız yardımcıyla aktarılır.
+  await expect(
+    page.getByRole('button', { name: /Kart numarasını|CVV’yi kopyala|Son kullanmayı kopyala/ }),
+  ).toHaveCount(0);
+  // Yenileyince kilit: anahtar yalnız sekmenin belleğindedir.
   await page.reload();
+  await expect(page.getByRole('heading', { name: 'Sanal POS kilitli' })).toBeVisible();
+  await expect(page.locator('body')).not.toContainText('Yapay Cari A');
+  await posKilidiniAc(page);
   await cariSec(page, 'A');
   await expect(page.locator('.pos-odeme-karti')).toHaveCount(1);
   await expect(page.locator('body')).not.toContainText('4242424242424242');
@@ -86,32 +95,35 @@ test('PIN olmadan gerçek kart kaydı, cari ayrımı, form onayı ve kalıcı ş
   });
   expect(await pos.evaluate(() => window.opener)).toBeNull();
   await page.bringToFront();
-  await page
-    .getByLabel('POS’taki firma adı ve numaranın seçtiğim cariyle eşleştiğini kontrol ettim.')
-    .check();
-  await page.getByRole('button', { name: 'Kart numarasını göster', exact: true }).click();
-  await expect(page.locator('.pos-acik-kart-numarasi')).toContainText('4242 4242 4242 4242');
   await cariEkle(page, 'B');
   await expect(page.locator('.pos-odeme-karti')).toHaveCount(0);
-  await expect(page.locator('.pos-acik-kart-numarasi')).toHaveCount(0);
   await kartEkle(page, 'Yapay B kartı', '5555555555554444');
   await cariSec(page, 'A');
   await expect(page.locator('.pos-odeme-karti')).toContainText('Yapay şirket kartı');
   await expect(page.locator('.pos-odeme-karti[aria-pressed="true"]')).toHaveCount(0);
-  const zarf = await page.evaluate(async () => {
+  const { zarf, anahtarlar } = await page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve) => {
       const r = indexedDB.open('bup-rapor', 1);
       r.onsuccess = () => resolve(r.result);
     });
-    return await new Promise<string>((resolve) => {
-      const r = db.transaction('kv').objectStore('kv').get('sanal-pos-kasa-v1');
-      r.onsuccess = () => {
-        resolve(JSON.stringify(r.result));
-        db.close();
-      };
-    });
+    const depo = db.transaction('kv').objectStore('kv');
+    const [z, a] = await Promise.all([
+      new Promise<string>((resolve) => {
+        const r = depo.get('sanal-pos-kasa-v1');
+        r.onsuccess = () => resolve(JSON.stringify(r.result));
+      }),
+      new Promise<string[]>((resolve) => {
+        const r = depo.getAllKeys();
+        r.onsuccess = () => resolve(r.result.map(String));
+      }),
+    ]);
+    db.close();
+    return { zarf: z, anahtarlar: a };
   });
-  for (const sir of ['4242424242424242', '5555555555554444', '+905000000000'])
+  expect(JSON.parse(zarf).kip).toBe('parola');
+  // Şifre anahtarı hiçbir yere yazılmaz; parola veya açık kart bilgisi kayıtta yoktur.
+  expect(anahtarlar.filter((k) => k.startsWith('sanal-pos-profil-anahtar-'))).toEqual([]);
+  for (const sir of ['4242424242424242', '5555555555554444', '+905000000000', YAPAY_PAROLA])
     expect(zarf).not.toContain(sir);
   expect(hatalar).toEqual([]);
 });
@@ -151,32 +163,30 @@ test('kart formu doğrulama, iptal, düzenleme ve doğru cariden silme', async (
   expect(hatalar).toEqual([]);
 });
 
-test('şifreli profil yedeği başka tarayıcıya kart ve telefonuyla geri alınır', async ({ page, browser }) => {
+test('yedek bölümü yok; elle kilit, yanlış parola, parola unutulunca her şey silinir', async ({ page }) => {
   const { hatalar } = await ortam(page);
   await cariEkle(page);
   await kartEkle(page);
-  await page.getByRole('button', { name: 'Şifreli yedeği indir', exact: true }).click();
-  await page.getByLabel('Taşınabilir yedek parolası', { exact: true }).fill(parola);
-  await page.getByLabel('Taşınabilir yedek parolası tekrar', { exact: true }).fill(parola);
-  const indirilen = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Yedeği şifrele ve indir', exact: true }).click();
-  const indirme = await indirilen;
-  const dosya = await indirme.path();
-  if (!dosya) throw new Error('Yedek inmedi');
-  const context = await browser.newContext();
-  const yeni = await context.newPage();
-  await ortam(yeni);
-  await yeni.locator('summary').filter({ hasText: 'Şifreli yedekten kayıt ekle' }).click();
-  await yeni.getByLabel('Şifreli profil veya eski cari yedeği').setInputFiles(dosya);
-  await yeni.getByLabel('Yedeğin uzun parolası', { exact: true }).fill(parola);
-  await yeni.getByRole('button', { name: 'Yedeği incele', exact: true }).click();
-  await expect(yeni.locator('.pos-yedek-onizleme')).toContainText('Yapay şirket kartı');
-  await expect(yeni.locator('.pos-yedek-onizleme')).not.toContainText('4242424242424242');
-  await yeni.getByRole('button', { name: 'İnceledim, kayıtları ekle', exact: true }).click();
-  await cariSec(yeni, 'A');
-  await yeni.locator('.pos-odeme-karti').click();
-  await expect(yeni.locator('.pos-secili-kart')).toContainText('+905000000000');
-  await context.close();
+  await expect(page.getByRole('button', { name: 'Şifreli yedeği indir' })).toHaveCount(0);
+  await expect(page.getByText('Şifreli yedekten kayıt ekle')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Şimdi kilitle', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Sanal POS kilitli' })).toBeVisible();
+  await expect(page.locator('body')).not.toContainText('Yapay Cari A');
+  await page.getByLabel('Sanal POS parolası', { exact: true }).fill('Yanlis-parola-1');
+  await page.getByRole('button', { name: 'Kilidi aç', exact: true }).click();
+  await expect(page.getByRole('alert').filter({ hasText: 'Parola yanlış' })).toBeVisible();
+  await posKilidiniAc(page);
+  await expect(page.locator('.pos-cari')).toContainText('Yapay Cari A');
+  // Parolayı unutma: onay yazılmadan silinmez; onaylanınca bütün kayıtlar gider.
+  await page.getByRole('button', { name: 'Şimdi kilitle', exact: true }).click();
+  await page.getByRole('button', { name: 'Parolamı unuttum', exact: true }).click();
+  const sil = page.getByRole('button', { name: 'Bütün kayıtları sil ve yeniden başla', exact: true });
+  await expect(sil).toBeDisabled();
+  await page.getByLabel('Onaylamak için büyük harflerle SİL yazın').fill('SİL');
+  await sil.click();
+  await expect(page.getByRole('heading', { name: 'Sanal POS parolası belirleyin' })).toBeVisible();
+  await posKilidiniAc(page, 'Yeni-yapay-kilit-7');
+  await expect(page.locator('.pos-cari')).toHaveCount(0);
   expect(hatalar).toEqual([]);
 });
 
@@ -189,6 +199,7 @@ test('başka sekmede kart kaydı yenilenir; açık form korunur, eski kart sessi
   await kartEkle(page);
   const ikinci = await context.newPage();
   await ikinci.goto(yol);
+  await posKilidiniAc(ikinci);
   await cariSec(ikinci, 'A');
   await ikinci.getByRole('button', { name: 'Kart ekle', exact: true }).click();
   await ikinci.getByLabel('Karta vereceğiniz isim').fill('Yarım kalan yapay kart');
@@ -328,100 +339,22 @@ test('iki dakika boşta kalınca açık formlar kapanmaz; yalnız açık numara 
   expect(hatalar).toEqual([]);
 });
 
-test('firma kontrolü sekme geçişinde korunur; yeni POS girişi ve kart değişimi sıfırlar', async ({
-  page,
-}) => {
+test('10 dakika işlem yapılmazsa kilitlenir; numarayla arama çalışır', async ({ page }) => {
+  await page.clock.install();
   const { hatalar } = await ortam(page);
   await cariEkle(page);
-  await kartEkle(page);
-  await kartEkle(page, 'İkinci yapay kart', '5555555555554444');
-  await page.locator('.pos-odeme-karti').filter({ hasText: 'Yapay şirket kartı' }).click();
-  const kutu = page.getByLabel('POS’taki firma adı ve numaranın seçtiğim cariyle eşleştiğini kontrol ettim.');
-  // POS başka sekmede zaten açıksa kutu yeniden POS açmadan da kullanılabilir.
-  await kutu.check();
-  await gizleVeGoster(page);
-  await expect(kutu).toBeChecked();
-  await expect(page.getByRole('button', { name: 'Kart numarasını kopyala', exact: true })).toBeEnabled();
-  await page.locator('.pos-odeme-karti').filter({ hasText: 'İkinci yapay kart' }).click();
-  await expect(kutu).not.toBeChecked();
-  await kutu.check();
-  const popup = page.context().waitForEvent('page');
-  await page.getByRole('button', { name: 'POS’u aç', exact: true }).click();
-  await (await popup).close();
-  await expect(kutu).not.toBeChecked();
-  expect(hatalar).toEqual([]);
-});
-
-test('iki bilgisayarda farklılaşan yedek incelenir; seçim yapılmadan eklenmez, seçime göre birleşir', async ({
-  page,
-  browser,
-}) => {
-  const { hatalar } = await ortam(page);
-  await expect(page.locator('body')).not.toContainText('henüz şifreli yedek alınmadı');
-  await cariEkle(page);
-  await kartEkle(page);
   await cariEkle(page, 'B');
-  await expect(page.getByText('Bu tarayıcıda henüz şifreli yedek alınmadı', { exact: false })).toBeVisible();
-  await page.getByRole('button', { name: 'Şifreli yedeği indir', exact: true }).click();
-  await page.getByLabel('Taşınabilir yedek parolası', { exact: true }).fill(parola);
-  await page.getByLabel('Taşınabilir yedek parolası tekrar', { exact: true }).fill(parola);
-  const indirilen = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Yedeği şifrele ve indir', exact: true }).click();
-  const dosya = await (await indirilen).path();
-  await expect(page.getByText('Son şifreli yedek:', { exact: false })).toBeVisible();
   // Numara ile arama: en az üç rakam.
   await page.getByLabel('Cari adına veya numarasına göre ara').fill('0000');
   await expect(page.locator('.pos-cari')).toHaveCount(1);
   await expect(page.locator('.pos-cari')).toContainText('Yapay Cari B');
-  await page.getByLabel('Cari adına veya numarasına göre ara').fill('');
-
-  // İkinci bilgisayar: aynı cari ayrı oluşturulmuş, adı ve kartın telefonu farklı.
-  const context = await browser.newContext();
-  const yeni = await context.newPage();
-  await ortam(yeni);
-  await yeni.getByRole('button', { name: 'Yeni cari', exact: true }).click();
-  await yeni.getByLabel('Cari adı', { exact: true }).fill('Yapay Cari A Ltd');
-  await yeni.getByLabel('Vergi/TC numarası', { exact: true }).fill('0123456789');
-  await yeni.getByLabel('Cari adı ve numaranın aynı kişiye ait olduğunu kontrol ettim.').check();
-  await yeni.getByRole('button', { name: 'Cariyi kaydet', exact: true }).click();
-  await yeni.getByRole('button', { name: 'Kart ekle', exact: true }).click();
-  await kartFormunuDoldur(yeni);
-  await yeni.getByLabel('Kart sahibinin iletişim telefonu (isteğe bağlı)', { exact: true }).fill('');
-  await yeni.getByLabel('Kart bilgilerini ve bu cari altında kaydetmeyi kontrol ettim.').check();
-  await yeni.getByRole('button', { name: 'Kartı kaydet', exact: true }).click();
-  await expect(yeni.locator('.pos-odeme-karti')).toHaveCount(1);
-  const ekle = async () => {
-    await yeni.locator('summary').filter({ hasText: 'Şifreli yedekten kayıt ekle' }).click();
-    await yeni.getByLabel('Şifreli profil veya eski cari yedeği').setInputFiles(dosya);
-    await yeni.getByLabel('Yedeğin uzun parolası', { exact: true }).fill(parola);
-    await yeni.getByRole('button', { name: 'Yedeği incele', exact: true }).click();
-  };
-  await ekle();
-  const onizleme = yeni.locator('.pos-yedek-onizleme');
-  await expect(onizleme).toContainText('1 yeni cari, 0 yeni kart');
-  await expect(onizleme).toContainText('burada “Yapay Cari A Ltd”, yedekte “Yapay Cari A”');
-  await expect(onizleme).toContainText('farklı telefon');
-  await expect(onizleme).not.toContainText('4242424242424242');
-  await expect(onizleme).not.toContainText('0123456789');
-  const ekleDugmesi = yeni.getByRole('button', { name: 'İnceledim, kayıtları ekle', exact: true });
-  await expect(ekleDugmesi).toBeDisabled();
-  await yeni.getByLabel('Farklı kayıtlarda bu bilgisayardakileri koru; yalnız yeni kayıtları ekle').check();
-  await ekleDugmesi.click();
-  await expect(yeni.locator('.pos-cari')).toHaveCount(2);
-  await expect(yeni.locator('.pos-cari').filter({ hasText: 'Yapay Cari A Ltd' })).toBeVisible();
-  await yeni.locator('.pos-cari').filter({ hasText: 'Yapay Cari A Ltd' }).click();
-  await yeni.locator('.pos-odeme-karti').click();
-  await expect(yeni.locator('.pos-secili-kart')).toContainText('İletişim telefonuEklenmedi');
-  // Aynı yedek ikinci kez: bu kez yedektekiler seçilir.
-  await yeni.locator('summary').filter({ hasText: 'Şifreli yedekten kayıt ekle' }).click();
-  await ekle();
-  await expect(onizleme).toContainText('0 yeni cari, 0 yeni kart');
-  await yeni.getByLabel('Farklı kayıtlarda yedektekileri kullan').check();
-  await ekleDugmesi.click();
-  await expect(yeni.locator('.pos-cari').filter({ hasText: 'Yapay Cari A Ltd' })).toHaveCount(0);
-  await yeni.locator('.pos-cari').filter({ hasText: 'Yapay Cari A' }).first().click();
-  await yeni.locator('.pos-odeme-karti').click();
-  await expect(yeni.locator('.pos-secili-kart')).toContainText('+905000000000');
-  await context.close();
+  await page.clock.runFor(9 * 60_000);
+  await expect(page.locator('.pos-cari')).toHaveCount(1);
+  await page.clock.runFor(61_000);
+  await expect(page.getByRole('heading', { name: 'Sanal POS kilitli' })).toBeVisible();
+  await expect(page.locator('body')).not.toContainText('Yapay Cari B');
+  await expect(page.getByText('Uzun süre işlem yapılmadığı için', { exact: false })).toBeVisible();
+  await posKilidiniAc(page);
+  await expect(page.locator('.pos-cari')).toHaveCount(2);
   expect(hatalar).toEqual([]);
 });

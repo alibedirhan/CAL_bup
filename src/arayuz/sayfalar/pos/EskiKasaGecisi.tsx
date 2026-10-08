@@ -1,24 +1,20 @@
 import type { IslemSonucu } from '../../../cekirdek/islemSonucu';
 import { useState } from 'react';
-import { YedekHazirlama } from './YedekHazirlama';
 
 export function EskiKasaGecisi({
   mesgul,
   tasi,
-  yedekle,
 }: {
   mesgul: boolean;
-  tasi: (parola: string) => Promise<IslemSonucu>;
-  yedekle: (eskiParola: string, yedekParolasi: string) => Promise<IslemSonucu>;
+  tasi: (parola: string) => Promise<IslemSonucu | boolean>;
 }) {
   const [parola, setParola] = useState('');
-  const [yedekAcik, setYedekAcik] = useState(false);
   return (
     <section className="kart pos-kilit" aria-labelledby="pos-gecis-baslik">
       <h2 id="pos-gecis-baslik">Mevcut carilerinizi yeni profile taşıyın</h2>
       <p>
         Eski kayıtlarınızı açmak için mevcut kasa PIN’ini veya parolasını bir kez girin. Carileriniz
-        korunacak; bundan sonraki açılışlarda PIN sorulmayacak.
+        korunacak; ardından Sanal POS için yeni bir parola belirleyeceksiniz.
       </p>
       <form
         className="pos-form"
@@ -48,28 +44,8 @@ export function EskiKasaGecisi({
           Carilerimi taşı
         </button>
       </form>
-      <button className="dugme" type="button" disabled={mesgul} onClick={() => setYedekAcik(!yedekAcik)}>
-        Geçişten önce eski cari yedeğini indir
-      </button>
-      {yedekAcik && (
-        <>
-          <p className="ipucu">
-            Yukarıdaki mevcut PIN’i yazın; yedek için aşağıda ayrı uzun parola belirleyin.
-          </p>
-          <YedekHazirlama
-            mesgul={mesgul}
-            hazirla={async (p) => {
-              const eskiParola = parola;
-              setParola('');
-              return yedekle(eskiParola, p);
-            }}
-            vazgec={() => setYedekAcik(false)}
-          />
-        </>
-      )}
       <p className="ipucu">
-        Yanlış PIN veya kayıt hatasında eski cari listeniz değiştirilmez. Unutulan eski PIN atlanamaz. Bu
-        tarayıcıyı kullanan kişiler yeni profile erişebilir.
+        Yanlış PIN veya kayıt hatasında eski cari listeniz değiştirilmez. Unutulan eski PIN atlanamaz.
       </p>
     </section>
   );

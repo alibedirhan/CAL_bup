@@ -24,6 +24,8 @@ export interface YardimciSonucu {
   surum: string;
   neden?: (typeof HATA_NEDENLERI)[number];
   kurulum?: PosKurulumu | null;
+  /** Yardımcı araç çubuğundaki anahtarla kapatılmış (yardımcı 2.1.0+). */
+  kapali?: true;
 }
 export function yardimciYanitiniDogrula(d: unknown): YardimciSonucu {
   const s = d as YardimciSonucu | null;
@@ -42,7 +44,8 @@ export function yardimciYanitiniDogrula(d: unknown): YardimciSonucu {
     !YARDIMCI_DURUMLARI.includes(s.durum) ||
     typeof s.mesaj !== 'string' ||
     s.mesaj.length > 500 ||
-    (s.neden !== undefined && !HATA_NEDENLERI.includes(s.neden))
+    (s.neden !== undefined && !HATA_NEDENLERI.includes(s.neden)) ||
+    (s.kapali !== undefined && s.kapali !== true)
   )
     throw gecersiz();
   let kurulum: PosKurulumu | null | undefined;
@@ -57,6 +60,7 @@ export function yardimciYanitiniDogrula(d: unknown): YardimciSonucu {
     protokol: s.protokol,
     surum: s.surum,
     ...(s.neden ? { neden: s.neden } : {}),
+    ...(s.kapali ? { kapali: true as const } : {}),
     ...(kurulum !== undefined ? { kurulum } : {}),
   };
 }

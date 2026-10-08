@@ -1,23 +1,24 @@
 import { KullaniciHatasi } from '../cekirdek/hata';
 import { BOS_POS_PROFILI, posProfilDogrula, type PosProfilVerisi } from '../cekirdek/posProfil';
-import {
-  profilBirlestir,
-  profilBirlestirmeOzeti,
-  type BirlestirmeOzeti,
-  type BirlestirmeSecimi,
-} from '../cekirdek/posBirlestirme';
+import { profilParolasiDogrula, profilParolasiGirdisi } from '../cekirdek/posParola';
 import * as idb from './idb';
 import { POS_CIHAZ_ONEKI } from './posCihaz';
-import { POS_DENEME_ONEKI } from './posDeneme';
+import {
+  POS_DENEME_ONEKI,
+  parolaDenemeleriniTemizle,
+  parolaDenemesiBasarisiz,
+  parolaDenemesiIzni,
+} from './posDeneme';
 import { POS_KASA_ANAHTARI, PosKasasi } from './posKasasi';
 import { posSifrelemeDestegi, posZarfiDogrula } from './posSifreleme';
 import {
+  parolaAnahtari,
   yeniProfilAnahtari,
   profilAnahtariDogrula,
   profilCoz,
   profilSifrele,
-  profilYedegiOlustur,
   profilZarfiDogrula,
+  yeniParolaTuzu,
   type ProfilZarfi,
 } from './posProfilSifreleme';
 
@@ -25,7 +26,31 @@ import {
 export const PROFIL_DEPO_ANAHTARI = POS_KASA_ANAHTARI;
 export const PROFIL_ANAHTAR_ONEKI = 'sanal-pos-profil-anahtar-';
 export const PROFIL_BEKLEME_SURESI = 45_000;
-export type ProfilAcilisi = { eski: true } | { eski: false; veri: PosProfilVerisi };
+/** Bu kadar süre programda dokunulmazsa Sanal POS kilitlenir. */
+export const KILIT_SURESI = 10 * 60_000;
+/** `parolaBelirle`: hiç kayıt yok (`tasima: false`) veya 1.17 ve öncesinin parolasız kaydı (`true`). */
+export type ProfilAcilisi =
+  | { tur: 'eski' }
+  | { tur: 'parolaBelirle'; tasima: boolean }
+  | { tur: 'kilitli' }
+  | { tur: 'acik'; veri: PosProfilVerisi };
+
+/** Kilit açıkken anahtar yalnız bu sekmenin belleğinde durur; sayfa geçişinde korunur, sekme kapanınca,
+ * süre dolunca veya “Kilitle” ile silinir. Hiçbir depoya yazılmaz. */
+let oturum: { kimlik: string; tuz: string; anahtar: CryptoKey; son: number } | null = null;
+export function posEtkinligi(simdi = Date.now()): void {
+  if (oturum) oturum.son = simdi;
+}
+/** Süre dolduysa (veya saat geri alındıysa) oturumu siler; kilitlenmesi gerekiyorsa `true`. */
+export function posOturumuSuresiDoldu(simdi = Date.now()): boolean {
+  if (!oturum) return false;
+  if (simdi - oturum.son < KILIT_SURESI && simdi >= oturum.son) return false;
+  oturum = null;
+  return true;
+}
+export function posOturumunuKapat(): void {
+  oturum = null;
+}
 
 /** İşlemleri sıraya sokar; iptal ve revizyon denetimi geç sonuçların eski veriyi yazmasını engeller. */
 export class PosProfilDeposu {
@@ -41,6 +66,11 @@ export class PosProfilDeposu {
     this.#anahtar = null;
     this.#eskiKasa?.kilitle();
     this.#iptal?.();
+  }
+  /** Bu sekmedeki oturumu da siler: yeniden açmak için parola gerekir. */
+  kilitle(): void {
+    posOturumunuKapat();
+    this.kapat();
   }
   get acik(): boolean {
     return Boolean(this.#anahtar && this.#zarf);
@@ -74,67 +104,183 @@ export class PosProfilDeposu {
       );
     }
   }
+  /** Parolalı kayıt yalnız bu sekmede açık bir oturum varsa açılır; yoksa `kilitli` döner. */
   async ac(): Promise<ProfilAcilisi> {
     posSifrelemeDestegi();
     return this.#islem(async (n) => {
       const ham = await this.#oku();
       this.#denetle(n);
-      if (ham === undefined) {
-        const veri = await this.#olustur(BOS_POS_PROFILI, undefined, n);
-        return { eski: false, veri };
-      }
+      if (ham === undefined) return { tur: 'parolaBelirle', tasima: false };
       if ((ham as { bicim?: unknown } | null)?.bicim === 'cal-bup-pos') {
         posZarfiDogrula(ham);
-        return { eski: true };
+        return { tur: 'eski' };
       }
       const z = profilZarfiDogrula(ham);
-      if (z.kip !== 'cihaz') throw new KullaniciHatasi('Yerel profil biçimi geçersiz. Kayıtlar korundu.');
-      const anahtar = profilAnahtariDogrula(await idb.okuKesin(PROFIL_ANAHTAR_ONEKI + z.kimlik));
-      const veri = await profilCoz(z, anahtar);
-      this.#denetle(n);
-      if (JSON.stringify(await this.#oku()) !== JSON.stringify(z))
-        throw new KullaniciHatasi('Profil başka sekmede değişti. Yeniden kontrol edin.');
+      if (z.kip === 'cihaz') return { tur: 'parolaBelirle', tasima: true };
+      const o = oturum;
+      if (!o || posOturumuSuresiDoldu() || o.kimlik !== z.kimlik || o.tuz !== z.tuz) {
+        // Parola başka sekmede değiştiyse eski oturum geçersizdir.
+        if (o && (o.kimlik !== z.kimlik || o.tuz !== z.tuz)) posOturumunuKapat();
+        return { tur: 'kilitli' };
+      }
+      let veri: PosProfilVerisi;
+      try {
+        veri = await profilCoz(z, o.anahtar);
+      } catch {
+        posOturumunuKapat();
+        return { tur: 'kilitli' };
+      }
       this.#denetle(n);
       this.#zarf = z;
-      this.#anahtar = anahtar;
-      return { eski: false, veri };
+      this.#anahtar = o.anahtar;
+      return { tur: 'acik', veri };
     });
   }
-  async #olustur(veri: PosProfilVerisi, eski: unknown, n: number): Promise<PosProfilVerisi> {
-    const k = await yeniProfilAnahtari();
-    const kimlik = crypto.randomUUID();
-    const z = await profilSifrele(veri, k, kimlik);
-    const dogrulanan = await profilCoz(z, k);
-    this.#denetle(n);
-    const yazildi = await idb.guncelle(PROFIL_DEPO_ANAHTARI, (onceki, d) => {
-      this.#denetle(n);
-      if (JSON.stringify(onceki) !== JSON.stringify(eski)) throw new Error('Profil değişti');
-      d.put(k, PROFIL_ANAHTAR_ONEKI + kimlik);
-      if (eski) {
-        const old = posZarfiDogrula(eski);
-        if (old.cihaz) {
-          d.delete(POS_CIHAZ_ONEKI + old.cihaz);
-          d.delete(POS_DENEME_ONEKI + old.cihaz);
-        }
+  #oturumuAc(z: ProfilZarfi, anahtar: CryptoKey): void {
+    this.#zarf = z;
+    this.#anahtar = anahtar;
+    oturum = { kimlik: z.kimlik, tuz: z.tuz, anahtar, son: Date.now() };
+  }
+  /** Yanlış parola sayılır ve beklemeye yol açar; doğru parola sayacı sıfırlar. */
+  async kilidiAc(parola: string): Promise<PosProfilVerisi> {
+    profilParolasiGirdisi(parola);
+    return this.#islem(async (n) => {
+      await parolaDenemesiIzni();
+      const z = profilZarfiDogrula(await this.#oku());
+      if (z.kip !== 'parola') throw new KullaniciHatasi('Önce Sanal POS parolasını belirleyin.');
+      const anahtar = await parolaAnahtari(parola, z.tuz);
+      let veri: PosProfilVerisi;
+      try {
+        veri = await profilCoz(z, anahtar);
+      } catch {
+        await parolaDenemesiBasarisiz();
+        throw new KullaniciHatasi('Parola yanlış.');
       }
+      await parolaDenemeleriniTemizle();
+      this.#denetle(n);
+      this.#oturumuAc(z, anahtar);
+      return veri;
+    });
+  }
+  /** İlk parola: boş profil oluşturulur veya parolasız eski kayıt yeni parolayla şifrelenir; eski
+   * cihaz anahtarı aynı aktarımda silinir, böylece kayıtlar artık parolasız açılamaz. */
+  async parolaBelirle(parola: string, tekrar: string): Promise<PosProfilVerisi> {
+    profilParolasiDogrula(parola, tekrar);
+    return this.#islem(async (n) => {
+      const ham = await this.#oku();
+      let eski: ProfilZarfi | undefined;
+      let veri = BOS_POS_PROFILI;
+      if (ham !== undefined) {
+        eski = profilZarfiDogrula(ham);
+        if (eski.kip !== 'cihaz')
+          throw new KullaniciHatasi('Parola başka sekmede belirlendi. Sayfayı yenileyip parolayı yazın.');
+        const k = profilAnahtariDogrula(await idb.okuKesin(PROFIL_ANAHTAR_ONEKI + eski.kimlik));
+        veri = await profilCoz(eski, k);
+      }
+      this.#denetle(n);
+      return this.#parolaylaYaz(veri, parola, ham, eski, n);
+    });
+  }
+  /** Eski parola doğrulanmadan değiştirilmez (yanlış deneme sayılır). */
+  async parolaDegistir(eskiParola: string, parola: string, tekrar: string): Promise<PosProfilVerisi> {
+    profilParolasiGirdisi(eskiParola);
+    profilParolasiDogrula(parola, tekrar);
+    return this.#islem(async (n) => {
+      await parolaDenemesiIzni();
+      const ham = await this.#oku();
+      const z = profilZarfiDogrula(ham);
+      if (z.kip !== 'parola' || JSON.stringify(z) !== JSON.stringify(this.#zarf))
+        throw new KullaniciHatasi('Profil başka sekmede değişti. Yeniden kontrol edin.');
+      let veri: PosProfilVerisi;
+      try {
+        veri = await profilCoz(z, await parolaAnahtari(eskiParola, z.tuz));
+      } catch {
+        await parolaDenemesiBasarisiz();
+        throw new KullaniciHatasi('Şu anki parola yanlış. Parola değiştirilmedi.');
+      }
+      await parolaDenemeleriniTemizle();
+      this.#denetle(n);
+      return this.#parolaylaYaz(veri, parola, ham, undefined, n);
+    });
+  }
+  async #parolaylaYaz(
+    veri: PosProfilVerisi,
+    parola: string,
+    onceki: unknown,
+    cihazli: ProfilZarfi | undefined,
+    n: number,
+  ): Promise<PosProfilVerisi> {
+    const tuz = yeniParolaTuzu();
+    const anahtar = await parolaAnahtari(parola, tuz);
+    const z = await profilSifrele(veri, anahtar, crypto.randomUUID(), tuz);
+    const dogrulanan = await profilCoz(z, anahtar);
+    this.#denetle(n);
+    const yazildi = await idb.guncelle(PROFIL_DEPO_ANAHTARI, (simdiki, d) => {
+      this.#denetle(n);
+      if (JSON.stringify(simdiki) !== JSON.stringify(onceki)) throw new Error('Profil değişti');
+      if (cihazli) d.delete(PROFIL_ANAHTAR_ONEKI + cihazli.kimlik);
       return z;
     });
     if (!yazildi)
-      throw new KullaniciHatasi('Profil kaydedilemedi veya başka sekmede değişti. Eski kayıtlar korunuyor.');
+      throw new KullaniciHatasi('Parola kaydedilemedi veya başka sekmede değişti. Kayıtlar değişmedi.');
     this.#denetle(n);
-    this.#zarf = z;
-    this.#anahtar = k;
+    this.#oturumuAc(z, anahtar);
     return dogrulanan;
   }
-  async eskiKasayiTasi(parola: string): Promise<PosProfilVerisi> {
-    return this.#islem(async (n) => {
+  /** Parola unutulunca tek yol: bütün cari ve kartlar kalıcı silinir. Parola sorulmaz, kurtarma yoktur. */
+  async sifirla(): Promise<void> {
+    await this.#islem(async (n) => {
+      const ham = await this.#oku();
+      this.#denetle(n);
+      const silindi = await idb.guncelle(PROFIL_DEPO_ANAHTARI, (simdiki, d) => {
+        if (JSON.stringify(simdiki) !== JSON.stringify(ham)) throw new Error('Profil değişti');
+        const b = (simdiki as { bicim?: unknown } | undefined)?.bicim;
+        if (b === 'cal-bup-pos-profil') d.delete(PROFIL_ANAHTAR_ONEKI + profilZarfiDogrula(simdiki).kimlik);
+        if (b === 'cal-bup-pos') {
+          const eski = posZarfiDogrula(simdiki);
+          if (eski.cihaz) {
+            d.delete(POS_CIHAZ_ONEKI + eski.cihaz);
+            d.delete(POS_DENEME_ONEKI + eski.cihaz);
+          }
+        }
+        return idb.KAYDI_SIL;
+      });
+      if (!silindi)
+        throw new KullaniciHatasi('Kayıtlar silinemedi veya başka sekmede değişti. Yeniden deneyin.');
+      await parolaDenemeleriniTemizle();
+      posOturumunuKapat();
+      this.#zarf = null;
+      this.#anahtar = null;
+    });
+  }
+  /** 1.3 öncesi PIN'li kasa: cariler taşınır, ardından parola belirlenmesi istenir. */
+  async eskiKasayiTasi(parola: string): Promise<void> {
+    await this.#islem(async (n) => {
       const eski = posZarfiDogrula(await this.#oku());
       const kasa = new PosKasasi();
       this.#eskiKasa = kasa;
       try {
         const veri = await kasa.ac(parola, false);
         this.#denetle(n);
-        return await this.#olustur({ surum: 2, cariler: veri.cariler, kartlar: [] }, eski, n);
+        const k = await yeniProfilAnahtari();
+        const kimlik = crypto.randomUUID();
+        const z = await profilSifrele({ surum: 2, cariler: veri.cariler, kartlar: [] }, k, kimlik);
+        await profilCoz(z, k);
+        this.#denetle(n);
+        const yazildi = await idb.guncelle(PROFIL_DEPO_ANAHTARI, (onceki, d) => {
+          this.#denetle(n);
+          if (JSON.stringify(onceki) !== JSON.stringify(eski)) throw new Error('Profil değişti');
+          d.put(k, PROFIL_ANAHTAR_ONEKI + kimlik);
+          if (eski.cihaz) {
+            d.delete(POS_CIHAZ_ONEKI + eski.cihaz);
+            d.delete(POS_DENEME_ONEKI + eski.cihaz);
+          }
+          return z;
+        });
+        if (!yazildi)
+          throw new KullaniciHatasi(
+            'Profil kaydedilemedi veya başka sekmede değişti. Eski kayıtlar korunuyor.',
+          );
       } finally {
         kasa.kilitle();
         if (this.#eskiKasa === kasa) this.#eskiKasa = null;
@@ -145,28 +291,11 @@ export class PosProfilDeposu {
     const v = posProfilDogrula(veri);
     return this.#islem((n) => this.#yaz(v, n));
   }
-  async eskiYedekle(eskiParola: string, yedekParolasi: string): Promise<Uint8Array<ArrayBuffer>> {
-    return this.#islem(async (n) => {
-      posZarfiDogrula(await this.#oku());
-      const kasa = new PosKasasi();
-      this.#eskiKasa = kasa;
-      try {
-        await kasa.ac(eskiParola, false);
-        this.#denetle(n);
-        const b = await kasa.yedekle(yedekParolasi);
-        this.#denetle(n);
-        return b;
-      } finally {
-        kasa.kilitle();
-        if (this.#eskiKasa === kasa) this.#eskiKasa = null;
-      }
-    });
-  }
   async #yaz(veri: PosProfilVerisi, n: number): Promise<PosProfilVerisi> {
     const eski = this.#zarf;
     const k = this.#anahtar;
-    if (!eski || !k) throw new KullaniciHatasi('Profil kapalı. Yeniden kontrol edin.');
-    const z = await profilSifrele(veri, k, eski.kimlik);
+    if (!eski || !k) throw new KullaniciHatasi('Sanal POS kilitli. Parolayı yazıp yeniden deneyin.');
+    const z = await profilSifrele(veri, k, eski.kimlik, eski.tuz);
     await profilCoz(z, k);
     this.#denetle(n);
     const yazildi = await idb.guncelle(PROFIL_DEPO_ANAHTARI, (onceki) => {
@@ -183,39 +312,7 @@ export class PosProfilDeposu {
     }
     this.#denetle(n);
     this.#zarf = z;
+    posEtkinligi();
     return veri;
-  }
-  async #guncel(n: number): Promise<PosProfilVerisi> {
-    const z = this.#zarf;
-    const k = this.#anahtar;
-    if (!z || !k) throw new KullaniciHatasi('Profil kapalı. Yeniden kontrol edin.');
-    if (JSON.stringify(await this.#oku()) !== JSON.stringify(z))
-      throw new KullaniciHatasi('Profil başka sekmede değişti. Yeniden kontrol edin.');
-    this.#denetle(n);
-    return profilCoz(z, k);
-  }
-  async yedekle(parola: string): Promise<Uint8Array<ArrayBuffer>> {
-    return this.#islem(async (n) => {
-      const z = this.#zarf;
-      const b = await profilYedegiOlustur(await this.#guncel(n), parola);
-      this.#denetle(n);
-      if (JSON.stringify(await this.#oku()) !== JSON.stringify(z))
-        throw new KullaniciHatasi('Profil başka sekmede değişti. Yedeği yeniden hazırlayın.');
-      this.#denetle(n);
-      return b;
-    });
-  }
-  /** Güncel kayıt yeniden okunur; özet incelemedekinden farklıysa hiçbir şey yazılmaz. */
-  async yedektenEkle(
-    gelen: PosProfilVerisi,
-    secim: BirlestirmeSecimi = 'koru',
-    onaylananOzet?: string,
-  ): Promise<PosProfilVerisi> {
-    return this.#islem(async (n) =>
-      this.#yaz(profilBirlestir(await this.#guncel(n), gelen, secim, onaylananOzet), n),
-    );
-  }
-  async yedekOzeti(gelen: PosProfilVerisi): Promise<BirlestirmeOzeti> {
-    return this.#islem(async (n) => profilBirlestirmeOzeti(await this.#guncel(n), gelen));
   }
 }

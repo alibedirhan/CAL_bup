@@ -14,7 +14,18 @@ export interface EklentiApi {
     sendMessage(m: unknown): Promise<unknown>;
     onMessage: { addListener(f: Dinleyici): void };
   };
-  storage: { session: Depo; local: Depo };
+  storage: {
+    session: Depo;
+    local: Depo;
+    onChanged: {
+      addListener(f: (d: Record<string, { newValue?: unknown }>, alan: string) => void): void;
+    };
+  };
+  action: {
+    setBadgeText(d: { text: string }): Promise<void>;
+    setBadgeBackgroundColor(d: { color: string }): Promise<void>;
+    setTitle(d: { title: string }): Promise<void>;
+  };
   tabs: {
     create(d: { url: string }): Promise<{ id?: number }>;
     /** İçerik betiğine mesaj; `tabs` izni gerektirmez. */

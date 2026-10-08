@@ -191,3 +191,37 @@ eksik e-posta, `/Index.aspx`; eski sekme uyarısı; CVV'nin hiçbir depoda kalma
 özel giriş; yeniden kurulumda geri yükleme ve bilerek silmede geri yüklememe), `eklentiTanitma.spec.ts`
 (tanıtma, CVV/tutar engeli, aynı kutu, ekran raporu). Gerçek POS ekranı ve Windows/Edge kabulü
 kullanıcıdadır; sayfa olaylarına bağlı doğrulama (kart görseli) bilinçli olarak tetiklenmez.
+
+## 2.1.0 — aç/kapa anahtarı ve gizli pencere (2026-10-08)
+
+Kullanıcı yardımcıyı “rahatlıkla aç kapa” yapabilmek ve kurulumdan sonra POS sayfasındaki sağ alt
+pencerenin görünmemesini istedi.
+
+- Manifest `action.default_popup: acKapa.html` (yalnız `acKapa.js`/`acKapa.css`, satır içi betik/stil yok;
+  CSP'ye yalnız `style-src 'self'` eklendi). Yeni izin yok. Popup `storage.local` anahtarlarını
+  `kapali` ve `panelGoster` olarak yazar; kart/cari/kurulum göstermez.
+- `kapali`: arka plan program `baslat`ını reddeder, `durum`a `kapali: true` ekler (program “yardımcı kapalı”
+  der ve kart göndermez), POS sekmesine `kapali` döner (giriş bilgisi/kart/kurulum verilmez). Kapatılınca
+  süren aktarımlar iptal edilir, açık POS sekmelerinde içerik betiği durdurulur (panel kaldırılır);
+  açılınca yeniden kurulur. Simgede `OFF` rozeti.
+- `panelGoster`: yoksa pencere yalnız kurulum yokken görünür. Uyarı/hata bildirimi pencereyi her zaman
+  gösterir (kart aktarılmadı, eski oturum). `stil.css`'te `:host([hidden])` gerekir; `all: initial`
+  tarayıcının `[hidden]` kuralını da sıfırlıyordu.
+- Windows kurulum betiği 8 dosya bekler. Denemeler `eklentiSaha.spec.ts` (anahtar, pencere, OFF rozeti,
+  kart göndermeme) ve test yardımcısı `pencereyiGoster`.
+
+## Yardımcı ne kadar güvenli? (sade özet, 2026-10-08)
+
+Kullanıcı “POS yardımcısı ne kadar güvenli onu bilmek gerek” diye sordu. Kısaca:
+
+- **Nerede çalışır:** Yalnız iki adreste: CAL bup sayfası ve Bupiliç'in POS adresi. Başka hiçbir siteyi
+  göremez. İnternete kendisi hiçbir şey göndermez (`connect-src 'none'`, arka planda ağ çağrısı yok).
+- **Kartı ne kadar tutar:** Kart, siz “Seçili kartla POS'u aç” deyince yardımcının geçici belleğine gelir,
+  en çok 3 dakika bekler ve POS'a yazılmadan **önce** silinir. Kalıcı olarak hiçbir kart, CVV veya cari
+  saklamaz; kalıcı deposunda yalnız alan konumları ve iki anahtar tercihi vardır (testle denetlenir).
+- **Yanlış cariye yazma:** POS ekranındaki firma numarası seçtiğiniz cariyle aynı değilse hiçbir şey yazmaz.
+  Yalnız kendi açtığı POS sekmesine yazar.
+- **Ödemeye dokunmaz:** Tutar, “ödeme al” ve SMS düğmelerine dokunmaz, tıklama/olay üretmez.
+- **Sınırları:** Bilgisayara virüs bulaşmışsa veya biri sizin Windows oturumunuzu kullanıyorsa hiçbir tarayıcı
+  eklentisi tam koruma sağlayamaz. Sitenin kodu GitHub'dan yayınlandığı için GitHub hesabının iki adımlı
+  doğrulamayla korunması gerekir. Kullanmadığınızda araç çubuğundan kapatmak saldırı yüzeyini daha da küçültür.

@@ -36,3 +36,32 @@ export async function posDenemeleriniTemizle(cihaz: string): Promise<void> {
     throw new KullaniciHatasi('PIN oturumu doğrulanamadı. Tarayıcı deposunu kontrol edip yeniden deneyin.');
   }
 }
+
+const PAROLA_DENEMESI = 'sanal-pos-parola-deneme';
+/** Yanlış parolada bekleme: ilk 5 deneme serbest, sonra 30 sn'den başlayıp her denemede ikiye katlanır
+ * (en çok 15 dk). Sayfa yenilemek sayacı sıfırlamaz; parola içermez. */
+export function parolaBeklemesi(sayi: number): number {
+  return sayi < 5 ? 0 : Math.min(30_000 * 2 ** (sayi - 5), 15 * 60_000);
+}
+type Deneme = { sayi: number; son: number };
+function denemeOku(d: unknown): Deneme {
+  const p = d as Partial<Deneme> | undefined;
+  return p && Number.isInteger(p.sayi) && (p.sayi ?? -1) >= 0 && Number.isFinite(p.son)
+    ? { sayi: p.sayi as number, son: p.son as number }
+    : { sayi: 0, son: 0 };
+}
+export async function parolaDenemesiIzni(simdi = Date.now()): Promise<void> {
+  const d = denemeOku(await idb.okuKesin(PAROLA_DENEMESI));
+  // Saat geri alınırsa bekleme yeniden başlar.
+  const kalan = d.son > simdi ? parolaBeklemesi(d.sayi) : d.son + parolaBeklemesi(d.sayi) - simdi;
+  if (kalan > 0)
+    throw new KullaniciHatasi(
+      `Çok sayıda yanlış parola denendi. ${Math.ceil(kalan / 1000)} saniye bekleyip yeniden deneyin.`,
+    );
+}
+export async function parolaDenemesiBasarisiz(simdi = Date.now()): Promise<void> {
+  await idb.guncelle(PAROLA_DENEMESI, (onceki) => ({ sayi: denemeOku(onceki).sayi + 1, son: simdi }));
+}
+export async function parolaDenemeleriniTemizle(): Promise<void> {
+  await idb.guncelle(PAROLA_DENEMESI, () => idb.KAYDI_SIL);
+}

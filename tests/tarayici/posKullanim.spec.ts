@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { cariHazirla, kartDoldur } from './yardimci';
+import { cariHazirla, kartDoldur, posKilidiniAc } from './yardimci';
 
 test('cari profili işlem sırasını gösterir; seçili kart iki yolu ayrı başlıklarla sunar', async ({
   page,
@@ -25,9 +25,8 @@ test('cari profili işlem sırasını gösterir; seçili kart iki yolu ayrı ba�
   const panel = page.locator('.pos-secili-kart');
   await expect(panel.getByRole('heading', { name: 'Seçilen kart: Yapay Denetim Kartı' })).toBeVisible();
   await expect(panel).toContainText('•••• •••• •••• 4242 · 12/2035');
-  await expect(panel.getByRole('heading', { name: 'Kart bilgilerini elle kopyala' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Kart numarasını kopyala', exact: true })).toBeDisabled();
-  await expect(panel).toContainText('“Elle POS’a giriş” bölümünden POS’u açın');
+  // Kart numarası ve CVV ekranda gösterilmez, panoya kopyalanmaz (1.18.0).
+  await expect(panel.getByRole('button', { name: /kopyala|göster/i })).toHaveCount(0);
 
   // Elle giriş bölümü: ayrıntılar kapalı başlar, açılınca açıklamalar görünür
   const ayrinti = page.locator('.pos-ayrinti');
@@ -74,5 +73,6 @@ test('cari profilinden “Cariyi sil” onayla siler; kart formundaki CVV maskel
   await page.getByRole('button', { name: 'Cariyi sil', exact: true }).click();
   await expect(page.getByText('Henüz cari yok.', { exact: false })).toBeVisible();
   await page.reload();
+  await posKilidiniAc(page);
   await expect(page.getByText('Henüz cari yok.', { exact: false })).toBeVisible();
 });

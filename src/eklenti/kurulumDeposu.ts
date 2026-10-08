@@ -1,8 +1,8 @@
 import { eskiKurulumuDonustur, kurulumDogrula, type PosKurulumu } from '../cekirdek/posKurulumu';
 import { eklenti } from './chrome';
 
-/** `storage.local` yalnız `kurulum` (site geneli alan seçicileri) ve `panel` (küçük/büyük tercihi)
- * tutar; kart, cari veya firma değeri asla. Güncellemede eklenti kaldırılmadan “Yeniden yükle”
+/** `storage.local` yalnız `kurulum` (site geneli alan seçicileri), `panel` (küçük/büyük tercihi),
+ * `panelGoster` (POS sayfasında pencere) ve `kapali` (araç çubuğundaki aç/kapa anahtarı) tutar; kart, cari veya firma değeri asla. Güncellemede eklenti kaldırılmadan “Yeniden yükle”
  * denirse kurulum korunur; kaldırılırsa program kendi kopyasını geri verir. */
 /** `undefined`: hiç kurulmadı (veya yardımcı yeniden kuruldu); `null`: kullanıcı bilerek sildi. */
 export async function kurulumKaydi(): Promise<PosKurulumu | null | undefined> {
@@ -42,4 +42,22 @@ export async function panelTercihi(kucuk?: unknown): Promise<boolean> {
   }
   const p = await eklenti.storage.local.get('panel');
   return (p.panel as { kucuk?: unknown } | undefined)?.kucuk === true;
+}
+/** Araç çubuğundaki anahtar. Kayıt yoksa yardımcı açıktır. */
+export async function yardimciKapali(): Promise<boolean> {
+  return (await eklenti.storage.local.get('kapali')).kapali === true;
+}
+export async function yardimciKapat(kapali: boolean): Promise<void> {
+  if (kapali) await eklenti.storage.local.set({ kapali: true });
+  else await eklenti.storage.local.remove('kapali');
+}
+/** POS sayfasındaki pencere: kullanıcı araç çubuğundan seçmediyse yalnız kurulum yokken (tanıtmak için)
+ * görünür. Kurulumdan sonra pencere kendiliğinden açılmaz. */
+export async function panelGorunur(): Promise<boolean> {
+  const d = await eklenti.storage.local.get('panelGoster');
+  if (typeof d.panelGoster === 'boolean') return d.panelGoster;
+  return !(await kurulumOku());
+}
+export async function panelGorunurYaz(goster: boolean): Promise<void> {
+  await eklenti.storage.local.set({ panelGoster: goster });
 }

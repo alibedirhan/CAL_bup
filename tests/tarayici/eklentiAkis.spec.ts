@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { eklentiOrtami, alanlariTanit, yapayKartliCari, POS } from './eklentiYardimci';
+import { eklentiOrtami, alanlariTanit, yapayKartliCari, pencereyiGoster, POS } from './eklentiYardimci';
 
 // Gerçek sağlayıcıda girişten sonra önce ana sayfa açılabilir. Taklit POS ağdan yalıtılmıştır.
 test('girişten sonra ana sayfada “ödeme sayfasına geçin” denir; ödeme sayfasında kart dolar', async () => {
@@ -21,6 +21,7 @@ test('girişten sonra ana sayfada “ödeme sayfasına geçin” denir; ödeme s
       }),
     );
     await alanlariTanit(e.p);
+    await pencereyiGoster(e.c);
     await yapayKartliCari(e.p);
     const yeni = e.c.waitForEvent('page');
     await e.p.getByRole('button', { name: 'Seçili kartla POS’u aç', exact: true }).click();
@@ -35,14 +36,14 @@ test('girişten sonra ana sayfada “ödeme sayfasına geçin” denir; ödeme s
       .locator('#cal-bup-pos-yardimcisi')
       .getByRole('button', { name: 'Paneli küçült', exact: true })
       .click();
-    // Kalıcı depoda yalnız alan seçicileri ve panel tercihi bulunur; kart/cari bilgisi bulunmaz.
+    // Kalıcı depoda yalnız alan seçicileri ve pencere tercihleri bulunur; kart/cari bilgisi bulunmaz.
     const yerel = await e.c.serviceWorkers()[0]?.evaluate(async () => {
       const ch = (
         globalThis as unknown as { chrome: { storage: { local: { get(k: null): Promise<object> } } } }
       ).chrome;
       return JSON.stringify(await ch.storage.local.get(null));
     });
-    expect(Object.keys(JSON.parse(yerel ?? '{}')).sort()).toEqual(['kurulum', 'panel']);
+    expect(Object.keys(JSON.parse(yerel ?? '{}')).sort()).toEqual(['kurulum', 'panel', 'panelGoster']);
     expect(yerel).not.toMatch(/4242|0123456789/);
     expect(e.sayac.sms + e.sayac.odeme + e.sayac.dis).toBe(0);
   } finally {

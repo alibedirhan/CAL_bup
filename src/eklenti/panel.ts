@@ -19,6 +19,8 @@ export interface Panel {
   metin(icerik: string | null): void;
   kucult(gizli: boolean): void;
   ac(): void;
+  /** Pencerenin sayfada görünmesi (araç çubuğundaki seçim). Uyarı ve hata pencereyi her zaman gösterir. */
+  gorunur(goster: boolean): void;
 }
 
 /** Yalnız kabuk: gölge kök içinde başlık, durum, kurulum satırı ve düğmeler. Ne gösterileceğine
@@ -72,6 +74,8 @@ export function panelOlustur(kucukDegisti: (kucuk: boolean) => void): Panel {
       if (ton === 'bilgi') delete durum.dataset.ton;
       else durum.dataset.ton = ton;
       durum.hidden = false;
+      // Kart aktarılmadığını veya yanlış oturumu söyleyen yazılar gizli pencerede kaybolmaz.
+      if (ton !== 'bilgi') kok.hidden = false;
       if (ton === 'hata') kucult(false);
     },
     kurulumYazisi(metin) {
@@ -97,5 +101,8 @@ export function panelOlustur(kucukDegisti: (kucuk: boolean) => void): Panel {
     },
     kucult,
     ac: () => kucult(false),
+    gorunur(goster) {
+      kok.hidden = !goster;
+    },
   };
 }

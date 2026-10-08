@@ -13,9 +13,15 @@ test('yayınlanan MV3 paketi yalnızca gerekli sitelere ve depolama/süre yetkis
   expect(m.externally_connectable).toBeUndefined();
   expect(m.web_accessible_resources).toBeUndefined();
   expect(m.content_security_policy.extension_pages).toContain("connect-src 'none'");
+  expect(m.content_security_policy.extension_pages).not.toContain('unsafe');
+  // Araç çubuğu penceresi yalnız aç/kapa anahtarıdır; yeni izin istemez.
+  expect(m.action).toEqual({ default_title: 'CAL bup POS yardımcısı', default_popup: 'acKapa.html' });
   const z = await JSZip.loadAsync(await readFile('dist/pos-yardimcisi.zip'));
   expect(Object.keys(z.files).sort()).toEqual([
     'KURULUM.txt',
+    'acKapa.css',
+    'acKapa.html',
+    'acKapa.js',
     'arkaPlan.js',
     'kopru.js',
     'manifest.json',

@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { posKilidiniAc } from './yardimci';
 import ExcelJS from 'exceljs';
 
 async function yapayExcel(adlar: readonly string[], depo = 'İZMİR ARAÇ 06') {
@@ -55,6 +56,7 @@ test('iş yeri ekranında Karşılaştır görünür; sonuç depo ve Excel başl
 test('hata bildirimi kendiliğinden kapanmaz', async ({ page }) => {
   await page.clock.install();
   await page.goto('/CAL_bup/#/sanal-pos');
+  await posKilidiniAc(page);
   await page.getByRole('button', { name: 'Yeni cari', exact: true }).click();
   await page.getByLabel('Cari adı', { exact: true }).fill('Yapay Hata Carisi');
   await page.getByLabel('Vergi/TC numarası', { exact: true }).fill('12');

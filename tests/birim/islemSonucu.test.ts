@@ -2,7 +2,6 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { basarisiz, tamam } from '../../src/cekirdek/islemSonucu';
 import { cariFormunuDenetle, kartFormunuDenetle } from '../../src/cekirdek/posFormDenetimi';
 import { yaz } from '../../src/platform/saklama';
-import { yedekParolasiDogrula } from '../../src/cekirdek/posParola';
 import type { PosKart } from '../../src/cekirdek/posKart';
 afterEach(() => vi.unstubAllGlobals());
 describe('işlem sonucu ve alan doğrulama', () => {
@@ -33,9 +32,5 @@ describe('işlem sonucu ve alan doğrulama', () => {
       },
     });
     expect(yaz('ayar', 'deger')).toBe(false);
-  });
-  it('yedek doğrulaması günlük kasa parolası istemez', () => {
-    expect(() => yedekParolasiDogrula('')).toThrow('Yedek parolasını');
-    expect(() => yedekParolasiDogrula('yapay-yedek-parolasi', 'farkli')).toThrow('İki yedek');
   });
 });

@@ -78,6 +78,8 @@ export function usePosAktarimi(cari: PosCari, kart: PosKart, mesgul: boolean, ya
       if (bag.durum !== 'hazir') throw new KullaniciHatasi(bag.mesaj);
       setUyari(surumUyarisi(bag.surum));
       const k = yardimci.esitle(bag);
+      // Araç çubuğundan kapatılmış yardımcıya kart gönderilmez.
+      if (bag.kapali) throw new KullaniciHatasi(bag.mesaj);
       if (kontrol) {
         setDurum(
           `POS yardımcısı bağlı (${bag.surum}). ${

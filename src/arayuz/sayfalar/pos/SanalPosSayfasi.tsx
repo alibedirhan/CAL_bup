@@ -10,15 +10,12 @@ import {
   profilKartSil,
   type PosProfilVerisi,
 } from '../../../cekirdek/posProfil';
-import { indir } from '../../../platform/dosya';
 import { Mesaj } from '../../bilesenler/Mesaj';
 import { SayfaBasligi } from '../../bilesenler/SayfaBasligi';
 import { CariFormu } from './CariFormu';
 import { CariProfili } from './CariProfili';
 import { EskiKasaGecisi } from './EskiKasaGecisi';
-import { ProfilYedegi } from './ProfilYedegi';
-import { yedekHatirlatmasi } from '../../../cekirdek/posYedekHatirlatma';
-import { sonYedekOku, sonYedekYaz } from '../../../platform/posYedekKaydi';
+import { PosGuvenlik, PosKilidi } from './PosKilidi';
 import { usePosProfili } from './usePosProfili';
 
 type Oturum = ReturnType<typeof usePosProfili>;
@@ -26,7 +23,6 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
   const { depo, veri, mesgul, calistir, seciliId, setSeciliId, gizlilikNo, veriNo, bildir } = oturum;
   const [arama, setArama] = useState('');
   const [form, setForm] = useState<{ cari: PosCari | null } | null>(null);
-  const [sonYedek, setSonYedek] = useState(sonYedekOku);
   // Başka sekmede silinen carinin açık düzenleme formu kapatılır ve nedeni söylenir.
   const formCariSilindi = Boolean(veri && form?.cari && !veri.cariler.some((c) => c.id === form.cari?.id));
   if (!veri) return null;
@@ -225,37 +221,13 @@ function AcikProfil({ oturum }: { oturum: Oturum }) {
           </div>
         )}
       </div>
-      <ProfilYedegi
+      <PosGuvenlik
         mesgul={mesgul}
-        hatirlatma={yedekHatirlatmasi(sonYedek, new Date(), cariler.length > 0)}
-        ozetle={(gelen) => depo.yedekOzeti(gelen)}
-        ekle={(gelen, secim, ozet) =>
-          calistir(
-            () => depo.yedektenEkle(gelen, secim, ozet),
-            secim === 'yedek'
-              ? 'Yedekteki yeni kayıtlar eklendi; farklı kayıtlarda yedektekiler kullanıldı.'
-              : 'Yedekteki yeni kayıtlar eklendi; bu bilgisayardaki kayıtlar korundu.',
-          )
-        }
-        indir={async (parola) => {
-          if (mesgul)
-            return basarisiz('dogrulama', 'Başka bir işlem sürüyor.', 'MESGUL', {
-              kapsam: 'pos',
-              islemId: veriNo,
-            });
-          return oturum.dosyaCalistir(
-            () => depo.yedekle(parola),
-            (b) => {
-              indir(
-                b,
-                `CAL-bup-profil-yedegi-${new Date().toISOString().slice(0, 10)}.calpos`,
-                'application/octet-stream',
-              );
-              const t = new Date();
-              sonYedekYaz(t);
-              setSonYedek(t.toISOString());
-            },
-            'Şifreli cari ve kart yedeğinin indirmesi başlatıldı. Yedek parolasını ayrı saklayın.',
+        kilitle={oturum.kilitle}
+        degistir={(eski, p, t) => {
+          void oturum.kilitIsi(
+            () => depo.parolaDegistir(eski, p, t),
+            'Parola değiştirildi. Bundan sonra yeni parolayı kullanın.',
           );
         }}
       />
@@ -274,8 +246,8 @@ export function SanalPosSayfasi() {
         Carinizi seçin, kartını hazırlayın ve tutarı POS’ta kendiniz girin.
       </SayfaBasligi>
       <Mesaj ton="bilgi">
-        Cari ve kart bilgileri (kaydettiyseniz CVV de) yalnız bu tarayıcıda şifreli saklanır; bu tarayıcıyı
-        kullanan herkes kullanabilir. Banka şifresi ve SMS doğrulama kodları kaydedilmez.
+        Cari ve kart bilgileri (kaydettiyseniz CVV de) yalnız bu tarayıcıda, Sanal POS parolanızla şifreli
+        saklanır; yedeği alınmaz ve hiçbir yere gönderilmez. Banka şifresi ve SMS kodları kaydedilmez.
       </Mesaj>
       {oturum.hata && (
         <div ref={hataKutusu} tabIndex={-1}>
@@ -301,23 +273,29 @@ export function SanalPosSayfasi() {
         </button>
       )}
       {!oturum.yukleniyor &&
-        (oturum.eski && !oturum.veri ? (
+        (oturum.durum === 'eski' ? (
           <EskiKasaGecisi
             key={oturum.gizlilikNo}
             mesgul={oturum.mesgul}
             tasi={(p) =>
-              oturum.calistir(
+              oturum.kilitIsi(
                 () => oturum.depo.eskiKasayiTasi(p),
-                'Carileriniz taşındı. Artık günlük PIN gerekmiyor.',
+                'Carileriniz taşındı. Şimdi Sanal POS parolası belirleyin.',
               )
             }
-            yedekle={(eski, p) =>
-              oturum.dosyaCalistir(
-                () => oturum.depo.eskiYedekle(eski, p),
-                (b) => indir(b, 'CAL-bup-eski-cari-yedegi.calpos', 'application/octet-stream'),
-                'Eski cari listenizin şifreli yedeğinin indirmesi başlatıldı. Geçişe devam edebilirsiniz.',
-              )
-            }
+          />
+        ) : oturum.durum === 'kilitli' || oturum.durum === 'parolaBelirle' ? (
+          <PosKilidi
+            key={oturum.durum}
+            durum={oturum.durum}
+            tasima={oturum.tasima}
+            mesgul={oturum.mesgul}
+            is={oturum.kilitIsi}
+            islemler={{
+              kilidiAc: (p) => oturum.depo.kilidiAc(p),
+              parolaBelirle: (p, t) => oturum.depo.parolaBelirle(p, t),
+              sifirla: () => oturum.depo.sifirla(),
+            }}
           />
         ) : oturum.veri ? (
           <AcikProfil oturum={oturum} />

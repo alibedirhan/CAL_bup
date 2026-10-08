@@ -1,3 +1,28 @@
+# 8 Ekim 2026 (gece) — Sanal POS parola kilidi, yedeksiz, kopyasız; yardımcı aç/kapa (1.18.0, yardımcı 2.1.0)
+
+Kullanıcı aynı gün 1.17.0'dan sonra şunları istedi (sırayla): yardımcıyı araç çubuğundan aç/kapa
+(kaydırmalı anahtar); Sanal POS'a yedek indirme veya Drive gibi seçenekler olmasın, bilgiler program içinde
+ve “son derece güvenli” kalsın; şifre olsun ama **unutulursa kurtarma olmasın, yeniden başlamada eski
+kayıtlar silinsin**; kart yalnız POS yardımcısıyla aktarılsın (gösterme/kopyalama kalksın) ve yardımcının
+ne kadar güvenli olduğu anlatılsın; kurulumdan sonra POS sayfasındaki sağ alt pencere görünmesin, araç
+çubuğundan açılıp kapansın. Sonra “bitirene kadar durma, commit+push, ardından genel uzman taraması ve
+rapor” dedi ve uyudu. Boşta kilit süresini söylemedi; önerilen 10 dakika uygulandı.
+
+- Kilit: `posProfilDeposu` yeniden yazıldı (`ac` → eski / parolaBelirle / kilitli / acik; `kilidiAc`,
+  `parolaBelirle`, `parolaDegistir`, `sifirla`, `kilitle`; oturum anahtarı modül belleğinde, 10 dk).
+  `posProfilSifreleme` `kip: 'parola'` + `parolaAnahtari` (PBKDF2 600k). `posDeneme` katlanan bekleme.
+  `posParola.profilParolasiDogrula` (≥10, harf+rakam). Ekran `PosKilidi.tsx` (+ `PosGuvenlik`).
+- Kaldırılanlar: `ProfilYedegi`, `YedekHazirlama`, `posBirlestirme`, `posYedekHatirlatma`, `posYedekKaydi`,
+  eski kasa geçişindeki yedek, kart numarası/CVV/tarih/sahip kopyalama ve gösterme, firma beyanı süresi.
+- Yardımcı 2.1.0: araç çubuğu popup'ı (iki anahtar), `kapali` ve `panelGoster`; uyarı/hata pencereyi açar.
+  Bulunan hata: `stil.css` `all: initial` `[hidden]`ı etkisiz kılıyordu → `:host([hidden])`.
+- Testler: birim (parola kuralları, depo kilidi/taşıma/sıfırlama/bekleme), tarayıcı (`posKilidiniAc`
+  yardımcısı; kilit/yanlış parola/sıfırlama/10 dk; 1.17 kaydının taşınması; anahtar/pencere).
+- Windows'ta: yardımcı 2.1.0 kurulum dosyasıyla güncellenmeli (kaldırmadan “Yeniden yükle”), simge
+  sabitlenmeli; Sanal POS ilk açılışta parola isteyecek (mevcut kayıtlar korunur).
+
+---
+
 # 8 Ekim 2026 — Cari silme, kayıtlı CVV, kurulumdan sonra sade ekran (1.17.0)
 
 Kullanıcı üç şey istedi ve önce genel tarama: (1) cari silme seçeneği yok, (2) CVV kart eklenirken

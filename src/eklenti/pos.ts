@@ -25,6 +25,7 @@ type Yanit = {
   mesaj?: string;
   bekleyen?: boolean;
   kucuk?: boolean;
+  goster?: boolean;
 };
 const sor = (m: Record<string, unknown>) => eklenti.runtime.sendMessage(m) as Promise<Yanit>;
 
@@ -60,14 +61,17 @@ function giris(r: Yanit) {
   }
 }
 
-if (window.top === window) {
-  posSayfasi(location.href);
+interface Calisan {
+  durdur(): void;
+  eskiOturum(): void;
+  gorunur(goster: boolean): void;
+}
+/** Yardımcı açıkken POS sekmesindeki bütün iş: panel, tanıtma, giriş ve doldurma. Yardımcı araç
+ * çubuğundan kapatılınca `durdur` paneli kaldırır ve döngüyü bitirir; yeniden açılınca yenisi kurulur. */
+function calistir(kucukBasla: boolean, goster: boolean): Calisan {
   const panel = panelOlustur((kucuk) => void sor({ is: 'panel', kucuk }).catch(() => undefined));
-  void sor({ is: 'panel' })
-    .then((r) => {
-      if (r?.kucuk === true) panel.kucult(true);
-    })
-    .catch(() => undefined);
+  if (kucukBasla) panel.kucult(true);
+  panel.gorunur(goster);
 
   let kurulum: PosKurulumu | null = null;
   let mod: 'bosta' | 'tanitma' | 'sil' | 'rapor' = 'bosta';
@@ -190,16 +194,13 @@ if (window.top === window) {
   }
 
   // Başka sekmede yeni cariyle giriş başladı: bu sekmenin oturumu değişmiş olabilir.
-  eklenti.runtime.onMessage.addListener((m, s) => {
-    if (s.id !== eklenti.runtime.id || s.tab || (m as { is?: string } | null)?.is !== 'eskiOturum')
-      return false;
+  const eskiOturumUyarisi = () => {
     eskiOturum = true;
     panel.bildir(
       'Başka sekmede yeni bir cariyle POS girişi başladı. Bu sekme önceki cariye ait olabilir: buradan ödeme yapmayın, sekmeyi kapatın.',
       'hata',
     );
-    return false;
-  });
+  };
   window.addEventListener(
     'pagehide',
     () => {
@@ -228,7 +229,7 @@ if (window.top === window) {
           firma = '';
         }
       const r = await sor({ is: 'posDurum', alanVar, firma, girisMesaji: girisMesaji() });
-      if (kapali) return;
+      if (kapali || r.durum === 'kapali') return;
       if ('kurulum' in r) kurulumuAl(r.kurulum);
       if (alanVar && !firma && r.bekleyen) {
         await sor({ is: 'alanHatasi' });
@@ -305,4 +306,43 @@ if (window.top === window) {
     .then((r) => kurulumuAl(r?.kurulum))
     .catch(() => undefined)
     .finally(() => void dene());
+  return {
+    durdur() {
+      kapali = true;
+      iptalTanitma();
+      panel.kok.remove();
+    },
+    eskiOturum: eskiOturumUyarisi,
+    gorunur: (g) => panel.gorunur(g),
+  };
+}
+
+if (window.top === window) {
+  posSayfasi(location.href);
+  let calisan: Calisan | null = null;
+  const ac = (kucuk = false, goster = true) => {
+    calisan ??= calistir(kucuk, goster);
+  };
+  eklenti.runtime.onMessage.addListener((m, s) => {
+    if (s.id !== eklenti.runtime.id || s.tab) return false;
+    const mesaj = m as { is?: string; kapali?: unknown; goster?: unknown } | null;
+    if (mesaj?.is === 'eskiOturum') calisan?.eskiOturum();
+    else if (mesaj?.is === 'panelGorunum') calisan?.gorunur(mesaj.goster === true);
+    else if (mesaj?.is === 'acKapa') {
+      if (mesaj.kapali === true) {
+        calisan?.durdur();
+        calisan = null;
+      } else
+        void sor({ is: 'panel' })
+          .then((r) => ac(r?.kucuk === true, r?.goster !== false))
+          .catch(() => ac());
+    }
+    return false;
+  });
+  // Yardımcı kapalıysa POS sayfasında hiçbir şey görünmez ve yapılmaz.
+  void sor({ is: 'panel' })
+    .then((r) => {
+      if (r?.durum !== 'kapali') ac(r?.kucuk === true, r?.goster !== false);
+    })
+    .catch(() => ac());
 }
