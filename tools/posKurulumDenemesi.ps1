@@ -33,7 +33,7 @@ try {
     & ([scriptblock]::Create($code))
     $destination = Join-Path $testLocalRoot 'CALbup\POSYardimcisi'
     $files = @(Get-ChildItem -LiteralPath $destination -File)
-    if ($files.Count -ne 5 -or -not $script:browserOpened -or $script:clipboardPath -ne $destination) { throw 'Hazırlama sonucu eksik.' }
+    if ($files.Count -ne 8 -or -not $script:browserOpened -or $script:clipboardPath -ne $destination) { throw 'Hazırlama sonucu eksik.' }
     foreach ($file in $files) {
         $original = Join-Path 'dist/pos-yardimcisi' $file.Name
         if ((Get-FileHash -LiteralPath $original).Hash -ne (Get-FileHash -LiteralPath $file.FullName).Hash) { throw 'Dosya değişmiş.' }
