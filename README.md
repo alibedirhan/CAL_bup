@@ -44,20 +44,20 @@ başvurusuyla karşılaştırılır. Aktarım planı ve kapsam:
 
 ## Sanal POS
 
-Sanal POS bölümünde cari seçince **Kayıtlı kartlar → Kart ekle** görünür. Kart bilgileri elle
-eklenebilir veya fotoğraftan numara/tarih okunabilir. Kart adı, kart sahibi ve isteğe bağlı iletişim
-telefonu aynı cari altında tutulur; fotoğraf, CVV ve banka doğrulama kodu kaydedilmez.
+Sanal POS bölümü **parolayla kilitlidir**: ilk açılışta parola belirlenir; sayfa yenilenince, tarayıcı
+kapanınca ve 10 dakika işlem yapılmayınca yeniden sorulur. Parola unutulursa kurtarma yoktur; “Parolamı
+unuttum” bütün kayıtları silip yeniden başlatır. Yedek veya dışa aktarma yoktur; kayıtlar yalnız bu
+tarayıcıda, paroladan üretilen anahtarla şifreli durur.
 
-Günlük açılış PIN’sizdir; eski kasa için yalnızca ilk geçişte mevcut PIN gerekir. Kayıtlar bu
-tarayıcıda şifrelidir; bu tarayıcıyı kullanan kişiler erişebilir. Başka bilgisayara aktarım için
-ayrı uzun parolayla **Cari ve kart yedeği** indirilir.
+Cari seçince **Kayıtlı kartlar → Kart ekle** görünür. Kart bilgileri elle eklenebilir veya fotoğraftan
+numara/tarih okunabilir; kart sahibi, isteğe bağlı CVV ve iletişim telefonu aynı cari altında tutulur.
+Kart numarası ve CVV ekranda açık gösterilmez, kopyalanmaz.
 
-**Seçili kartla POS’u aç**, kurulu POS yardımcısına seçilen cari numarası ile kart numarası ve
-son kullanma tarihini geçici olarak iletir. Yardımcı görünen cari numarasını karşılaştırır ve önceden
-tanıtılmış boş numara/tarih alanlarını bir kez doldurur. Aktarım en fazla iki dakika bekler;
-kart düzenlemeye başlamak, başka giriş başlatmak veya cari/rota değiştirmek bekleyen aktarımı iptal eder.
-CVV, tutar, SMS ve ödeme düğmeleri kullanıcıda kalır. Yardımcı olmadan firma kontrolünden sonra
-elle gösterme/kopyalama kullanılabilir. Ayrıntılar: [POS yardımcısı](docs/POS_YARDIMCISI.md).
+**Seçili kartla POS’u aç**, kurulu POS yardımcısına seçilen cari ve kart bilgisini geçici olarak iletir.
+Yardımcı görünen cari numarasını karşılaştırır ve tanıtılmış alanları bir kez doldurur; tutar, SMS ve ödeme
+düğmeleri kullanıcıda kalır. Yardımcı araç çubuğundan açılıp kapatılır; POS sayfasındaki penceresi
+kurulumdan sonra yalnız istenince görünür. Ayrıntılar: [Sanal POS](docs/SANAL_POS.md),
+[POS yardımcısı](docs/POS_YARDIMCISI.md).
 
 ## Geliştirme
 

@@ -362,3 +362,16 @@
 .pos-elle-giris[open] > summary {
   margin-bottom: 12px;
 }
+.pos-sifirlama {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--hata);
+  border-radius: var(--yaricap-k);
+  background: var(--hata-yumusak);
+}
+.pos-sifirlama h3,
+.pos-sifirlama p {
+  margin: 0;
+}

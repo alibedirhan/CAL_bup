@@ -19,6 +19,7 @@ function ParolaKutusu({
   degistir,
   mesgul,
   yeni,
+  odak,
 }: {
   id: string;
   etiket: string;
@@ -26,6 +27,7 @@ function ParolaKutusu({
   degistir: (s: string) => void;
   mesgul: boolean;
   yeni?: boolean;
+  odak?: boolean;
 }) {
   return (
     <>
@@ -38,6 +40,7 @@ function ParolaKutusu({
         maxLength={128}
         value={deger}
         disabled={mesgul}
+        autoFocus={odak}
         onChange={(e) => degistir(e.target.value)}
       />
     </>
@@ -206,6 +209,7 @@ export function PosKilidi({
           deger={parola}
           degistir={setParola}
           mesgul={mesgul}
+          odak
         />
         <button className="dugme birincil" type="submit" disabled={mesgul}>
           Kilidi aç
