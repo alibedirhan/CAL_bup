@@ -79,7 +79,7 @@ describe.skipIf(!VAR)('gerçek dosyalarla yeni gün (Excel okuma ve yazma)', () 
     );
     const denetimler = tarihleriDenetle(kaynaklar, secim.tarih, secim.onceki.tarih);
     expect(denetimler.map((d) => d.durum)).toEqual(['uygun', 'uygun', 'uygun']);
-    plan = planla(hedef, secim, kaynaklar, AYAR, denetimler);
+    plan = planla(hedef, secim, kaynaklar, AYAR, denetimler, YOLLAR.sayim?.split('/').pop());
     uygula(hedef, secim, plan, AYAR);
     bayt = await kitapYaz(hedef.excel);
     writeFileSync(join(ORN, `cikti_${gun}.xlsx`), bayt);
@@ -177,7 +177,9 @@ describe.skipIf(!VAR)('gerçek dosyalarla yeni gün (Excel okuma ve yazma)', () 
     expect(sayfalar).toHaveLength(cikti.worksheets.length);
     expect(sayfalar.filter((x) => x.includes('tabSelected="1"'))).toHaveLength(1);
     // Gerçek sayfada son dolu sütun J; not bir sütun boşluk bırakıp L'ye yazılır.
-    expect(String(ws.getCell('L1').value)).toMatch(/^Depo sayımı, depo sorumlusunun /);
+    expect(String(ws.getCell('L1').value)).toMatch(
+      /^Depo sayımı, depo sorumlusunun .+ \(.+\.xlsx\) alınmıştır\.$/,
+    );
     expect(ws.getCell('L2').value).toBe('Hazırlayan fiziki sayım yapmamıştır.');
     expect(ws.getCell('K1').value).toBeNull();
   });
