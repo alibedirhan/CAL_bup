@@ -7,6 +7,7 @@ import type { Ayarlar } from '../../cekirdek/ayarlar';
 import { KullaniciHatasi } from '../../cekirdek/hata';
 import type { KaynakVeri } from '../../cekirdek/kaynakVeri';
 import type { Tarih } from '../../cekirdek/tarih';
+import { bilgilendirmeDogrula, raporNotunuYaz } from '../../hedef/bilgilendirme';
 import { listeOku, planiYaz, yapiDogrula } from '../../hedef/depoKontrol';
 import { satirEklemeyiDogrula } from '../../hedef/satirOzellikleri';
 import type { AcikKitap } from '../../kaynaklar/excel';
@@ -62,18 +63,20 @@ export function kaynaklariOku(
   };
 }
 
-/** Kitaba dokunmadan planı hesaplar; önizleme bundan çizilir. */
+/** Kitaba dokunmadan planı hesaplar; önizleme bundan çizilir. Sayım fişinin adı nota yazılır. */
 export function planla(
   hedef: AcikKitap,
   secim: GunSecimi,
   kaynaklar: Kaynaklar,
   ayarlar: Ayarlar,
   tarihDenetimleri: readonly TarihDenetimi[] = [],
+  sayimDosyasi?: string,
 ): DepoKontrolPlani {
   const ad = secim.tur === 'mevcut' ? secim.ad : secim.onceki.ad;
   const ws = hedef.excel.getWorksheet(ad);
   if (!ws) throw new KullaniciHatasi(`'${ad}' sayfası bulunamadı.`);
   yapiDogrula(ws, ayarlar);
+  bilgilendirmeDogrula(hedef.excel);
   const plan = hesapla({
     listeAdlari: listeOku(ws, ayarlar),
     ...kaynaklar,
@@ -83,12 +86,22 @@ export function planla(
     oncekiSayfa: secim.onceki.ad,
   });
   if (plan.eklenenler.length) satirEklemeyiDogrula(ws, Math.min(...plan.eklenenler.map((e) => e.satir)));
-  return plan;
+  return sayimDosyasi ? { ...plan, sayimDosyasi } : plan;
 }
 
-/** Planı bellekteki kitaba yazar. Diske kaydetmek için ardından kitapYaz çağrılır. */
-export function uygula(hedef: AcikKitap, secim: GunSecimi, plan: DepoKontrolPlani, ayarlar: Ayarlar): string {
-  return planiYaz({
+/**
+ * Planı bellekteki kitaba yazar; gün sayfasına sorumluluk notu, kitaba Bilgilendirme sayfası eklenir.
+ * Diske kaydetmek için ardından kitapYaz çağrılır.
+ */
+export function uygula(
+  hedef: AcikKitap,
+  secim: GunSecimi,
+  plan: DepoKontrolPlani,
+  ayarlar: Ayarlar,
+  zaman = new Date(),
+): string {
+  bilgilendirmeDogrula(hedef.excel);
+  const ws = planiYaz({
     wb: hedef.excel,
     tur: secim.tur,
     ad: secim.ad,
@@ -97,5 +110,11 @@ export function uygula(hedef: AcikKitap, secim: GunSecimi, plan: DepoKontrolPlan
     yeniTarih: secim.tarih,
     plan,
     ayarlar,
-  }).name;
+  });
+  raporNotunuYaz(hedef.excel, ws, {
+    gun: secim.tarih,
+    ...(plan.sayimDosyasi ? { sayimDosyasi: plan.sayimDosyasi } : {}),
+    zaman,
+  });
+  return ws.name;
 }

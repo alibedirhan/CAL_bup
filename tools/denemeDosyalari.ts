@@ -77,6 +77,8 @@ Gerçek raporunuzdan ayrı bir klasöre çıkarın. Rapor ayarları varsayılan 
 3. Yeni dosya olarak indirin. Masaüstü Excel'de açın: onarım uyarısı olmamalı.
    02.10 sayfasında B7=17, D7=16, E7=1, G2=7, H2=16; önceki sayfalar aynı kalmalı.
    Filtre A3:E6, baskı alanı A1:H7 olmalı. Excel'de kaydedip yeniden açın.
+   Dosya Bilgilendirme sayfasıyla açılmalı; "Okudum, 02.10 gün sayfasına geç" bağlantısı
+   02.10 sayfasına götürmeli. 02.10 sayfasının sağ üstünde sorumluluk notu olmalı.
 4. Yeni bir deneme kopyasını uygulamada dosya seçiciyle açın ve dosyaya kaydı deneyin.
    Excel'de açıkken de deneyin. Yazma hatası varsa başarı mesajı verilmemeli;
    Excel'i kapatıp dosyayı yeniden açın. Excel kilit davranışı sürüme göre değişebilir.

@@ -110,9 +110,9 @@ describe.skipIf(!VAR)('gerçek dosyalarla yeni gün (Excel okuma ve yazma)', () 
     expect(plan.genelDurum).toBe(beklenen.genelDurum);
   });
 
-  it('yeni sayfa önceki günün arkasında, son sayfa olarak durur', () => {
+  it('yeni sayfa önceki günün arkasında, son gün olarak durur; arkasında Bilgilendirme', () => {
     const adlar = cikti.worksheets.map((w) => w.name);
-    expect(adlar).toEqual(asil.worksheets.map((w) => w.name));
+    expect(adlar).toEqual([...asil.worksheets.map((w) => w.name), 'Bilgilendirme']);
   });
 
   it('elle hazırlanan sayfayla aynı ürün listesi ve miktarlar (bilinen tek fark hariç)', () => {
@@ -170,12 +170,16 @@ describe.skipIf(!VAR)('gerçek dosyalarla yeni gün (Excel okuma ve yazma)', () 
     }
   });
 
-  it('yalnızca yeni sayfa seçili ve açık', async () => {
-    const sira = cikti.worksheets.findIndex((w) => w.name === gun);
+  it('yalnızca Bilgilendirme sayfası seçili ve açık; gün sayfasında sorumluluk notu', async () => {
+    const sira = cikti.worksheets.findIndex((w) => w.name === 'Bilgilendirme');
     expect(await xlsxParcasi(bayt, 'xl/workbook.xml')).toMatch(new RegExp(`activeTab="${sira}"`));
     const sayfalar = await xlsxParcalari(bayt, /^xl\/worksheets\/sheet\d+\.xml$/);
     expect(sayfalar).toHaveLength(cikti.worksheets.length);
     expect(sayfalar.filter((x) => x.includes('tabSelected="1"'))).toHaveLength(1);
+    // Gerçek sayfada son dolu sütun J; not bir sütun boşluk bırakıp L'ye yazılır.
+    expect(String(ws.getCell('L1').value)).toMatch(/^Depo sayımı, depo sorumlusunun /);
+    expect(ws.getCell('L2').value).toBe('Hazırlayan fiziki sayım yapmamıştır.');
+    expect(ws.getCell('K1').value).toBeNull();
   });
 
   it('diğer bütün sayfalar hiç değişmez', () => {

@@ -200,6 +200,7 @@ type Planlayici = (
   k: { d01: KaynakVeri; sayim: KaynakVeri; sube: KaynakVeri },
   ayarlar: Ayarlar,
   denetimler: readonly TarihDenetimi[],
+  sayimDosyasi?: string,
 ) => DepoKontrolPlani;
 
 function mesaj(e: unknown): string {
@@ -308,7 +309,14 @@ export function turet(o: Oturum, ayarlar: Ayarlar, bugun: Tarih, planla?: Planla
   g.adim = 4;
 
   try {
-    g.plan = planla(o.hedef.acik, g.secim, { d01, sayim, sube }, ayarlar, g.denetimler);
+    g.plan = planla(
+      o.hedef.acik,
+      g.secim,
+      { d01, sayim, sube },
+      ayarlar,
+      g.denetimler,
+      o.kaynaklar.sayim?.dosyaAdi,
+    );
   } catch (e) {
     g.planHatasi = mesaj(e);
     return g;

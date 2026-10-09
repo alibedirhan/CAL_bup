@@ -8,7 +8,7 @@ import { OkumaHatasi } from '../../src/kaynaklar/kitap';
 import { gunSec } from '../../src/raporlar/depoKontrol/gunSecimi';
 import { hedefiIncele, kaynaklariOku, planla, uygula } from '../../src/raporlar/depoKontrol/islem';
 import { depoKontrolBaytlari } from '../yardimci/depoKontrolExcel';
-import { xlsxParcasi } from '../yardimci/xml';
+import { xlsxParcalari, xlsxParcasi } from '../yardimci/xml';
 import { d01Kitap, sayimKitap, subeKitap } from '../yardimci/sentetik';
 
 const BUGUN = tarih(2026, 10, 1);
@@ -43,16 +43,18 @@ describe('yeni gün sayfası (sentetik dosya)', () => {
     ws = s;
   });
 
-  it('önceki günün hemen arkasına eklenir ve tek seçili sayfa olur', async () => {
-    expect(cikti.worksheets.map((w) => w.name)).toEqual(['Ana Sayfa', '28.09', '29.09', '30.09']);
+  it('önceki günün hemen arkasına eklenir; kitap arkasındaki Bilgilendirme sayfasıyla açılır', async () => {
+    expect(cikti.worksheets.map((w) => w.name)).toEqual([
+      'Ana Sayfa',
+      '28.09',
+      '29.09',
+      '30.09',
+      'Bilgilendirme',
+    ]);
     // ExcelJS sekme seçimini geri okumadığı için dosyanın içine bakılır
-    const secili = [];
-    for (let i = 1; i <= 4; i++) {
-      if ((await xlsxParcasi(bayt, `xl/worksheets/sheet${i}.xml`)).includes('tabSelected="1"'))
-        secili.push(i);
-    }
-    expect(secili).toEqual([4]);
-    expect(await xlsxParcasi(bayt, 'xl/workbook.xml')).toMatch(/activeTab="3"/);
+    const secili = await xlsxParcalari(bayt, /^xl\/worksheets\/sheet\d+\.xml$/);
+    expect(secili.filter((x) => x.includes('tabSelected="1"'))).toHaveLength(1);
+    expect(await xlsxParcasi(bayt, 'xl/workbook.xml')).toMatch(/activeTab="4"/);
   });
 
   it('eksik ürün alfabetik yerine, biçimiyle eklenir', () => {
@@ -122,7 +124,7 @@ describe('var olan gün sayfasını yeniden doldurma', () => {
     const plan = planla(hedef, secim, kaynaklar(), AYAR);
     uygula(hedef, secim, plan, AYAR);
     const cikti = await ac(await kitapYaz(hedef.excel));
-    expect(cikti.worksheets.map((w) => w.name)).toEqual(['Ana Sayfa', '28.09', '29.09']);
+    expect(cikti.worksheets.map((w) => w.name)).toEqual(['Ana Sayfa', '28.09', '29.09', 'Bilgilendirme']);
     const ws = cikti.getWorksheet('29.09');
     expect(ws?.getCell('A9').value).toBe('YENİ ÜRÜN');
     expect(ws?.getCell('B2').formula).toBe("+'28.09'!B10");

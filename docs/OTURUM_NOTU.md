@@ -1,3 +1,24 @@
+# 9 Ekim 2026 — Depo kontrol dosyasında sorumluluk notu ve Bilgilendirme sayfası (1.19.0)
+
+Kullanıcı depo kontrolü masada hazırlıyor, sayımı depocu yapıyor; hata sorumluluğunun kendisinde
+görünmesini istemiyor. Önce Excel'in “onay verilmeden bulanık/gizli” açılmasını sordu. Konuşulan:
+Excel'de bulanıklık yok; makrolu kapı e-postayla gelen dosyada (Outlook) çoğu zaman engellenir, tarayıcıda
+açılan onay sayfası eki de şirket postasında karantinaya düşebilir; ikisi de onayı kanıt olarak geri
+getirmez. Kullanıcı kabul etti: **onay Outlook oylama düğmeleriyle (Onaylıyorum;Onaylamıyorum) alınır,
+rapor onaydan sonra yanıtla gönderilir** (programda iş yok; kullanıcıya adımlar anlatıldı). Programda:
+
+- `cekirdek/bilgilendirme.ts`: kullanıcıyla kararlaştırılan metin (olduğu gibi kalsın dedi; depocu adı
+  istenmedi), gün notu, rapor kaydı birleştirme. `hedef/bilgilendirme.ts`: gün sayfası notu (son dolu
+  sütun + 2; gerçek dosyada L1:L3) ve alt bilgi; en yeni günün arkasında baştan kurulan Bilgilendirme
+  sayfası, `HYPERLINK("#'GG.AA'!A1")` bağlantısı, kayıt tablosu; kitap o sayfayla açılır.
+- `planla` sayım fişi adını plana koyar ve aynı adlı yabancı sayfayı önizlemede reddeder; `uygula` notu
+  yazar (zaman parametreli). Kayıt ekranı metni Bilgilendirme'yi anlatır.
+- Testler: `tests/birim/bilgilendirme.test.ts`; excelYazma/altın testleri yeni sayfa sırası ve seçimiyle
+  güncellendi. LibreOffice çıktısıyla görünüm kontrol edildi (yapay dosya). Gerçek Excel'de bağlantının
+  tıklanması ve Outlook oylama düğmeleri kullanıcı tarafından denenmeli.
+
+---
+
 # 9 Ekim 2026 — Sanal POS parolası en az 6 karakter (1.18.1)
 
 Kullanıcı “Parola kilidi 6 karakter olsun sayı ve harf şeklinde” dedi. `PROFIL_PAROLA_EN_AZ` 10 → 6;

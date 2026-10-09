@@ -154,6 +154,24 @@ en yeni gün en sonda.
 - Başka sayfaya bakan formül yalnızca B2 ve D2'dir; ikisi de yeniden yazılır. Bu yüzden önceki günü
   kopyalayarak yeni gün oluşturmak güvenlidir.
 
+**Sorumluluk notu (1.19.0, kullanıcı kararı).** Raporu idari asistan masa başında hazırlar; depo sayımı
+depo sorumlusundandır. Dosya yöneticiye Outlook ile gider; onay Outlook oylama düğmeleriyle alınır (rapor
+onaydan sonra gönderilir). Makrolu “onaylamadan açılmasın” kapısı, e-postada makrolar engellendiği için
+yapılmadı. Her kayıtta (`hedef/bilgilendirme.ts`, metinler `cekirdek/bilgilendirme.ts`):
+
+- Gün sayfasının sağ üstüne üç satır not: son dolu sütundan bir sütun boşluk bırakılarak (gerçek dosyada
+  L1:L3); önceki günden kopyalanan not aynı sütunda yenilenir. Metin: “Depo sayımı, depo sorumlusunun
+  GG.AA.YYYY sayımından (sayım fişi adı) alınmıştır. / Hazırlayan fiziki sayım yapmamıştır. / Ayrıntı:
+  Bilgilendirme sayfası.” İlk iki cümle çıktı alt bilgisine de yazılır; kullanıcının kendi alt bilgisi
+  varsa ona dokunulmaz.
+- `Bilgilendirme` sayfası en yeni gün sayfasının hemen arkasında durur ve kitap onunla açılır (tek seçili
+  sekme). Kullanıcıyla kararlaştırılan metin, `HYPERLINK("#'GG.AA'!A1"; …)` ile hazırlanan güne bağlantı
+  (makro ve dış bağlantı yok) ve “Rapor kaydı” (gün, sayım fişi, hazırlanma tarih-saati; en yeni üstte;
+  aynı gün yeniden hazırlanınca satırı yenilenir). Sayfa her kayıtta baştan kurulur; yalnız kayıt
+  satırları korunur. Aynı adda (büyük/küçük harf fark etmez) kullanıcının kendi sayfası varsa önizleme
+  durur ve dosyaya dokunulmaz.
+- Depocunun adı yazılmaz (kullanıcı istemedi); metin değiştirilecekse kullanıcıya sorulur.
+
 ## Günlük depo kontrol kuralları
 
 | Hedef                | Kaynak           | Kural                                                                              |

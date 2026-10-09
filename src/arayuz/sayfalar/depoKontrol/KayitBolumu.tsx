@@ -37,7 +37,7 @@ export function KayitCubugu({ dk }: { dk: DepoKontrol }) {
       )}
       <p>
         {dosyaya
-          ? `${dk.gorunum.secim?.tur === 'mevcut' ? 'Mevcut sayfa yeniden doldurularak' : 'Yeni sayfa'} ${hedef.ad} dosyasına yazılacak. Önce dosyanın yedeği alınır.`
+          ? `${dk.gorunum.secim?.tur === 'mevcut' ? 'Mevcut sayfa yeniden doldurularak' : 'Yeni sayfa'} ${hedef.ad} dosyasına yazılacak; sayfaya sorumluluk notu eklenir. Önce dosyanın yedeği alınır.`
           : 'Güncellenmiş dosya indirilecek. Eski dosyanın yerine koyabilirsiniz.'}
       </p>
       <div className="satir-dugmeleri">
@@ -97,7 +97,8 @@ export function SonucKarti({ dk }: { dk: DepoKontrol }) {
           <p>
             {s.kayit === 'dosyaya'
               ? `${s.hedef.ad} dosyasını Excel'de açabilirsiniz.`
-              : `İndirilen ${s.hedef.ad} dosyasını eski dosyanın yerine koyun.`}
+              : `İndirilen ${s.hedef.ad} dosyasını eski dosyanın yerine koyun.`}{' '}
+            Dosya Bilgilendirme sayfasıyla açılır; oradaki “Okudum” bağlantısı {s.sayfa} sayfasına götürür.
           </p>
         </div>
       </div>

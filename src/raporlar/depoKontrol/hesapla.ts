@@ -44,6 +44,8 @@ export interface DepoKontrolPlani {
   uyarilar: string[];
   notlar: string[];
   genelDurum: 'Tamam' | 'Uyarı' | 'Hata';
+  /** Sorumluluk notunda gösterilen sayım fişi dosyasının adı (1.19.0). */
+  sayimDosyasi?: string;
 }
 
 export interface HesapGirdisi {
