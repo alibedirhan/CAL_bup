@@ -14,6 +14,8 @@ export const BILGI_METNI: readonly string[] = [
   '• Raporu hazırlayan kişi depoda fiziki sayım yapmamaktadır. Sayım miktarlarının doğruluğu, sayımı yapan depo sorumlusuna aittir.',
   '• Rapordaki farklar kayıtlar ile sayım arasındaki farkı gösterir; nedenleri depo sayımı üzerinden incelenmelidir.',
 ];
+/** Kırmızı şeritte kalın gösterilen sorumluluk cümlesi (BILGI_METNI içindeki sırası). */
+export const ONEMLI_SIRA = 3;
 
 /** Gün sayfasının sağ üstündeki üç satırlık kısa not. */
 export function gunNotu(gun: Tarih, sayimDosyasi?: string): [string, string, string] {
@@ -36,6 +38,15 @@ export function gunNotuMu(metin: string): boolean {
 
 export function gecisMetni(sayfaAdi: string): string {
   return `Okudum, ${sayfaAdi} gün sayfasına geç →`;
+}
+
+export function baglantiIpucu(sayfaAdi: string): string {
+  return `${sayfaAdi} sayfasına git`;
+}
+
+/** Korumalı Görünümde ya da bağlantıyı açmayan programlarda sekme her zaman çalışır. */
+export function yedekYolMetni(sayfaAdi: string): string {
+  return `Bağlantı açılmazsa alttaki ${sayfaAdi} sekmesine tıklayın.`;
 }
 
 export interface RaporKaydi {

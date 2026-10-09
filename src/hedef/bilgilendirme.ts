@@ -1,41 +1,18 @@
 // Depo kontrol kitabına sorumluluk notu (1.19.0): gün sayfasının sağ üstüne üç satırlık kısa not
-// ve çıktı alt bilgisi; kitabın açılışta gösterdiği "Bilgilendirme" sayfası (metin, gün sayfasına
-// bağlantı, rapor kaydı). Makro yoktur: dosya e-postayla gittiğinde de her Excel'de açılır.
+// ve çıktı alt bilgisi; kitabın açılışta gösterdiği "Bilgilendirme" sayfası (görünümü bilgiSayfasi.ts).
+// Makro yoktur: dosya e-postayla gittiğinde de her Excel'de açılır.
 
 import type ExcelJS from 'exceljs';
-import {
-  BILGI_BASLIGI,
-  BILGI_METNI,
-  BILGI_SAYFASI,
-  KAYIT_BASLIKLARI,
-  gecisMetni,
-  gunNotu,
-  gunNotuMu,
-  kayitlariGuncelle,
-  zamanMetni,
-  type RaporKaydi,
-} from '../cekirdek/bilgilendirme';
+import { BILGI_SAYFASI, gunNotu, gunNotuMu, kayitlariGuncelle, zamanMetni } from '../cekirdek/bilgilendirme';
 import { KullaniciHatasi } from '../cekirdek/hata';
-import { adNormal } from '../cekirdek/metin';
 import { gunSayfasiMi, tarihMetni, type Tarih } from '../cekirdek/tarih';
-import { hucreDegeri } from '../kaynaklar/excel';
+import { bilgiSayfasiEkle, bilgiSayfasiMi, kayitlariOku } from './bilgiSayfasi';
 import { sayfaSec } from './sayfa';
 
 type IcSayfa = ExcelJS.Worksheet & { orderNo: number };
 
 const YAZI = 'Calibri';
 const NOT_RENGI = { argb: 'FF1F3864' };
-const INCE: Partial<ExcelJS.Borders> = {
-  top: { style: 'thin' },
-  left: { style: 'thin' },
-  bottom: { style: 'thin' },
-  right: { style: 'thin' },
-};
-const GENISLIKLER = [14, 40, 20, 14];
-/** Birleşik A:D genişliğine bir satırda sığan yaklaşık karakter; Excel birleşik satırı kendisi büyütmez. */
-const SATIR_KARAKTERI = 80;
-
-const metin = (c: ExcelJS.Cell) => adNormal(hucreDegeri(c.value));
 
 function bilgiSayfasiBul(wb: ExcelJS.Workbook): ExcelJS.Worksheet | undefined {
   const ad = BILGI_SAYFASI.toLocaleLowerCase('tr');
@@ -45,7 +22,7 @@ function bilgiSayfasiBul(wb: ExcelJS.Workbook): ExcelJS.Worksheet | undefined {
 /** Aynı adda kullanıcının kendi sayfası varsa üzerine yazılmaz; önizlemede söylenir. */
 export function bilgilendirmeDogrula(wb: ExcelJS.Workbook): void {
   const ws = bilgiSayfasiBul(wb);
-  if (ws && metin(ws.getCell('A1')) !== BILGI_BASLIGI)
+  if (ws && !bilgiSayfasiMi(ws))
     throw new KullaniciHatasi(
       `Dosyada '${ws.name}' adında başka bir sayfa var. Program bu adı sorumluluk notu için kullanıyor; ` +
         'o sayfanın adını Excel’de değiştirip dosyayı yeniden açın.',
@@ -84,98 +61,8 @@ function gunNotunuYaz(ws: ExcelJS.Worksheet, gun: Tarih, sayimDosyasi?: string):
     ws.headerFooter = { ...ws.headerFooter, oddFooter: `&L&8${`${not[0]} ${not[1]}`.replace(/&/g, '&&')}` };
 }
 
-function kayitlariOku(ws: ExcelJS.Worksheet): RaporKaydi[] {
-  let r = 1;
-  while (
-    r <= ws.rowCount &&
-    !(metin(ws.getCell(r, 1)) === KAYIT_BASLIKLARI[0] && metin(ws.getCell(r, 2)) === KAYIT_BASLIKLARI[1])
-  )
-    r++;
-  const kayitlar: RaporKaydi[] = [];
-  for (r++; r <= ws.rowCount && metin(ws.getCell(r, 1)); r++)
-    kayitlar.push({
-      gun: metin(ws.getCell(r, 1)),
-      sayimDosyasi: metin(ws.getCell(r, 2)),
-      hazirlanma: metin(ws.getCell(r, 3)),
-    });
-  return kayitlar;
-}
-
-/** Biçim birleştirmeden önce verilir; ExcelJS onu birleşen hücrelere kopyalar (sağ kenarlık D'dedir). */
-function birlesikYaz(
-  ws: ExcelJS.Worksheet,
-  r: number,
-  deger: ExcelJS.CellValue,
-  stil: Partial<ExcelJS.Style>,
-) {
-  const c = ws.getCell(r, 1);
-  c.value = deger;
-  c.style = stil;
-  ws.mergeCells(r, 1, r, GENISLIKLER.length);
-  return c;
-}
-
-/** Sayfa her seferinde baştan kurulur; yalnız rapor kaydı satırları korunur. */
-function bilgiSayfasiKur(wb: ExcelJS.Workbook, gunSayfasi: ExcelJS.Worksheet, kayitlar: RaporKaydi[]) {
-  const eski = bilgiSayfasiBul(wb);
-  if (eski) wb.removeWorksheet(eski.id);
-  const ws = wb.addWorksheet(BILGI_SAYFASI, {
-    properties: { tabColor: { argb: 'FFC00000' } },
-    pageSetup: { orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
-  });
-  GENISLIKLER.forEach((g, i) => (ws.getColumn(i + 1).width = g));
-
-  birlesikYaz(ws, 1, BILGI_BASLIGI, {
-    font: { name: YAZI, size: 16, bold: true, color: { argb: 'FFC00000' } },
-  });
-  ws.getRow(1).height = 26;
-  BILGI_METNI.forEach((m, i) => {
-    const r = 3 + i;
-    birlesikYaz(ws, r, m, {
-      font: { name: YAZI, size: 11, bold: m.startsWith('• Raporu hazırlayan') },
-      alignment: { wrapText: true, vertical: 'top' },
-    });
-    ws.getRow(r).height = 15 * Math.ceil(m.length / SATIR_KARAKTERI) + 4;
-  });
-
-  // Makrosuz bağlantı: HYPERLINK formülü e-postayla gelen dosyada da çalışır.
-  const r = 3 + BILGI_METNI.length + 1;
-  const hedef = `#'${gunSayfasi.name.replace(/'/g, "''")}'!A1`;
-  const yazi = gecisMetni(gunSayfasi.name);
-  birlesikYaz(
-    ws,
-    r,
-    { formula: `HYPERLINK("${hedef}","${yazi}")`, result: yazi } as ExcelJS.CellFormulaValue,
-    {
-      font: { name: YAZI, size: 14, bold: true, underline: true, color: { argb: 'FF0563C1' } },
-      alignment: { vertical: 'middle', horizontal: 'center' },
-      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDDEBF7' } },
-      border: INCE,
-    },
-  );
-  ws.getRow(r).height = 30;
-
-  const k = r + 2;
-  ws.getCell(k, 1).value = 'Rapor kaydı';
-  ws.getCell(k, 1).font = { name: YAZI, size: 12, bold: true };
-  KAYIT_BASLIKLARI.forEach((b, i) => {
-    const c = ws.getCell(k + 1, i + 1);
-    c.value = b;
-    c.style = {
-      font: { name: YAZI, size: 11, bold: true },
-      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F2F2' } },
-      border: INCE,
-    };
-  });
-  kayitlar.forEach((kayit, i) =>
-    [kayit.gun, kayit.sayimDosyasi, kayit.hazirlanma].forEach((d, j) => {
-      const c = ws.getCell(k + 2 + i, j + 1);
-      c.value = d;
-      c.style = { font: { name: YAZI, size: 11 }, border: INCE };
-    }),
-  );
-
-  // En yeni gün sayfasının hemen arkasında durur; sekme çubuğunda son günün yanında görünür.
+/** En yeni gün sayfasının hemen arkasına; sekme çubuğunda son günün yanında görünür. */
+function siraya(wb: ExcelJS.Workbook, ws: ExcelJS.Worksheet): void {
   const sira = wb.worksheets.filter((w) => w !== ws);
   let sonGun = -1;
   sira.forEach((w, i) => {
@@ -183,7 +70,6 @@ function bilgiSayfasiKur(wb: ExcelJS.Workbook, gunSayfasi: ExcelJS.Worksheet, ka
   });
   sira.splice(sonGun + 1, 0, ws);
   sira.forEach((w, i) => ((w as IcSayfa).orderNo = i));
-  return ws;
 }
 
 export interface RaporNotu {
@@ -192,7 +78,10 @@ export interface RaporNotu {
   zaman: Date;
 }
 
-/** Gün sayfasına kısa notu yazar, Bilgilendirme sayfasını yeniler; kitap o sayfayla açılır. */
+/**
+ * Gün sayfasına kısa notu yazar, Bilgilendirme sayfasını baştan kurar (yalnız rapor kaydı satırları
+ * korunur; 1.19.0 düzeni de okunur) ve kitabın o sayfayla açılmasını sağlar.
+ */
 export function raporNotunuYaz(wb: ExcelJS.Workbook, gunSayfasi: ExcelJS.Worksheet, n: RaporNotu): void {
   bilgilendirmeDogrula(wb);
   gunNotunuYaz(gunSayfasi, n.gun, n.sayimDosyasi);
@@ -202,5 +91,8 @@ export function raporNotunuYaz(wb: ExcelJS.Workbook, gunSayfasi: ExcelJS.Workshe
     sayimDosyasi: n.sayimDosyasi ?? '',
     hazirlanma: zamanMetni(n.zaman),
   });
-  sayfaSec(wb, bilgiSayfasiKur(wb, gunSayfasi, kayitlar));
+  if (eski) wb.removeWorksheet(eski.id);
+  const ws = bilgiSayfasiEkle(wb, gunSayfasi.name, kayitlar);
+  siraya(wb, ws);
+  sayfaSec(wb, ws);
 }

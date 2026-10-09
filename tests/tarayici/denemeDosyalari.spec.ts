@@ -55,9 +55,13 @@ test('indirilebilir yapay kabul paketi gerçek rapor akışında beklenen Excel 
   // Sorumluluk notu (1.19.0): sayım fişinin adıyla gün sayfasında, bağlantı Bilgilendirme'de
   const not = String(s?.getCell('J1').value);
   expect(not).toMatch(/^Depo sayımı, depo sorumlusunun 02\.10\.2026 sayımından \(.+\.xlsx\) alınmıştır\.$/);
-  expect(wb.getWorksheet('Bilgilendirme')?.getCell('A9').formula).toBe(
-    'HYPERLINK("#\'02.10\'!A1","Okudum, 02.10 gün sayfasına geç →")',
+  expect(wb.getWorksheet('Bilgilendirme')?.getCell('D11').text).toBe('Okudum, 02.10 gün sayfasına geç →');
+  const sayfaXml = await Promise.all(
+    Object.values((await JSZip.loadAsync(await readFile(ciktiYolu))).files)
+      .filter((f) => /^xl\/worksheets\/sheet\d+\.xml$/.test(f.name))
+      .map((f) => f.async('string')),
   );
+  expect(sayfaXml.join('')).toContain('location="&apos;02.10&apos;!A1"');
   await expect(page.getByText('02.10 sayfası hazır, indirme başlatıldı')).toBeVisible();
   await expect(page.getByText('Dosya Bilgilendirme sayfasıyla açılır')).toBeVisible();
 });

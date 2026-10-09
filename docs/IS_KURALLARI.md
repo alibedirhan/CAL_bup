@@ -165,11 +165,19 @@ yapılmadı. Her kayıtta (`hedef/bilgilendirme.ts`, metinler `cekirdek/bilgilen
   Bilgilendirme sayfası.” İlk iki cümle çıktı alt bilgisine de yazılır; kullanıcının kendi alt bilgisi
   varsa ona dokunulmaz.
 - `Bilgilendirme` sayfası en yeni gün sayfasının hemen arkasında durur ve kitap onunla açılır (tek seçili
-  sekme). Kullanıcıyla kararlaştırılan metin, `HYPERLINK("#'GG.AA'!A1"; …)` ile hazırlanan güne bağlantı
-  (makro ve dış bağlantı yok) ve “Rapor kaydı” (gün, sayım fişi, hazırlanma tarih-saati; en yeni üstte;
-  aynı gün yeniden hazırlanınca satırı yenilenir). Sayfa her kayıtta baştan kurulur; yalnız kayıt
-  satırları korunur. Aynı adda (büyük/küçük harf fark etmez) kullanıcının kendi sayfası varsa önizleme
-  durur ve dosyaya dokunulmaz.
+  sekme). Kullanıcıyla kararlaştırılan metin, hazırlanan güne bağlantı (makro ve dış bağlantı yok) ve
+  “Rapor kaydı” (gün, sayım fişi, hazırlanma tarih-saati; en yeni üstte; aynı gün yeniden hazırlanınca
+  satırı yenilenir). Sayfa her kayıtta baştan kurulur; yalnız kayıt satırları korunur (1.19.0 düzeni de
+  okunur). Aynı adda (büyük/küçük harf fark etmez) kullanıcının kendi sayfası varsa önizleme durur ve
+  dosyaya dokunulmaz.
+- Görünüm (1.19.1, kullanıcı isteği; `hedef/bilgiSayfasi.ts`): CAL bup tema renkleri. Ortalanmış koyu
+  kutu (`--murekkep`), kırmızı başlık şeridi (`--vurgu`), beyaz yazı; sorumluluk cümlesi kırmızı şeritte
+  kalın. Bağlantı açık zeminli düğme (`--buz-yumusak` / `--buz`), altında “Bağlantı açılmazsa alttaki
+  GG.AA sekmesine tıklayın.” (Korumalı Görünüm). Hücre çizgileri ve satır/sütun başlıkları gizli; A
+  sütunu ortalama boşluğu (yaygın geniş ekrana göre); çıktıda yalnız kutu ve kayıt, kâğıdın ortasında.
+- Bağlantı Excel'in kendi iç bağlantısıdır (`<hyperlink location="'GG.AA'!A1">`). ExcelJS buna dış ilişki
+  (`r:id`) de yazdığı için `kitapYaz` onu siler (`hedef/icBaglanti.ts`). LibreOffice bunu bağlantı olarak
+  tanır (Ctrl+tıklama); Excel'de tek tıklama.
 - Depocunun adı yazılmaz (kullanıcı istemedi); metin değiştirilecekse kullanıcıya sorulur.
 
 ## Günlük depo kontrol kuralları

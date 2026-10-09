@@ -36,11 +36,22 @@ async function ac(bayt: Uint8Array) {
   return wb;
 }
 
-const satirlar = (ws: ExcelJS.Worksheet, ilk: number) => {
+/** Bilgilendirme düzeni (1.19.1): başlık B2, metin C4 ve C6–C9, düğme D11, yedek yol C12, kayıt C16:E. */
+const KAYIT_BASLIGI = 16;
+const satirlar = (ws: ExcelJS.Worksheet, ilk = KAYIT_BASLIGI + 1, sutun = 3) => {
   const sonuc: unknown[][] = [];
-  for (let r = ilk; ws.getCell(r, 1).value; r++) sonuc.push([1, 2, 3].map((c) => ws.getCell(r, c).value));
+  for (let r = ilk; ws.getCell(r, sutun).value; r++)
+    sonuc.push([0, 1, 2].map((c) => ws.getCell(r, sutun + c).value));
   return sonuc;
 };
+/** Bilgilendirme'nin sayfa XML'i: çizgisiz ve başlıksız tek sayfa odur. */
+async function bilgiXml(bayt: Uint8Array) {
+  const x = (await xlsxParcalari(bayt, /^xl\/worksheets\/sheet\d+\.xml$/)).filter((s) =>
+    s.includes('showRowColHeaders="0"'),
+  );
+  expect(x).toHaveLength(1);
+  return x[0] ?? '';
+}
 
 describe('sorumluluk notu metinleri', () => {
   it('gün notu tarihi ve sayım fişinin adını yazar; önceki günün notu tanınır', () => {
@@ -104,18 +115,31 @@ describe('depo kontrol kitabında sorumluluk notu', () => {
 
     const b = wb.getWorksheet('Bilgilendirme');
     if (!b) throw new Error('Bilgilendirme yok');
-    expect(b.getCell('A1').value).toBe('BİLGİLENDİRME');
-    expect(BILGI_METNI.map((_, i) => b.getCell(3 + i, 1).value)).toEqual([...BILGI_METNI]);
-    const baglanti = b.getCell(3 + BILGI_METNI.length + 1, 1);
-    expect(baglanti.formula).toBe('HYPERLINK("#\'30.09\'!A1","Okudum, 30.09 gün sayfasına geç →")');
-    expect(baglanti.result).toBe('Okudum, 30.09 gün sayfasına geç →');
-    // Makro ve dış bağlantı ilişkisi yok; bağlantı yalnız formüldür
+    expect(b.getCell('B2').value).toBe('BİLGİLENDİRME');
+    expect(b.getCell('B2').fill).toMatchObject({ fgColor: { argb: 'FFB3222E' } });
+    expect([4, 6, 7, 8, 9].map((r) => b.getCell(r, 3).value)).toEqual([...BILGI_METNI]);
+    // Yazılar beyaz, kutu koyu; sorumluluk cümlesi kırmızı şeritte kalın
+    expect(b.getCell('C4').font).toMatchObject({ color: { argb: 'FFFFFFFF' } });
+    expect(b.getCell('C4').fill).toMatchObject({ fgColor: { argb: 'FF151A22' } });
+    expect(b.getCell('C8').value).toMatch(/^• Raporu hazırlayan/);
+    expect(b.getCell('C8').font).toMatchObject({ bold: true, color: { argb: 'FFFFFFFF' } });
+    expect(b.getCell('C8').fill).toMatchObject({ fgColor: { argb: 'FFB3222E' } });
+    expect(b.getCell('D11').fill).toMatchObject({ fgColor: { argb: 'FFE8F1F9' } });
+    expect(b.getCell('D11').font).toMatchObject({ bold: true, color: { argb: 'FF2E6FA8' } });
+    expect(b.getCell('C12').value).toBe('Bağlantı açılmazsa alttaki 30.09 sekmesine tıklayın.');
+    // Excel'in kendi iç bağlantısı: yalnız location; dış ilişki, makro yok
+    const xml = await bilgiXml(bayt);
+    expect(xml).toContain(
+      '<hyperlink ref="D11" tooltip="30.09 sayfasına git" location="&apos;30.09&apos;!A1"/>',
+    );
+    expect(xml).toMatch(/showGridLines="0"/);
+    expect(xml).not.toMatch(/<hyperlink [^>]*r:id=/);
     expect(await xlsxParcalari(bayt, /vbaProject/)).toHaveLength(0);
     for (const x of await xlsxParcalari(bayt, /^xl\/worksheets\/_rels\//))
       expect(x).not.toMatch(/hyperlink/i);
-    const ilk = 3 + BILGI_METNI.length + 5;
-    expect(b.getCell(ilk - 1, 1).value).toBe('Gün');
-    expect(satirlar(b, ilk)).toEqual([['30.09.2026', 'SAYIM_30_09.xlsx', '01.10.2026 09:12']]);
+    expect(await xlsxParcasi(bayt, 'xl/workbook.xml')).toMatch(/&apos;Bilgilendirme&apos;!\$B\$1:\$F\$17/);
+    expect(b.getCell(KAYIT_BASLIGI, 3).value).toBe('Gün');
+    expect(satirlar(b)).toEqual([['30.09.2026', 'SAYIM_30_09.xlsx', '01.10.2026 09:12']]);
 
     // Sentetik sayfada son dolu sütun H; not bir sütun boşluk bırakıp J'ye yazılır.
     const g = wb.getWorksheet('30.09');
@@ -150,8 +174,8 @@ describe('depo kontrol kitabında sorumluluk notu', () => {
     );
     const b = wb.getWorksheet('Bilgilendirme');
     if (!b) throw new Error('Bilgilendirme yok');
-    expect(b.getCell(3 + BILGI_METNI.length + 1, 1).formula).toContain("#'01.10'!A1");
-    expect(satirlar(b, 3 + BILGI_METNI.length + 5)).toEqual([
+    expect(b.getCell('D11').text).toBe('Okudum, 01.10 gün sayfasına geç →');
+    expect(satirlar(b)).toEqual([
       ['01.10.2026', 'SAYIM_01_10.xlsx', '01.10.2026 10:12'],
       ['30.09.2026', 'SAYIM_30_09.xlsx', '01.10.2026 09:12'],
     ]);
@@ -169,8 +193,27 @@ describe('depo kontrol kitabında sorumluluk notu', () => {
     ]);
     const b = wb.getWorksheet('Bilgilendirme');
     if (!b) throw new Error('Bilgilendirme yok');
-    expect(satirlar(b, 3 + BILGI_METNI.length + 5)).toEqual([
-      ['30.09.2026', 'SAYIM_30_09_duzeltilmis.xlsx', '01.10.2026 11:12'],
+    expect(satirlar(b)).toEqual([['30.09.2026', 'SAYIM_30_09_duzeltilmis.xlsx', '01.10.2026 11:12']]);
+  });
+
+  it('1.19.0 düzenindeki Bilgilendirme yeni görünüme geçer, kayıt satırları korunur', async () => {
+    const wb = await ac(await depoKontrolBaytlari());
+    const eski = wb.addWorksheet('Bilgilendirme');
+    eski.getCell('A1').value = 'BİLGİLENDİRME';
+    eski.getCell('A9').value = 'Okudum, 29.09 gün sayfasına geç →';
+    eski.getCell('A11').value = 'Rapor kaydı';
+    ['Gün', 'Sayım fişi', 'Hazırlanma'].forEach((d, i) => (eski.getCell(12, i + 1).value = d));
+    ['29.09.2026', 'SAYIM_29_09.xlsx', '30.09.2026 08:00'].forEach(
+      (d, i) => (eski.getCell(13, i + 1).value = d),
+    );
+    const bayt = await hazirla(await kitapYaz(wb), tarih(2026, 9, 30), 'SAYIM_30_09.xlsx');
+    const b = (await ac(bayt)).getWorksheet('Bilgilendirme');
+    if (!b) throw new Error('Bilgilendirme yok');
+    expect(b.getCell('A1').value).toBeNull();
+    expect(b.getCell('B2').value).toBe('BİLGİLENDİRME');
+    expect(satirlar(b)).toEqual([
+      ['30.09.2026', 'SAYIM_30_09.xlsx', '01.10.2026 09:12'],
+      ['29.09.2026', 'SAYIM_29_09.xlsx', '30.09.2026 08:00'],
     ]);
   });
 
@@ -192,5 +235,25 @@ describe('depo kontrol kitabında sorumluluk notu', () => {
     const hedef = await kitapAc(await kitapYaz(wb), 'DEPO KONTROL.xlsx');
     const secim = gunSec(hedefiIncele(hedef, AYAR, BUGUN).gunler, tarih(2026, 9, 30));
     expect(() => planla(hedef, secim, kaynaklar(), AYAR)).toThrow(/adında başka bir sayfa var/);
+  });
+});
+
+describe('iç bağlantı düzeltmesi', () => {
+  it('iç bağlantının dış ilişkisi silinir, gerçek dış bağlantıya dokunulmaz', async () => {
+    const wb = new ExcelJS.Workbook();
+    const s = wb.addWorksheet('Yapay');
+    wb.addWorksheet('30.09');
+    s.getCell('A1').value = { text: 'iç', hyperlink: "'30.09'!A1" };
+    s.getCell('A2').value = { text: 'dış', hyperlink: 'https://ornek.invalid/yapay' };
+    const bayt = await kitapYaz(wb);
+    const xml = await xlsxParcasi(bayt, 'xl/worksheets/sheet1.xml');
+    expect(xml).toContain('<hyperlink ref="A1" location="&apos;30.09&apos;!A1"/>');
+    expect(xml).toMatch(/<hyperlink ref="A2" r:id="rId\d+"\/>/);
+    const iliski = await xlsxParcasi(bayt, 'xl/worksheets/_rels/sheet1.xml.rels');
+    expect(iliski).toContain('https://ornek.invalid/yapay');
+    expect(iliski).not.toContain('30.09');
+    expect((await ac(bayt)).getWorksheet('Yapay')?.getCell('A2').hyperlink).toBe(
+      'https://ornek.invalid/yapay',
+    );
   });
 });

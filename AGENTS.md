@@ -109,7 +109,7 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.19.0 (POS yardımcısı 2.1.0). Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.19.1 (POS yardımcısı 2.1.0). Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
 
@@ -119,6 +119,8 @@ yerine (makro engellenir) **onay Outlook oylama düğmeleriyle alınır, rapor o
 (programda değil, kullanıcının iş akışı). Program her kayıtta gün sayfasının sağ üstüne kısa not + alt
 bilgi yazar ve kitabı en yeni günün arkasındaki **Bilgilendirme** sayfasıyla açar (metin, güne bağlantı,
 rapor kaydı). Metin kullanıcıyla kararlaştırıldı, depocu adı yok; değiştirmeden sor. Ayrıntı IS_KURALLARI.
+1.19.1: kullanıcı isteğiyle CAL bup renkli ortalanmış kutu, beyaz yazı, kırmızı sorumluluk şeridi; bağlantı
+Excel'in iç bağlantısı (ExcelJS'in eklediği `r:id` `hedef/icBaglanti.ts` ile silinir).
 
 **2026-10-08 gece Sanal POS güvenliği (1.18.0, yardımcı 2.1.0):** Kullanıcı kararlarıyla: **Sanal POS
 parolası** (≥6, 1.18.1 kullanıcı kararı; harf+rakam; PBKDF2 600k; anahtar yalnız sekme belleğinde; 10 dk boşta/yenilemede kilit;

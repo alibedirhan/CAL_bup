@@ -1,3 +1,22 @@
+# 9 Ekim 2026 (akşam) — Bilgilendirme sayfasının görünümü ve bağlantı (1.19.1)
+
+Kullanıcı Linux'ta gerçek 30.09 örneğini (`ornekler/cikti_30.09.xlsx`, altın test üretir) LibreOffice'te
+açtı: mesaj ekranın ortasında ve daha düzenli olsun, CAL bup renkleri, beyaz yazı, önemli yerler kırmızı
+veya belirgin; “Okudum” tıklanmıyor. “Planını iyice yap, sonra başla” dedi ve ayrıldı.
+
+- Görünüm `hedef/bilgiSayfasi.ts`'e ayrıldı: A boşluk sütunu (≈500 px) ile ortalanmış B:F kutusu, B/F
+  kenar boşluğu (LibreOffice girintiyi alt satıra taşımıyordu), C:E yazı ve kayıt tablosu aynı hizada;
+  çizgi/başlık gizli; yazdırma alanı `$B$1:$F$n` (ExcelJS yalnız sütuna $ koyuyor, `B$1` verildi).
+- Tıklanmama: hedef doğruydu (UNO ile `#'GG.AA'!A1` açılınca gün sayfasına geçiyor); LibreOffice
+  bağlantıları Ctrl+tıklamayla açar. HYPERLINK formülü yerine Excel'in iç bağlantısı yazıldı; ExcelJS'in
+  eklediği dış `r:id` ilişkisi `hedef/icBaglanti.ts` ile siliniyor (yalnız iç bağlantı varsa yeniden
+  sıkıştırır). LibreOffice hücre bağlantısını tanıdı ve 30.09'a götürdü. LibreOffice bağlantı yazısını
+  kendi lacivert rengine boyadığı için düğme açık zeminli (`--buz-yumusak`) yapıldı.
+- 1.19.0 düzenindeki sayfanın kayıt satırları yeni düzene taşınır (test var). Gerçek Excel'de görünüm ve
+  tek tıklamayla geçiş kullanıcı tarafından denenecek.
+
+---
+
 # 9 Ekim 2026 — Depo kontrol dosyasında sorumluluk notu ve Bilgilendirme sayfası (1.19.0)
 
 Kullanıcı depo kontrolü masada hazırlıyor, sayımı depocu yapıyor; hata sorumluluğunun kendisinde

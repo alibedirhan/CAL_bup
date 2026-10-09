@@ -5,6 +5,7 @@
 import type ExcelJS from 'exceljs';
 import { KullaniciHatasi } from '../cekirdek/hata';
 import { formulKaydir } from './formul';
+import { icBaglantilariDuzelt } from './icBaglanti';
 import { satirEklemeyiDogrula, satirOzellikleriniHazirla } from './satirOzellikleri';
 
 type FormulDegeri = { formula?: string; sharedFormula?: string; result?: unknown };
@@ -136,5 +137,5 @@ export async function kitapYaz(wb: ExcelJS.Workbook): Promise<Uint8Array> {
   genislikleriKoru(wb);
   wb.calcProperties = { ...wb.calcProperties, fullCalcOnLoad: true };
   const tampon = await wb.xlsx.writeBuffer();
-  return new Uint8Array(tampon as ArrayBuffer);
+  return icBaglantilariDuzelt(new Uint8Array(tampon as ArrayBuffer));
 }
