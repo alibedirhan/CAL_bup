@@ -31,8 +31,8 @@ export function yeniKasaParolasiDogrula(parola: string, tekrar: string, sadeceUz
 }
 
 /** Sanal POS kilidi (1.18.0). Kayıtlar yalnız bu paroladan üretilen anahtarla açılır; kurtarma yolu yoktur.
- * Tarayıcı dosyaları kopyalansa bile tahmin denemesini yavaşlatmak için en az 10 karakter, harf ve rakam. */
-export const PROFIL_PAROLA_EN_AZ = 10;
+ * Kullanıcı kararıyla (1.18.1) en az 6 karakter, harf ve rakam; daha uzun parola serbesttir. */
+export const PROFIL_PAROLA_EN_AZ = 6;
 export function profilParolasiDogrula(parola: string, tekrar: string): void {
   if (!parola) throw new KullaniciHatasi('Sanal POS parolasını yazın.');
   if (parola.length < PROFIL_PAROLA_EN_AZ || parola.length > KASA_PAROLA_EN_FAZLA)

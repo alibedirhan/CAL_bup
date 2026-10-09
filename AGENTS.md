@@ -109,12 +109,12 @@ tools/          ikiz_aktar.py (eski Python ikizinden başvuru çıktısı üreti
 | 6     | Google Drive kayıt/yedek/LED/ayar/geçmiş       | Kod ve taklit servis denemesi tamam; gerçek OAuth kurulumu bekliyor |
 | 7     | Envanter, bakiye, palet/kasa                   | Örnek dosya ve beklenen sonuç bekleniyor                            |
 
-**Güncel sürüm:** 1.18.0 (POS yardımcısı 2.1.0). Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
+**Güncel sürüm:** 1.18.1 (POS yardımcısı 2.1.0). Son çalışma: [docs/OTURUM_NOTU.md](docs/OTURUM_NOTU.md).
 Google Drive kurulum/teknik kararlar: [docs/DRIVE.md](docs/DRIVE.md).
 Sanal POS cari kasası ve sınırlar: [docs/SANAL_POS.md](docs/SANAL_POS.md).
 
 **2026-10-08 gece Sanal POS güvenliği (1.18.0, yardımcı 2.1.0):** Kullanıcı kararlarıyla: **Sanal POS
-parolası** (≥10, harf+rakam; PBKDF2 600k; anahtar yalnız sekme belleğinde; 10 dk boşta/yenilemede kilit;
+parolası** (≥6, 1.18.1 kullanıcı kararı; harf+rakam; PBKDF2 600k; anahtar yalnız sekme belleğinde; 10 dk boşta/yenilemede kilit;
 5 yanlıştan sonra katlanan bekleme). **Unutulan parola kurtarılamaz** — “Parolamı unuttum” + “SİL” her
 şeyi siler; bunu değiştirme. **Yedek/yedekten ekleme/dışa aktarma ve kart numarası/CVV gösterme-kopyalama
 yoktur**; kart yalnız yardımcıyla aktarılır; geri ekleme önerme. Yardımcıda araç çubuğu aç/kapa ve “POS

@@ -8,7 +8,7 @@ aktarılır** (1.18.0, kullanıcı kararı). Tutar ve banka doğrulaması POS/ba
 
 ## Kullanım ve sınırlar
 
-1. Sanal POS’u açın. İlk açılışta **Sanal POS parolası** belirlenir (en az 10 karakter, harf ve rakam).
+1. Sanal POS’u açın. İlk açılışta **Sanal POS parolası** belirlenir (en az 6 karakter, harf ve rakam).
    Sonraki açılışlarda, sayfa yenilenince, tarayıcı kapanınca ve 10 dakika işlem yapılmayınca parola
    sorulur. “Şimdi kilitle” ile hemen kilitlenir. 1.17 ve öncesinin parolasız kaydı ilk açılışta yeni
    parolayla yeniden şifrelenir. Eski PIN’li kasa varsa önce mevcut PIN bir kez girilir, sonra parola belirlenir.
@@ -43,7 +43,9 @@ kurtarma olmasın, yeniden başlayınca eski kayıtlar silinsin” dedi.
   her yazıda yeni IV/revizyon, biçim/kip/kimlik/revizyon/IV/tuz/tekrar AAD’ye bağlı. Anahtar **hiçbir
   depoya yazılmaz**; IndexedDB’de yalnız zarf durur (tarayıcı testi `sanal-pos-profil-anahtar-*`
   kalmadığını denetler). Tarayıcı dosyaları kopyalansa da parola olmadan açılamaz; tahmin denemesi
-  KDF ile yavaşlar, bu yüzden parola en az 10 karakter, harf ve rakam ister (`cekirdek/posParola.ts`).
+  KDF ile yavaşlar. Parola kullanıcı kararıyla en az 6 karakter, harf ve rakamdır (1.18.1, `cekirdek/posParola.ts`);
+  6 karakterlik parola, kopyalanmış tarayıcı dosyasına karşı güçlü bir bilgisayarla günler içinde
+  denenebilir. Ekrandaki yanlış deneme beklemesi bunu yalnız program içinde engeller; daha uzun parola serbesttir.
 - Oturum (`platform/posProfilDeposu.ts`): çözülen anahtar yalnız o sekmenin belleğinde, sayfa geçişlerinde
   korunur; 10 dakika etkinlik yoksa (`KILIT_SURESI`), saat geri alınırsa, “Şimdi kilitle”de veya sekme
   kapanınca silinir. Başka sekmede parola değişirse eski oturum geçersizdir. Her sekme ayrı açılır.

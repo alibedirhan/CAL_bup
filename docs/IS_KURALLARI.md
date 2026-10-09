@@ -273,8 +273,8 @@ eşleşince doldurabilir. Sağlayıcının kart API'si doğrulanmış değildir;
 - Cari silme bağlı kartları onayla birlikte atomik siler (cari profilinde “Cariyi sil”, 1.17.0).
 - Cari listesi ada veya en az üç rakamla vergi/TC numarasının bir kısmına göre aranır.
 
-**Parola kilidi (1.18.0, kullanıcı kararı):** Sanal POS parolası en az 10 karakter, en az bir harf ve bir
-rakam. Kayıtlar yalnız bu paroladan PBKDF2-SHA256 (600.000) ile üretilen anahtarla açılır; anahtar hiçbir
+**Parola kilidi (1.18.0, kullanıcı kararı):** Sanal POS parolası en az 6 karakter (1.18.1; önce 10), en az bir harf
+ve bir rakam. Kayıtlar yalnız bu paroladan PBKDF2-SHA256 (600.000) ile üretilen anahtarla açılır; anahtar hiçbir
 yere yazılmaz. Açılışta, yenilemede, tarayıcı kapanınca, 10 dakika işlem yapılmayınca ve “Şimdi kilitle”de
 parola sorulur. 5 yanlış denemeden sonra bekleme 30 sn’den başlayıp katlanır (en çok 15 dk). **Unutulan
 parola kurtarılamaz**; “Parolamı unuttum” + “SİL” onayı bütün cari/kart/CVV kayıtlarını kalıcı siler ve

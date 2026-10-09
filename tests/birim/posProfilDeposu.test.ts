@@ -98,7 +98,7 @@ describe('Parolalı Sanal POS deposu (1.18.0)', () => {
   it('ilk açılışta parola istenir; anahtar hiçbir yere yazılmaz, zarf açık bilgi taşımaz', async () => {
     const d = new PosProfilDeposu();
     expect(await d.ac()).toEqual({ tur: 'parolaBelirle', tasima: false });
-    await expect(d.parolaBelirle('kisa1', 'kisa1')).rejects.toThrow(/en az 10/);
+    await expect(d.parolaBelirle('kisa1', 'kisa1')).rejects.toThrow(/en az 6/);
     await expect(d.parolaBelirle('yalnizharfler', 'yalnizharfler')).rejects.toThrow(/harf ve bir rakam/);
     await expect(d.parolaBelirle(kilit, kilit + 'x')).rejects.toThrow(/aynı/);
     expect(depo.veri.size).toBe(0);

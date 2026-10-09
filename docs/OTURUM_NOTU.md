@@ -1,3 +1,13 @@
+# 9 Ekim 2026 — Sanal POS parolası en az 6 karakter (1.18.1)
+
+Kullanıcı “Parola kilidi 6 karakter olsun sayı ve harf şeklinde” dedi. `PROFIL_PAROLA_EN_AZ` 10 → 6;
+harf+rakam, basit tekrar ve boşluk denetimi aynen sürer, daha uzun parola serbest. Mevcut 10+ karakterli
+parolalar geçerli kalır; kısaltmak isteyen “Parolayı değiştir”i kullanır. Sınır SANAL_POS.md'de yazılı:
+6 karakter, kopyalanmış tarayıcı dosyasına karşı güçlü bir bilgisayarla günler içinde denenebilir; ekrandaki
+yanlış deneme beklemesi yalnız program içinde korur. Yardımcı değişmedi (2.1.0).
+
+---
+
 # 8 Ekim 2026 (gece) — Sanal POS parola kilidi, yedeksiz, kopyasız; yardımcı aç/kapa (1.18.0, yardımcı 2.1.0)
 
 Kullanıcı aynı gün 1.17.0'dan sonra şunları istedi (sırayla): yardımcıyı araç çubuğundan aç/kapa
@@ -11,7 +21,7 @@ rapor” dedi ve uyudu. Boşta kilit süresini söylemedi; önerilen 10 dakika u
 - Kilit: `posProfilDeposu` yeniden yazıldı (`ac` → eski / parolaBelirle / kilitli / acik; `kilidiAc`,
   `parolaBelirle`, `parolaDegistir`, `sifirla`, `kilitle`; oturum anahtarı modül belleğinde, 10 dk).
   `posProfilSifreleme` `kip: 'parola'` + `parolaAnahtari` (PBKDF2 600k). `posDeneme` katlanan bekleme.
-  `posParola.profilParolasiDogrula` (≥10, harf+rakam). Ekran `PosKilidi.tsx` (+ `PosGuvenlik`).
+  `posParola.profilParolasiDogrula` (≥10, harf+rakam; 1.18.1'de ≥6). Ekran `PosKilidi.tsx` (+ `PosGuvenlik`).
 - Kaldırılanlar: `ProfilYedegi`, `YedekHazirlama`, `posBirlestirme`, `posYedekHatirlatma`, `posYedekKaydi`,
   eski kasa geçişindeki yedek, kart numarası/CVV/tarih/sahip kopyalama ve gösterme, firma beyanı süresi.
 - Yardımcı 2.1.0: araç çubuğu popup'ı (iki anahtar), `kapali` ve `panelGoster`; uyarı/hata pencereyi açar.

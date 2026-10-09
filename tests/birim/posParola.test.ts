@@ -37,14 +37,16 @@ describe('Kasa PIN, parola ve yedek ayrımı', () => {
 });
 
 describe('Sanal POS parolası (1.18.0)', () => {
-  it('en az 10 karakter, harf ve rakam ister; boşluk ve tekrar denetlenir', () => {
+  it('en az 6 karakter, harf ve rakam ister; boşluk ve tekrar denetlenir', () => {
     expect(() => profilParolasiDogrula('Yapay-kilit-2026', 'Yapay-kilit-2026')).not.toThrow();
+    expect(() => profilParolasiDogrula('yap4y9', 'yap4y9')).not.toThrow();
     for (const [p, h] of [
       ['', /yazın/],
-      ['Kisa-1', /en az 10/],
+      ['yap4y', /en az 6/],
       ['sadeceharfler', /harf ve bir rakam/],
-      ['1234567890', /harf ve bir rakam/],
-      ['aaaaaaaaa1', /tahmin/],
+      ['123456', /harf ve bir rakam/],
+      ['yapayy', /harf ve bir rakam/],
+      ['aaaaa1', /tahmin/],
       [' Yapay-kilit-2026', /boşluk/],
     ] as const)
       expect(() => profilParolasiDogrula(p, p)).toThrow(h);
